@@ -5,7 +5,7 @@ import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
 import { 
   Search, SlidersHorizontal, ArrowUpDown, Tag as TagIcon, Star, Sparkles, 
-  ChevronUp, ChevronDown, LayoutGrid, BadgeCheck, Heart, ScanLine
+  ChevronUp, ChevronDown, LayoutGrid, BadgeCheck, Heart, ScanLine, MoreHorizontal
 } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { Product, Category, Brand } from '@/payload-types'
@@ -20,27 +20,27 @@ export default async function HomePage() {
 
   if (categories.length === 0) {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center bg-[#050505]">
-        <h2 className="font-serif text-3xl font-bold text-[#D4AF37]">Database Empty</h2>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center bg-background">
+        <h2 className="font-sans text-3xl font-bold text-primary">Database Empty</h2>
         <p className="mt-4 text-sm text-gray-400">Run `bun run seed` to populate data.</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full bg-[#050505] pb-8 text-white min-h-screen">
+    <div className="w-full bg-background pb-8 text-foreground min-h-screen font-sans bg-[url('/noise.png')] bg-repeat">
       <div className="max-w-7xl mx-auto">
         
         {/* Search Bar */}
-        <div className="px-4 pt-4 md:pt-8 max-w-4xl mx-auto">
-          <div className="relative flex items-center w-full px-4 py-3.5 border rounded-2xl bg-[#111111] border-[#D4AF37]/20 focus-within:border-[#D4AF37] shadow-sm transition-colors">
-            <Search className="w-5 h-5 text-[#D4AF37] font-bold mr-2" strokeWidth={2.5} />
+        <div className="px-4 pt-4 md:pt-6 max-w-4xl mx-auto">
+          <div className="relative flex items-center w-full px-5 py-3 border rounded-full bg-card border-primary/40 focus-within:border-primary shadow-sm transition-colors">
+            <Search className="w-5 h-5 text-primary font-bold mr-3" strokeWidth={2.5} />
             <input
               type="text"
-              placeholder="Search premium collections..."
-              className="w-full px-2 text-sm text-white bg-transparent outline-none placeholder:text-[#888888] font-medium"
+              placeholder="Search products, brands & categories..."
+              className="w-full text-[13px] text-foreground bg-transparent outline-none placeholder:text-gray-500 font-medium"
             />
-            <ScanLine className="w-5 h-5 text-[#D4AF37]/70 ml-2 cursor-pointer hover:text-[#D4AF37] transition-colors" />
+            <ScanLine className="w-5 h-5 text-primary ml-2 cursor-pointer transition-colors" />
           </div>
         </div>
 
@@ -48,41 +48,41 @@ export default async function HomePage() {
         <div className="px-4 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Main Banner */}
-            <div className="md:col-span-2 relative flex flex-col justify-center p-6 md:p-10 min-h-[180px] md:min-h-[220px] overflow-hidden rounded-3xl bg-gradient-to-r from-[#1A1A1A] to-[#0A0A0A] border border-[#D4AF37]/10 shadow-lg">
+            <div className="md:col-span-2 relative flex flex-col justify-center p-6 md:p-8 min-h-[160px] md:min-h-[200px] overflow-hidden rounded-2xl bg-card border border-primary/20">
               <div className="z-10 max-w-sm">
-                <h2 className="flex flex-col gap-1 font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-[#D4AF37] leading-tight">
-                  <span>Exclusive Deals</span>
-                  <span className="text-gray-300 font-normal text-xl md:text-2xl mt-1">Curated Excellence <Sparkles className="inline w-5 h-5 text-[#D4AF37] ml-1" /></span>
+                <h2 className="flex flex-col gap-1 text-2xl md:text-3xl font-bold leading-tight">
+                  <span className="text-primary">Best Deals</span>
+                  <span className="text-foreground font-medium mt-1">Handpicked for You! <Sparkles className="inline w-5 h-5 text-primary ml-1" /></span>
                 </h2>
                 <Link
                   href="/search"
-                  className="inline-flex items-center gap-2 px-6 py-2.5 mt-6 text-xs font-bold text-black bg-[#D4AF37] hover:bg-[#C5A059] rounded-full transition-colors w-fit shadow-md tracking-wider uppercase"
+                  className="inline-flex items-center gap-2 px-6 py-2 mt-5 text-sm font-semibold text-background bg-primary hover:bg-primary-hover rounded-full transition-colors w-fit"
                 >
-                  Discover Now &rarr;
+                  Shop Now &rarr;
                 </Link>
               </div>
               {/* Decorative shapes / image */}
-              <div className="absolute right-0 top-0 w-3/4 md:w-1/2 h-full pointer-events-none bg-[url('/seed/hero_luxury_mobile.webp')] bg-cover mix-blend-screen opacity-70" style={{ backgroundPosition: 'center right' }}></div>
+              <div className="absolute right-0 top-0 w-3/4 md:w-1/2 h-full pointer-events-none bg-[url('/seed/hero_luxury_mobile.webp')] bg-cover opacity-90" style={{ backgroundPosition: 'center right' }}></div>
             </div>
             
             {/* Side Banners */}
-            <div className="flex flex-row md:flex-col gap-4">
-              <div className="flex-1 relative flex items-center justify-between p-5 md:p-6 overflow-hidden rounded-3xl bg-[#111111] shadow-sm border border-[#D4AF37]/20 group cursor-pointer hover:border-[#D4AF37]/50 transition-all">
+            <div className="flex flex-col gap-4">
+              <div className="flex-1 relative flex items-center justify-between p-5 overflow-hidden rounded-2xl bg-card border border-primary/20 cursor-pointer">
                 <div>
-                  <h3 className="text-sm md:text-base font-bold text-[#D4AF37] uppercase tracking-wide">Signature</h3>
-                  <p className="text-xs text-gray-400 mt-1">Up to 70% Off</p>
+                  <h3 className="text-[15px] font-medium text-primary">Mega Deals</h3>
+                  <p className="text-[13px] text-gray-300 mt-1">Up to 70% Off</p>
                 </div>
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#D4AF37] to-[#AA8C49] rounded-full text-black shadow-sm">
-                  <span className="font-serif text-lg md:text-xl font-bold">%</span>
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 border border-primary/30 rounded-full text-primary backdrop-blur-sm">
+                  <span className="text-xl font-bold">%</span>
                 </div>
               </div>
-              <div className="flex-1 relative flex items-center justify-between p-5 md:p-6 overflow-hidden rounded-3xl bg-[#111111] shadow-sm border border-[#D4AF37]/20 group cursor-pointer hover:border-[#D4AF37]/50 transition-all">
+              <div className="flex-1 relative flex items-center justify-between p-5 overflow-hidden rounded-2xl bg-card border border-primary/20 cursor-pointer">
                 <div>
-                  <h3 className="text-sm md:text-base font-bold text-[#D4AF37] uppercase tracking-wide">Top Rated</h3>
-                  <p className="text-xs text-gray-400 mt-1">Masterpieces</p>
+                  <h3 className="text-[15px] font-medium text-primary">Top Rated</h3>
+                  <p className="text-[13px] text-gray-300 mt-1">Products</p>
                 </div>
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-[#D4AF37] to-[#AA8C49] rounded-full text-black shadow-sm">
-                  <Star className="w-4 h-4 md:w-5 md:h-5 fill-black" />
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 border border-primary/30 rounded-full text-primary backdrop-blur-sm">
+                  <Star className="w-6 h-6 fill-primary" />
                 </div>
               </div>
             </div>
@@ -90,13 +90,13 @@ export default async function HomePage() {
         </div>
 
         {/* Horizontal Categories Row */}
-        <div className="mt-10 px-4">
+        <div className="mt-8 px-4">
           <div className="flex space-x-6 md:space-x-8 overflow-x-auto no-scrollbar pb-4 items-center justify-start md:justify-center">
             <Link href="/search" className="flex flex-col items-center flex-shrink-0 gap-3 group">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-[#111111] shadow-lg text-[#D4AF37] group-hover:bg-[#1A1A1A] group-hover:scale-105 transition-all border border-[#D4AF37]/30">
+              <div className="flex items-center justify-center w-[60px] h-[60px] rounded-full bg-transparent border border-primary/50 text-primary group-hover:bg-primary/10 transition-all">
                 <LayoutGrid className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wider uppercase text-gray-400 group-hover:text-[#D4AF37] transition-colors">All</span>
+              <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">All</span>
             </Link>
 
             {categories.map((cat: Category) => (
@@ -105,16 +105,16 @@ export default async function HomePage() {
                 href={`/category/${cat.slug}`}
                 className="flex flex-col items-center flex-shrink-0 gap-3 group"
               >
-                <div className="relative flex items-center justify-center w-16 h-16 p-3 overflow-hidden rounded-full bg-[#111111] shadow-lg group-hover:scale-105 transition-all border border-[#D4AF37]/30 group-hover:border-[#D4AF37]/60">
+                <div className="relative flex items-center justify-center w-[60px] h-[60px] p-3 overflow-hidden rounded-full bg-transparent border border-primary/50 group-hover:bg-primary/10 transition-all">
                   <Image
                     src={getImageUrl(cat.image)}
                     alt={cat.title}
                     width={32}
                     height={32}
-                    className="object-contain transition-all"
+                    className="object-contain transition-all grayscale brightness-200 contrast-200 sepia hue-rotate-[10deg] saturate-200"
                   />
                 </div>
-                <span className="text-[11px] font-semibold tracking-wider uppercase text-gray-400 group-hover:text-[#D4AF37] transition-colors">
+                <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">
                   {cat.title}
                 </span>
               </Link>
@@ -122,35 +122,32 @@ export default async function HomePage() {
             
             {/* "More" placeholder icon */}
             <Link href="/search" className="flex flex-col items-center flex-shrink-0 gap-3 group">
-              <div className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-[#111111] shadow-lg group-hover:scale-105 transition-all text-[#D4AF37] border border-[#D4AF37]/30">
-                <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-current" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-current" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-current" />
-                </div>
+              <div className="flex flex-col items-center justify-center w-[60px] h-[60px] rounded-full bg-transparent border border-primary/50 text-primary group-hover:bg-primary/10 transition-all">
+                <MoreHorizontal className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-semibold tracking-wider uppercase text-gray-400 group-hover:text-[#D4AF37] transition-colors">More</span>
+              <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">More</span>
             </Link>
           </div>
         </div>
 
         {/* Filter / Sort Horizontal Bar */}
-        <div className="px-4 mt-8">
+        <div className="px-4 mt-4">
           <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
-            <button className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-black bg-[#D4AF37] rounded-full flex-shrink-0 shadow-lg hover:bg-[#C5A059] transition-all uppercase tracking-wide">
-              <SlidersHorizontal className="w-4 h-4" /> Filters <span className="w-1.5 h-1.5 rounded-full bg-black ml-1"></span>
+            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-primary/40 rounded-full flex-shrink-0 hover:bg-primary/10 transition-all relative">
+              <SlidersHorizontal className="w-4 h-4 text-primary" /> Filters
+              <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-primary"></span>
             </button>
-            <button className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-300 bg-[#111111] border border-[#D4AF37]/30 rounded-full hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors flex-shrink-0 uppercase tracking-wide">
-              <ArrowUpDown className="w-4 h-4" /> Sort
+            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-gray-700 rounded-full hover:border-primary/40 transition-colors flex-shrink-0">
+              <ArrowUpDown className="w-4 h-4 text-primary" /> Sort
             </button>
-            <button className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-300 bg-[#111111] border border-[#D4AF37]/30 rounded-full hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors flex-shrink-0 uppercase tracking-wide">
-              <TagIcon className="w-4 h-4" /> Brand
+            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-gray-700 rounded-full hover:border-primary/40 transition-colors flex-shrink-0">
+              <TagIcon className="w-4 h-4 text-primary" /> Brand
             </button>
-            <button className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-300 bg-[#111111] border border-[#D4AF37]/30 rounded-full hover:border-[#D4AF37] hover:text-[#D4AF37] transition-colors flex-shrink-0 uppercase tracking-wide">
-              <span className="font-serif italic font-bold">$</span> Price
+            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-gray-700 rounded-full hover:border-primary/40 transition-colors flex-shrink-0">
+              <span className="font-semibold text-primary">$</span> Price
             </button>
             <div className="ml-auto pl-4">
-              <button className="text-sm font-bold text-[#D4AF37] hover:text-white transition-colors flex-shrink-0 uppercase tracking-wider">
+              <button className="text-[13px] font-semibold text-primary hover:text-primary-hover transition-colors flex-shrink-0">
                 Clear All
               </button>
             </div>
@@ -158,48 +155,49 @@ export default async function HomePage() {
         </div>
 
         {/* Main Content Split: Sidebar + Product Grid */}
-        <div className="px-4 mt-8 flex flex-col lg:flex-row gap-8">
+        <div className="px-4 mt-6 flex flex-col lg:flex-row gap-6">
           
           {/* Left Sidebar (Desktop/Tablet) */}
           <div className="hidden md:block w-64 lg:w-72 flex-shrink-0 space-y-6">
             {/* Categories Accordion */}
-            <div className="bg-[#111111] p-5 rounded-3xl border border-[#D4AF37]/10">
-              <h3 className="text-sm font-bold text-[#D4AF37] uppercase tracking-wider flex justify-between items-center mb-5 cursor-pointer">
-                Collections
-                <ChevronUp className="w-4 h-4 text-[#D4AF37]" />
+            <div className="bg-transparent border border-gray-800 p-4 rounded-2xl">
+              <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
+                Categories
+                <ChevronUp className="w-4 h-4 text-primary" />
               </h3>
-              <div className="space-y-2">
-                <Link href="/search" className="flex items-center gap-3 px-4 py-3 bg-[#D4AF37] text-black rounded-xl font-bold text-xs tracking-wide shadow-sm">
+              <div className="space-y-1">
+                <Link href="/search" className="flex items-center gap-3 px-3 py-2.5 bg-transparent border border-primary text-primary rounded-xl font-medium text-[13px] shadow-sm">
                   <LayoutGrid className="w-4 h-4" />
-                  ALL COLLECTIONS
+                  All Categories
                 </Link>
                 {categories.map((cat: Category) => (
-                  <Link key={cat.id} href={`/category/${cat.slug}`} className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-[#D4AF37] hover:bg-[#1A1A1A] rounded-xl transition-all text-xs font-semibold tracking-wide uppercase group">
-                    <div className="w-4 h-4 relative opacity-70 group-hover:opacity-100 transition-opacity">
-                      <Image src={getImageUrl(cat.image)} alt="" fill className="object-contain" />
+                  <Link key={cat.id} href={`/category/${cat.slug}`} className="flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:text-primary hover:bg-muted rounded-xl transition-all text-[13px] font-medium group">
+                    <div className="w-4 h-4 relative">
+                      <Image src={getImageUrl(cat.image)} alt="" fill className="object-contain grayscale brightness-200" />
                     </div>
                     {cat.title}
                   </Link>
                 ))}
+                <button className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 px-3 transition-colors">
+                  Show More <ChevronDown className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            <div className="bg-[#111111] p-5 rounded-3xl border border-[#D4AF37]/10">
-              <h3 className="text-sm font-bold text-[#D4AF37] uppercase tracking-wider flex justify-between items-center mb-5 cursor-pointer">
-                Designer Brands
-                <ChevronUp className="w-4 h-4 text-[#D4AF37]" />
+            <div className="bg-transparent border border-gray-800 p-4 rounded-2xl">
+              <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
+                Brands
+                <ChevronUp className="w-4 h-4 text-primary" />
               </h3>
-              <div className="space-y-4 px-2">
+              <div className="space-y-4 px-3">
                 {brands.slice(0, 6).map(brand => (
-                  <label key={brand} className="flex items-center gap-4 cursor-pointer group">
-                    <div className="w-5 h-5 border border-[#D4AF37]/40 rounded-[4px] flex items-center justify-center bg-transparent group-hover:border-[#D4AF37] transition-colors relative">
-                       <div className="w-3 h-3 bg-[#D4AF37] rounded-[2px] opacity-0 group-hover:opacity-20" />
-                    </div>
-                    <span className="text-gray-300 font-semibold text-xs tracking-wide uppercase group-hover:text-[#D4AF37] transition-colors">{brand}</span>
+                  <label key={brand} className="flex items-center gap-3 cursor-pointer group">
+                    <div className="w-4 h-4 border border-gray-600 rounded-[3px] flex items-center justify-center bg-transparent group-hover:border-primary transition-colors" />
+                    <span className="text-gray-300 font-medium text-[13px] group-hover:text-foreground transition-colors">{brand}</span>
                   </label>
                 ))}
-                <button className="flex items-center gap-2 text-[#D4AF37] hover:text-white text-xs font-bold pt-2 transition-colors uppercase tracking-wider">
-                  View More <ChevronDown className="w-3.5 h-3.5" />
+                <button className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 transition-colors">
+                  View More <ChevronDown className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -208,46 +206,46 @@ export default async function HomePage() {
           {/* Right Content */}
           <div className="flex-1">
             {/* Product List Header */}
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-[#D4AF37]/10">
-              <span className="text-xs tracking-wider uppercase font-semibold text-[#D4AF37]">{allProducts.length} Curated Pieces</span>
-              <div className="flex items-center gap-2 cursor-pointer group">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Sort by:</span>
-                <span className="text-xs font-bold text-white group-hover:text-[#D4AF37] transition-colors uppercase tracking-wider">Exclusivity</span>
-                <ChevronDown className="w-4 h-4 text-[#D4AF37]" />
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[13px] font-medium text-primary">1,248 Products found</span>
+              <div className="flex items-center gap-1 cursor-pointer group">
+                <span className="text-[13px] text-gray-400">Sort by:</span>
+                <span className="text-[13px] font-medium text-primary">Popular</span>
+                <ChevronDown className="w-4 h-4 text-primary" />
               </div>
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               {allProducts.map((prod: Product) => (
                 <div
                   key={prod.id}
-                  className="flex flex-col p-4 md:p-5 border border-[#D4AF37]/20 rounded-3xl bg-[#111111] hover:border-[#D4AF37]/60 transition-all shadow-lg hover:shadow-[0_4px_20px_rgba(212,175,55,0.1)] relative group"
+                  className="flex flex-col p-4 border border-gray-800 rounded-2xl bg-card hover:border-primary/40 transition-all relative group"
                 >
-                  <button className="absolute top-4 right-4 z-10 text-gray-500 hover:text-[#D4AF37] transition-colors p-1 rounded-full">
+                  <button className="absolute top-4 right-4 z-10 text-primary opacity-70 hover:opacity-100 transition-colors">
                     <Heart className="w-5 h-5" />
                   </button>
                   <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow">
-                    <div className="relative flex items-center justify-center w-full bg-[#1A1A1A] rounded-2xl aspect-square mb-5 overflow-hidden border border-gray-800">
+                    <div className="relative flex items-center justify-center w-full bg-card rounded-xl aspect-square mb-4">
                       <Image
                         src={getImageUrl(prod.image)}
                         alt={prod.title}
-                        width={200}
-                        height={200}
-                        className="object-contain p-2 transition-transform duration-700 group-hover:scale-110 drop-shadow-2xl"
+                        width={180}
+                        height={180}
+                        className="object-contain p-2 transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
                       />
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase text-[#D4AF37] mb-2">
+                    <div className="flex items-center gap-1 text-[11px] font-medium text-gray-300 mb-1">
                       {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
-                      <BadgeCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <BadgeCheck className="w-3.5 h-3.5 text-primary" />
                     </div>
-                    <h3 className="text-sm md:text-base font-serif font-semibold text-white line-clamp-2 leading-snug group-hover:text-[#D4AF37] transition-colors">
+                    <h3 className="text-[13px] font-normal text-foreground line-clamp-2 leading-relaxed mt-1">
                       {prod.title}
                     </h3>
                     
-                    <div className="flex items-center gap-1.5 mt-3 mb-4">
-                      <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
-                      <span className="text-xs font-bold text-white">{(prod as any).rating || '4.7'}</span>
+                    <div className="flex items-center gap-1.5 mt-2 mb-2">
+                      <Star className="w-3.5 h-3.5 text-primary fill-primary" />
+                      <span className="text-xs font-medium text-primary">{(prod as any).rating || '4.7'}</span>
                       <span className="text-[11px] text-gray-500">({(prod as any).reviewsCount || '1.2k'} reviews)</span>
                     </div>
                   </Link>

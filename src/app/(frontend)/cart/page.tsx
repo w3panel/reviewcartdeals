@@ -32,17 +32,17 @@ export default function CartPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-[70vh] bg-[#050505] flex flex-col items-center justify-center p-6">
-        <div className="w-16 h-16 bg-[#111111] border border-[#D4AF37]/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
-          <Send className="w-8 h-8 text-[#D4AF37]" />
+      <div className="min-h-[70vh] bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-16 h-16 bg-card border border-primary/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
+          <Send className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="text-2xl font-serif font-bold text-[#D4AF37] mb-2 tracking-wide">Your Enquiry is Empty</h1>
+        <h1 className="text-2xl font-sans font-bold text-primary mb-2">Your Enquiry is Empty</h1>
         <p className="text-gray-400 text-center mb-8 max-w-sm text-sm">
-          Browse our exclusive collections and add items you're interested in to send us an enquiry.
+          Browse our exclusive collections and add items you&apos;re interested in to send us an enquiry.
         </p>
         <Link
           href="/"
-          className="bg-[#D4AF37] text-black px-8 py-3.5 rounded-full font-bold uppercase tracking-wider hover:bg-[#C5A059] transition-colors shadow-lg text-sm"
+          className="bg-primary text-background px-8 py-3.5 rounded-full font-bold uppercase tracking-wide hover:bg-primary-hover transition-colors shadow-lg text-sm"
         >
           Explore Collections
         </Link>
@@ -51,14 +51,14 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] pb-24 text-white">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-[#D4AF37]/20 px-4 h-16 flex items-center">
-        <Link href="/" className="p-2 -ml-2 text-[#D4AF37] hover:text-white transition-colors">
+      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-primary/20 px-4 h-16 flex items-center">
+        <Link href="/" className="p-2 -ml-2 text-primary hover:text-foreground transition-colors">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="text-lg font-serif font-bold text-[#D4AF37] ml-2 tracking-widest uppercase">Your Enquiry</h1>
-        <div className="ml-auto bg-[#D4AF37] text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+        <h1 className="text-lg font-sans font-bold text-primary ml-2">Your Enquiry</h1>
+        <div className="ml-auto bg-primary text-background text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
           {cartItems.length} items
         </div>
       </header>
@@ -66,11 +66,11 @@ export default function CartPage() {
       <main className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
         {/* Selected Items */}
         <section>
-          <h2 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-4 px-1">Selected Pieces</h2>
-          <div className="bg-[#111111] rounded-3xl p-2 shadow-lg border border-[#D4AF37]/20 divide-y divide-[#D4AF37]/10">
+          <h2 className="text-sm font-medium text-primary mb-4 px-1">Selected Pieces</h2>
+          <div className="bg-card rounded-3xl p-2 shadow-lg border border-primary/20 divide-y divide-[#F5B82A]/10">
             {cartItems.map((item) => (
               <div key={item.product.id} className="flex gap-4 p-4 relative group">
-                <div className="w-24 h-24 bg-[#1A1A1A] rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-gray-800">
+                <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-primary/10">
                   {item.product.image ? (
                     <Image
                       src={getImageUrl(item.product.image)}
@@ -80,23 +80,23 @@ export default function CartPage() {
                       sizes="96px"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#111111]" />
+                    <div className="w-full h-full bg-card" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0 py-1">
-                  <h3 className="text-sm md:text-base font-serif font-bold text-white leading-tight pr-8 group-hover:text-[#D4AF37] transition-colors">
+                  <h3 className="text-sm md:text-base font-sans font-medium text-foreground leading-tight pr-8 group-hover:text-primary transition-colors">
                     {item.product.title}
                   </h3>
                   <p className="text-xs text-gray-400 mt-2 line-clamp-2 leading-relaxed">
                     {item.product.shortDescription}
                   </p>
-                  <p className="text-xs font-bold text-[#D4AF37] mt-3 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-primary mt-3 uppercase tracking-wider">
                     Qty: {item.quantity}
                   </p>
                 </div>
                 <button
                   onClick={() => removeFromCart(item.product.id)}
-                  className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-500 bg-[#1A1A1A] hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"
+                  className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-500 bg-muted hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"
                   aria-label="Remove item"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -108,8 +108,8 @@ export default function CartPage() {
 
         {/* Enquiry Form */}
         <section>
-          <h2 className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest mb-4 px-1">Client Details</h2>
-          <form onSubmit={handleSubmit} className="bg-[#111111] rounded-3xl p-6 shadow-lg border border-[#D4AF37]/20 space-y-5">
+          <h2 className="text-sm font-medium text-primary mb-4 px-1">Client Details</h2>
+          <form onSubmit={handleSubmit} className="bg-card rounded-3xl p-6 shadow-lg border border-primary/20 space-y-5">
             <div>
               <label htmlFor="name" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
                 Full Name *
@@ -121,7 +121,7 @@ export default function CartPage() {
                 required
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full bg-[#1A1A1A] border border-gray-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all placeholder:text-gray-600"
+                className="w-full bg-muted border border-gray-800 rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#F5B82A] focus:border-primary transition-all placeholder:text-gray-600"
                 placeholder="John Doe"
               />
             </div>
@@ -137,7 +137,7 @@ export default function CartPage() {
                 required
                 value={formData.phone}
                 onChange={handleInputChange}
-                className="w-full bg-[#1A1A1A] border border-gray-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all placeholder:text-gray-600"
+                className="w-full bg-muted border border-gray-800 rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#F5B82A] focus:border-primary transition-all placeholder:text-gray-600"
                 placeholder="+1 234 567 8900"
               />
             </div>
@@ -152,15 +152,15 @@ export default function CartPage() {
                 rows={3}
                 value={formData.message}
                 onChange={handleInputChange}
-                className="w-full bg-[#1A1A1A] border border-gray-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all resize-none placeholder:text-gray-600"
+                className="w-full bg-muted border border-gray-800 rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#F5B82A] focus:border-primary transition-all resize-none placeholder:text-gray-600"
                 placeholder="Any specific requests or questions?"
               />
             </div>
 
-            <div className="pt-6 border-t border-[#D4AF37]/10">
+            <div className="pt-6 border-t border-primary/10">
               <button
                 type="submit"
-                className="w-full bg-[#D4AF37] text-black rounded-xl py-4 font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-[#C5A059] active:scale-[0.98] transition-all shadow-lg"
+                className="w-full bg-primary text-background rounded-xl py-4 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-3 hover:bg-primary-hover active:scale-[0.98] transition-all shadow-lg"
               >
                 <span>Send via WhatsApp</span>
                 <Send className="w-5 h-5" />

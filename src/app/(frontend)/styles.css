@@ -8,8 +8,40 @@
   --color-luxury-gold: #c5a880;
   --color-luxury-gold-hover: #b3946a;
   --color-luxury-gold-light: #f5ede3;
+  
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
+}
+
+:root {
+  --background: #FCFBF9;
+  --foreground: #000000;
+  --card: #FFFFFF;
+  --border: rgba(245, 184, 42, 0.3);
+  --primary: #F5B82A;
+  --primary-hover: #DCA54A;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+}
+
+.dark {
+  --background: #0A0A0A;
+  --foreground: #F9F9F9;
+  --card: #111111;
+  --border: rgba(245, 184, 42, 0.2);
+  --primary: #F5B82A;
+  --primary-hover: #DCA54A;
+  --muted: #1A1A1A;
+  --muted-foreground: #9CA3AF;
 }
 
 /* Custom premium scrollbar */
@@ -29,8 +61,8 @@
 }
 
 body {
-  background-color: #080808;
-  color: #f3f3f3;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
 }
