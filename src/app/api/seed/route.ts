@@ -40,19 +40,19 @@ export const GET = async () => {
         file: {
           data: fileBuffer,
           name: fileName,
-          mimetype: 'image/png',
+          mimetype: 'image/webp',
           size: fileBuffer.length,
         },
       })
     }
 
     // 2. Upload seed images
-    await uploadMedia('hero_luxury.png', 'Luxury Hero Banner')
-    const mediaWatch = await uploadMedia('rolex_watch.png', 'Rolex Watch Gold Black')
-    const mediaGlasses = await uploadMedia('gucci_sunglasses.png', 'Gucci Sunglasses Gold Black')
-    const mediaBag = await uploadMedia('lv_bag.png', 'Louis Vuitton Pouch')
-    const mediaWallet = await uploadMedia('woodland_wallet.png', 'Woodland Leather Wallet')
-    const mediaRing = await uploadMedia('gucci_ring.png', 'Gucci Gold Black Ring')
+    await uploadMedia('hero_luxury.webp', 'Luxury Hero Banner')
+    const mediaWatch = await uploadMedia('rolex_watch.webp', 'Rolex Watch Gold Black')
+    const mediaGlasses = await uploadMedia('gucci_sunglasses.webp', 'Gucci Sunglasses Gold Black')
+    const mediaBag = await uploadMedia('lv_bag.webp', 'Louis Vuitton Pouch')
+    const mediaWallet = await uploadMedia('woodland_wallet.webp', 'Woodland Leather Wallet')
+    const mediaRing = await uploadMedia('gucci_ring.webp', 'Gucci Gold Black Ring')
 
     // 3. Create Categories
     const catWatch = await payload.create({
@@ -366,7 +366,6 @@ export const GET = async () => {
       message: 'Luxury catalog database seeded successfully!',
       success: true,
     })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('Seeding error:', error)
     return Response.json(

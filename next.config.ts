@@ -11,7 +11,7 @@ const nextConfig = {
         pathname: '/seed/**',
       },
       {
-        pathname: '/placeholder.jpg',
+        pathname: '/placeholder.webp',
       },
     ],
   },

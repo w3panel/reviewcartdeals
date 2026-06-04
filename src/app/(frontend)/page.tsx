@@ -46,13 +46,23 @@ export default async function HomePage() {
     <div className="w-full">
       {/* 1. Hero Section */}
       <section className="relative h-[85vh] w-full overflow-hidden border-b border-luxury-gray">
+        {/* Desktop Image */}
         <Image
-          src="/seed/hero_luxury.png"
+          src="/seed/hero_luxury.webp"
           alt="Luxury Accessories Hero"
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-60"
+          className="hidden sm:block object-cover opacity-60"
+        />
+        {/* Mobile Image */}
+        <Image
+          src="/seed/hero_luxury_mobile.webp"
+          alt="Luxury Accessories Hero Mobile"
+          fill
+          priority
+          sizes="100vw"
+          className="block sm:hidden object-cover opacity-60 object-center"
         />
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-black/40" />

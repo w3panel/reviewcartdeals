@@ -8,5 +8,5 @@ export function getImageUrl(image: number | Media | undefined | null): string {
   if (image && typeof image === 'object' && image.url) {
     return image.url
   }
-  return '/placeholder.jpg'
+  return '/placeholder.webp'
 }

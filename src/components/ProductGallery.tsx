@@ -31,7 +31,7 @@ export function ProductGallery({ gallery }: ProductGalleryProps) {
       {/* Main Image View */}
       <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-black border border-luxury-gray flex items-center justify-center p-4">
         <Image
-          src={activeImage.url || '/placeholder.jpg'}
+          src={activeImage.url || '/placeholder.webp'}
           alt={activeImage.alt || 'Product Image'}
           fill
           priority
@@ -54,7 +54,7 @@ export function ProductGallery({ gallery }: ProductGalleryProps) {
               }`}
             >
               <Image
-                src={img.url || '/placeholder.jpg'}
+                src={img.url || '/placeholder.webp'}
                 alt={img.alt || 'Thumbnail'}
                 fill
                 sizes="80px"
