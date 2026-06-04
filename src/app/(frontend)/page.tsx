@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCategories } from '@/services/categories'
 import { getProducts } from '@/services/products'
-import { ArrowRight, MessageCircle, RefreshCw } from 'lucide-react'
+import { ArrowRight, MessageCircle } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { Product, Category } from '@/payload-types'
 
@@ -23,16 +23,12 @@ export default async function HomePage() {
             Welcome to the ReviewCartDeals Luxury Product Showcase. The database is currently empty.
           </p>
           <div className="mt-8">
-            <Link
-              href="/api/seed"
-              className="inline-flex items-center gap-2 rounded bg-luxury-gold px-6 py-3 font-semibold text-luxury-black transition-all hover:bg-luxury-gold-hover hover:scale-105"
-            >
-              <RefreshCw className="h-5 w-5 animate-spin" />
-              Seed Database with Luxury Catalog
-            </Link>
+            <div className="inline-flex items-center gap-2 rounded bg-luxury-dark border border-luxury-gray px-6 py-3 font-semibold text-gray-300">
+              <span className="font-mono text-luxury-gold">bun run seed</span>
+            </div>
           </div>
           <p className="mt-4 text-xs text-gray-500">
-            Clicking this will automatically upload high-quality mock images and populate categories and products.
+            Run the command above in your terminal to automatically upload high-quality mock images and populate categories and products.
           </p>
         </div>
       </div>

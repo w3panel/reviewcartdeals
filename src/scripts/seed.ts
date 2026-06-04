@@ -4,9 +4,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
-export const dynamic = 'force-dynamic'
-
-export const GET = async () => {
+async function seed() {
   try {
     const payload = await getPayload({
       config: configPromise,
@@ -19,10 +17,8 @@ export const GET = async () => {
     })
 
     if (existingCats.docs.length > 0) {
-      return Response.json({
-        message: 'Database already has category data. Seeding skipped.',
-        success: true,
-      })
+      console.log('Database already has category data. Seeding skipped.')
+      process.exit(0)
     }
 
     // Helper to upload media from the seed assets
@@ -362,19 +358,12 @@ export const GET = async () => {
       },
     })
 
-    return Response.json({
-      message: 'Luxury catalog database seeded successfully!',
-      success: true,
-    })
+    console.log('Luxury catalog database seeded successfully!')
+    process.exit(0)
   } catch (error: any) {
-    console.error('Seeding error:', error)
-    return Response.json(
-      {
-        message: 'Seeding failed.',
-        error: error.message || error,
-        success: false,
-      },
-      { status: 500 }
-    )
+    console.error('Seeding failed:', error)
+    process.exit(1)
   }
 }
+
+seed()
