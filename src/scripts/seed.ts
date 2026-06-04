@@ -108,21 +108,20 @@ async function seed() {
     })
 
     // 4. Create Brands
-    const brandMap: Record<string, string> = {}
+    const brandMap: Record<string, number> = {}
     const createBrand = async (title: string) => {
-      const b = await payload.create({ collection: 'brands', data: { title } })
+      const b = await payload.create({ collection: 'brands', data: { title } } as any)
       brandMap[title] = b.id
     }
     const brandsToCreate = ['Hublot', 'Gucci', 'Louis Vuitton', 'Seiko', 'Woodland', 'Maserati', 'Hermès']
     for (const b of brandsToCreate) {
       await createBrand(b)
     }
-
-    // 5. Create Tags
-    const tagMap: Record<string, string> = {}
+    // 5. Create Tags
+    const tagMap: Record<string, number> = {}
     const tagsToCreate = ['watch', 'gold', 'luxury', 'sunglasses', 'eyewear', 'gucci', 'bag', 'leather', 'pouch', 'seiko', 'automatic', 'accessories', 'ring', 'wallet', 'woodland', 'bracelet', 'belt', 'hermes']
     for (const t of tagsToCreate) {
-      const newTag = await payload.create({ collection: 'tags', data: { title: t } })
+      const newTag = await payload.create({ collection: 'tags', data: { title: t } } as any)
       tagMap[t] = newTag.id
     }
     const getTagIds = (tags: string[]) => tags.map((t) => tagMap[t])
@@ -182,7 +181,7 @@ async function seed() {
         },
         tags: getTagIds(['watch', 'gold', 'luxury']),
       },
-    })
+    } as any)
 
     // Product 2: Gucci Sunglasses
     await payload.create({
@@ -211,7 +210,7 @@ async function seed() {
         },
         tags: getTagIds(['sunglasses', 'eyewear', 'gucci']),
       },
-    })
+    } as any)
 
     // Product 3: LV Pouch
     await payload.create({
@@ -239,7 +238,7 @@ async function seed() {
         },
         tags: getTagIds(['bag', 'leather', 'pouch']),
       },
-    })
+    } as any)
 
     // Product 4: Seiko Watch
     await payload.create({
@@ -267,7 +266,7 @@ async function seed() {
         },
         tags: getTagIds(['watch', 'seiko', 'automatic']),
       },
-    })
+    } as any)
 
     // Product 5: Gucci Ring
     await payload.create({
@@ -294,7 +293,7 @@ async function seed() {
         },
         tags: getTagIds(['accessories', 'ring', 'gold']),
       },
-    })
+    } as any)
 
     // Product 6: Woodland Wallet
     await payload.create({
@@ -321,7 +320,7 @@ async function seed() {
         },
         tags: getTagIds(['wallet', 'leather', 'woodland']),
       },
-    })
+    } as any)
 
     // Product 7: Maserati Bracelet
     await payload.create({
@@ -349,7 +348,7 @@ async function seed() {
         },
         tags: getTagIds(['accessories', 'bracelet', 'leather']),
       },
-    })
+    } as any)
 
     // Product 8: Hermes Belt
     await payload.create({
@@ -377,7 +376,7 @@ async function seed() {
         },
         tags: getTagIds(['accessories', 'belt', 'hermes']),
       },
-    })
+    } as any)
 
     console.log('Luxury catalog database seeded successfully!')
     process.exit(0)

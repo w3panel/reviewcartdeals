@@ -3,6 +3,7 @@ import './styles.css'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
+import { CartProvider } from '@/context/CartContext'
 
 export const metadata = {
   title: 'ReviewCartDeals | Premium Luxury Showcase & Concierge',
@@ -13,12 +14,14 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en" className="dark">
-      <body className="min-h-screen flex flex-col bg-luxury-black text-gray-100">
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
-        <FloatingWhatsApp />
+    <html lang="en">
+      <body className="min-h-screen flex flex-col bg-[#FCFBF9] text-gray-900">
+        <CartProvider>
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+          <FloatingWhatsApp />
+        </CartProvider>
       </body>
     </html>
   )
