@@ -157,8 +157,8 @@ export default async function HomePage() {
         {/* Main Content Split: Sidebar + Product Grid */}
         <div className="px-4 mt-6 flex flex-col lg:flex-row gap-6">
           
-          {/* Left Sidebar (Desktop/Tablet) */}
-          <div className="hidden md:block w-64 lg:w-72 flex-shrink-0 space-y-6">
+          {/* Left Sidebar (Desktop/Tablet/Mobile) */}
+          <div className="w-full md:w-64 lg:w-72 flex-shrink-0 space-y-6">
             {/* Categories Accordion */}
             <div className="bg-transparent border border-gray-800 p-4 rounded-2xl">
               <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
