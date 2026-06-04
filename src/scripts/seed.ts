@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import { getPayload } from 'payload'
@@ -34,7 +35,7 @@ async function seed() {
           alt: altText,
         },
         file: {
-          data: fileBuffer,
+          data: new Uint8Array(fileBuffer) as unknown as Buffer,
           name: fileName,
           mimetype: 'image/webp',
           size: fileBuffer.length,
@@ -106,6 +107,26 @@ async function seed() {
       },
     })
 
+    // 4. Create Brands
+    const brandMap: Record<string, string> = {}
+    const createBrand = async (title: string) => {
+      const b = await payload.create({ collection: 'brands', data: { title } })
+      brandMap[title] = b.id
+    }
+    const brandsToCreate = ['Hublot', 'Gucci', 'Louis Vuitton', 'Seiko', 'Woodland', 'Maserati', 'Hermès']
+    for (const b of brandsToCreate) {
+      await createBrand(b)
+    }
+
+    // 5. Create Tags
+    const tagMap: Record<string, string> = {}
+    const tagsToCreate = ['watch', 'gold', 'luxury', 'sunglasses', 'eyewear', 'gucci', 'bag', 'leather', 'pouch', 'seiko', 'automatic', 'accessories', 'ring', 'wallet', 'woodland', 'bracelet', 'belt', 'hermes']
+    for (const t of tagsToCreate) {
+      const newTag = await payload.create({ collection: 'tags', data: { title: t } })
+      tagMap[t] = newTag.id
+    }
+    const getTagIds = (tags: string[]) => tags.map((t) => tagMap[t])
+
     // Basic Lexical JSON format for fullDescription
     const createLexicalDescription = (text: string) => {
       return {
@@ -133,14 +154,14 @@ async function seed() {
       } as any
     }
 
-    // 4. Create Products
+    // 6. Create Products
     // Product 1: Hublot Watch
     await payload.create({
       collection: 'products',
       data: {
         title: 'Hublot Big Bang Gold Edition',
         slug: 'hublot-big-bang-gold-edition',
-        brand: 'Hublot',
+        brand: brandMap['Hublot'],
         shortDescription: 'The Hublot Big Bang features a satin-finished 18K king gold case, combining luxury with rugged ceramic aesthetics.',
         fullDescription: createLexicalDescription(
           'An icon of modern horology, the Hublot Big Bang Gold Edition merges traditional Swiss watchmaking with futuristic materials. Featuring a robust satin-finished 18K king gold case, a matte black dial, and the signature black structured rubber strap, it is a statement timepiece for collectors who demand bold elegance.'
@@ -159,7 +180,7 @@ async function seed() {
           title: 'Hublot Big Bang Gold Edition - Luxury Watch',
           description: 'Explore the Hublot Big Bang Gold Edition watch featuring 18K king gold and a microblasted black ceramic bezel.',
         },
-        tags: [{ tag: 'watch' }, { tag: 'gold' }, { tag: 'luxury' }],
+        tags: getTagIds(['watch', 'gold', 'luxury']),
       },
     })
 
@@ -169,7 +190,7 @@ async function seed() {
       data: {
         title: 'Gucci Premium Black & Gold Sunglasses',
         slug: 'gucci-premium-black-gold-sunglasses',
-        brand: 'Gucci',
+        brand: brandMap['Gucci'],
         shortDescription: 'Chic black acetate square frame sunglasses highlighted by gold-toned temples with the classic interlocking double-G logo.',
         fullDescription: createLexicalDescription(
           'Elevate your daily profile with these Gucci Premium sunglasses. Handcrafted in Italy from high-grade black acetate, they feature gold-toned metal temples detailed with the iconic Interlocking G logo. The dark grey lenses provide 100% UVA/UVB protection, blending fashion with optimal visual performance.'
@@ -188,7 +209,7 @@ async function seed() {
           title: 'Gucci Premium Black & Gold Sunglasses - Designer Eyewear',
           description: 'Elevate your profile with the Gucci Premium Black & Gold square-frame sunglasses featuring the interlocking double-G logo.',
         },
-        tags: [{ tag: 'sunglasses' }, { tag: 'eyewear' }, { tag: 'gucci' }],
+        tags: getTagIds(['sunglasses', 'eyewear', 'gucci']),
       },
     })
 
@@ -198,7 +219,7 @@ async function seed() {
       data: {
         title: 'LV Signature Executive Pouch',
         slug: 'lv-signature-executive-pouch',
-        brand: 'Louis Vuitton',
+        brand: brandMap['Louis Vuitton'],
         shortDescription: 'Crafted from premium black Taurillon leather, the LV Signature Executive Pouch features gold hardware and a spacious interior.',
         fullDescription: createLexicalDescription(
           'A sophisticated companion for the modern executive. Crafted from rich black Taurillon leather and embossed with Louis Vuitton’s heritage monogram motif, this pouch includes gold-toned zipper hardware and a structured wrist strap. Inside features card slots and a flat pocket to secure your daily essentials.'
@@ -216,7 +237,7 @@ async function seed() {
           title: 'LV Signature Executive Pouch - Luxury Leather Pouch',
           description: 'Shop the LV Signature Executive Pouch in black embossed Taurillon leather with gold-finished hardware.',
         },
-        tags: [{ tag: 'bag' }, { tag: 'leather' }, { tag: 'pouch' }],
+        tags: getTagIds(['bag', 'leather', 'pouch']),
       },
     })
 
@@ -226,7 +247,7 @@ async function seed() {
       data: {
         title: 'Seiko Premium Black Gold Automatic Watch',
         slug: 'seiko-premium-black-gold-automatic-watch',
-        brand: 'Seiko',
+        brand: brandMap['Seiko'],
         shortDescription: 'An automatic mechanical watch presenting a gold stainless steel case, black dial, and gold accents.',
         fullDescription: createLexicalDescription(
           'Blending timeless Japanese precision with rich luxury styling, the Seiko Premium Automatic Watch features a solid stainless steel case with a durable gold-toned finish, a deep black dial with luminescent indices, and an exhibition case back showing the automatic Caliber movement.'
@@ -244,7 +265,7 @@ async function seed() {
           title: 'Seiko Premium Black Gold Automatic Watch - mechanical luxury',
           description: 'Discover the Seiko Premium Automatic watch featuring gold-finished stainless steel and Lumibrite indicators.',
         },
-        tags: [{ tag: 'watch' }, { tag: 'seiko' }, { tag: 'automatic' }],
+        tags: getTagIds(['watch', 'seiko', 'automatic']),
       },
     })
 
@@ -254,7 +275,7 @@ async function seed() {
       data: {
         title: 'Gucci Noir Signature Ring',
         slug: 'gucci-noir-signature-ring',
-        brand: 'Gucci',
+        brand: brandMap['Gucci'],
         shortDescription: 'A modern black zirconia band ring with gold interlocking double-G logos set in 18k yellow gold.',
         fullDescription: createLexicalDescription(
           'Daring and contemporary, the Gucci Noir Signature Ring is crafted from glossy black zirconia ceramic, bordered by twin bands of 18k yellow gold. The face of the ring is adorned with gold interlocking double-G studs, encapsulating luxury streetwear aesthetics.'
@@ -271,7 +292,7 @@ async function seed() {
           title: 'Gucci Noir Signature Ring - 18k Gold & Black Ceramic',
           description: 'A contemporary Gucci band ring made with black zirconia ceramic and 18k yellow gold interlocking double-G logos.',
         },
-        tags: [{ tag: 'accessories' }, { tag: 'ring' }, { tag: 'gold' }],
+        tags: getTagIds(['accessories', 'ring', 'gold']),
       },
     })
 
@@ -281,7 +302,7 @@ async function seed() {
       data: {
         title: 'Woodland Vintage Leather Wallet',
         slug: 'woodland-vintage-leather-wallet',
-        brand: 'Woodland',
+        brand: brandMap['Woodland'],
         shortDescription: 'Premium vintage brown leather bifold wallet with hand-stitched details and a gold-plated logo plaque.',
         fullDescription: createLexicalDescription(
           'Handcrafted from select full-grain cowhide leather, the Woodland Vintage bifold wallet patinas beautifully over time. Featuring a classic bifold layout with eight card slots, dual bill compartments, and a gold-plated brass logo accent, it delivers timeless luxury for daily use.'
@@ -298,7 +319,7 @@ async function seed() {
           title: 'Woodland Vintage Leather Wallet - Handcrafted Bifold',
           description: 'Discover the Woodland Vintage Leather Wallet featuring full-grain cowhide leather and a gold logo plaque.',
         },
-        tags: [{ tag: 'wallet' }, { tag: 'leather' }, { tag: 'woodland' }],
+        tags: getTagIds(['wallet', 'leather', 'woodland']),
       },
     })
 
@@ -308,7 +329,7 @@ async function seed() {
       data: {
         title: 'Maserati Noir Prestige Bracelet',
         slug: 'maserati-noir-prestige-bracelet',
-        brand: 'Maserati',
+        brand: brandMap['Maserati'],
         shortDescription: 'Braided black calfskin leather bracelet accented by gold-plated stainless steel hardware with the trident logo.',
         fullDescription: createLexicalDescription(
           'Infuse luxury automotive spirit into your wristwear. The Maserati Noir Prestige Bracelet is braided from soft black Italian calfskin leather and secured by a high-grade gold-plated stainless steel magnetic clasp, engraved with Maserati’s signature trident logo.'
@@ -326,7 +347,7 @@ async function seed() {
           title: 'Maserati Noir Prestige Bracelet - Black Leather & Gold clasp',
           description: 'Shop the Maserati Noir Prestige braided black leather bracelet with an 18k gold-plated trident clasp.',
         },
-        tags: [{ tag: 'accessories' }, { tag: 'bracelet' }, { tag: 'leather' }],
+        tags: getTagIds(['accessories', 'bracelet', 'leather']),
       },
     })
 
@@ -336,7 +357,7 @@ async function seed() {
       data: {
         title: 'Hermès Noir Executive Belt',
         slug: 'hermes-noir-executive-belt',
-        brand: 'Hermès',
+        brand: brandMap['Hermès'],
         shortDescription: 'Classic Hermès reversible leather belt in black Togo and brown Epsom leather, completed by the gold H buckle.',
         fullDescription: createLexicalDescription(
           'The ultimate symbol of luxury accessories. This reversible belt is crafted from black textured Togo leather on one side and smooth gold Epsom leather on the reverse. The ensemble is completed by the iconic brushed gold-plated H metal buckle, allowing versatile styling.'
@@ -354,7 +375,7 @@ async function seed() {
           title: 'Hermes Noir Executive Belt - Reversible Gold H Buckle',
           description: 'Explore the Hermes Noir Executive Reversible Belt with Togo leather and a brushed gold H buckle.',
         },
-        tags: [{ tag: 'accessories' }, { tag: 'belt' }, { tag: 'hermes' }],
+        tags: getTagIds(['accessories', 'belt', 'hermes']),
       },
     })
 

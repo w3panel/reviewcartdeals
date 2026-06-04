@@ -5,7 +5,7 @@ import { getCategories } from '@/services/categories'
 import { getProducts } from '@/services/products'
 import { ArrowRight, MessageCircle } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
-import type { Product, Category } from '@/payload-types'
+import type { Product, Category, Brand } from '@/payload-types'
 
 export const revalidate = 60 // Revalidate cache every 60 seconds
 
@@ -127,7 +127,7 @@ export default async function HomePage() {
                         />
                       </div>
                       <h4 className="mt-4 font-serif text-sm font-semibold tracking-widest text-luxury-gold uppercase group-hover:text-white transition-colors">
-                        {watch.brand}
+                        {typeof watch.brand === 'object' && watch.brand !== null ? (watch.brand as Brand).title : String(watch.brand)}
                       </h4>
                       <p className="mt-1 text-xs text-gray-500 max-w-[180px] line-clamp-1">
                         {watch.title}
@@ -213,7 +213,7 @@ export default async function HomePage() {
 
                     {/* Meta */}
                     <h3 className="mt-4 font-serif text-xs font-semibold tracking-widest text-luxury-gold uppercase">
-                      {prod.brand}
+                      {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
                     </h3>
                     <h4 className="mt-1 text-sm font-medium text-white line-clamp-1 group-hover:text-luxury-gold transition-colors">
                       {prod.title}

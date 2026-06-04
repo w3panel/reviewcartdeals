@@ -31,7 +31,7 @@ export async function getProducts(options: GetProductsOptions = {}) {
   if (brand) {
     andFilters.push({
       brand: {
-        equals: brand,
+        in: await getBrandIdsByTitle(brand, payload),
       },
     })
   }
@@ -102,6 +102,20 @@ async function getCategoryIdsBySlug(slug: string, payload: any): Promise<string[
   return cats.docs.map((c: any) => c.id)
 }
 
+// Helper to retrieve brand IDs by title
+async function getBrandIdsByTitle(title: string, payload: any): Promise<string[]> {
+  const brands = await payload.find({
+    collection: 'brands',
+    where: {
+      title: {
+        equals: title,
+      },
+    },
+    limit: 100,
+  })
+  return brands.docs.map((b: any) => b.id)
+}
+
 export async function getProductBySlug(slug: string) {
   const payload = await getPayload({
     config: configPromise,
@@ -153,17 +167,11 @@ export async function getAllBrands() {
   })
 
   const response = await payload.find({
-    collection: 'products',
+    collection: 'brands',
     limit: 300,
-    select: {
-      brand: true,
-    },
+    sort: 'title',
   })
 
-  const brands = new Set<string>()
-  response.docs.forEach((p: any) => {
-    if (p.brand) brands.add(p.brand)
-  })
-
-  return Array.from(brands)
+  // Return brand titles as strings to maintain compatibility with existing frontend
+  return response.docs.map((b: any) => b.title)
 }

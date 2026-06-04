@@ -7,7 +7,7 @@ import { getProductBySlug, getRelatedProducts } from '@/services/products'
 import { RichText } from '@/components/RichText'
 import { MessageCircle, ChevronRight, ListCollapse, Award } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
-import type { Product, Category } from '@/payload-types'
+import type { Product, Category, Brand } from '@/payload-types'
 
 interface ProductPageProps {
   params: Promise<{
@@ -83,7 +83,7 @@ Please share more details.`
           {/* Right Column: Details */}
           <div className="flex flex-col">
             <span className="font-serif text-sm font-semibold tracking-widest text-luxury-gold uppercase">
-              {product.brand}
+              {typeof product.brand === 'object' && product.brand !== null ? (product.brand as Brand).title : String(product.brand)}
             </span>
             <h1 className="mt-2 font-serif text-3xl sm:text-4xl font-bold text-white tracking-wide uppercase">
               {product.title}
@@ -185,7 +185,7 @@ Please share more details.`
                         />
                       </div>
                       <h3 className="mt-4 font-serif text-[10px] font-semibold tracking-widest text-luxury-gold uppercase">
-                        {prod.brand}
+                        {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
                       </h3>
                       <h4 className="mt-1 text-xs font-medium text-white line-clamp-1 group-hover:text-luxury-gold transition-colors">
                         {prod.title}
@@ -213,7 +213,7 @@ Please share more details.`
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-serif font-bold text-luxury-gold uppercase truncate">{product.brand}</p>
+              <p className="text-[10px] font-serif font-bold text-luxury-gold uppercase truncate">{typeof product.brand === 'object' && product.brand !== null ? (product.brand as Brand).title : String(product.brand)}</p>
               <p className="text-xs font-medium text-white truncate max-w-[130px]">{product.title}</p>
             </div>
           </div>

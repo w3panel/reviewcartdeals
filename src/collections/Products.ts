@@ -30,7 +30,8 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'brand',
-      type: 'text',
+      type: 'relationship',
+      relationTo: 'brands',
       required: true,
     },
     {
@@ -92,14 +93,9 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'tags',
-      type: 'array',
-      fields: [
-        {
-          name: 'tag',
-          type: 'text',
-          required: true,
-        },
-      ],
+      type: 'relationship',
+      relationTo: 'tags',
+      hasMany: true,
     },
   ],
 }

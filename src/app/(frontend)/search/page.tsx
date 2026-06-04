@@ -5,7 +5,7 @@ import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
 import { Search, MessageCircle, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
-import type { Product, Category } from '@/payload-types'
+import type { Product, Category, Brand } from '@/payload-types'
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -168,7 +168,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                             />
                           </div>
                           <h3 className="mt-4 font-serif text-xs font-semibold tracking-widest text-luxury-gold uppercase">
-                            {prod.brand}
+                            {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
                           </h3>
                           <h4 className="mt-1 text-sm font-medium text-white line-clamp-1 group-hover:text-luxury-gold transition-colors">
                             {prod.title}
