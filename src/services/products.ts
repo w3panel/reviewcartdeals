@@ -1,82 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import { getPayloadClient } from '@/lib/payload'
+import { findCatalogProducts, type CatalogQueryOptions } from '@/lib/productFilters'
 
-export interface GetProductsOptions {
-  categorySlug?: string
-  featured?: boolean
-  search?: string
-  brand?: string
-  page?: number
-  limit?: number
-}
+export type GetProductsOptions = CatalogQueryOptions
 
 export async function getProducts(options: GetProductsOptions = {}) {
-  const { categorySlug, featured, search, brand, page = 1, limit = 12 } = options
+  const payload = await getPayloadClient()
 
-  const payload = await getPayload({
-    config: configPromise,
-  })
-
-  const andFilters: any[] = []
-
-  if (featured !== undefined) {
-    andFilters.push({
-      featured: {
-        equals: featured,
-      },
-    })
-  }
-
-  if (brand) {
-    andFilters.push({
-      brand: {
-        in: await getBrandIdsByTitle(brand, payload),
-      },
-    })
-  }
-
-  if (categorySlug) {
-    // Query category ID first or use nested relationship filter
-    // Nested relation query in Payload:
-    andFilters.push({
-      category: {
-        in: await getCategoryIdsBySlug(categorySlug, payload),
-      },
-    })
-  }
-
-  if (search) {
-    andFilters.push({
-      or: [
-        {
-          title: {
-            like: search,
-          },
-        },
-        {
-          brand: {
-            like: search,
-          },
-        },
-        {
-          shortDescription: {
-            like: search,
-          },
-        },
-      ],
-    })
-  }
-
-  const where = andFilters.length > 0 ? { and: andFilters } : undefined
-
-  const response = await payload.find({
-    collection: 'products',
-    where,
-    page,
-    limit,
-    sort: '-createdAt',
-  })
+  const response = await findCatalogProducts(payload, options)
 
   return {
     products: response.docs,
@@ -88,38 +18,8 @@ export async function getProducts(options: GetProductsOptions = {}) {
   }
 }
 
-// Helper to retrieve category IDs by slug
-async function getCategoryIdsBySlug(slug: string, payload: any): Promise<string[]> {
-  const cats = await payload.find({
-    collection: 'categories',
-    where: {
-      slug: {
-        equals: slug,
-      },
-    },
-    limit: 100,
-  })
-  return cats.docs.map((c: any) => c.id)
-}
-
-// Helper to retrieve brand IDs by title
-async function getBrandIdsByTitle(title: string, payload: any): Promise<string[]> {
-  const brands = await payload.find({
-    collection: 'brands',
-    where: {
-      title: {
-        equals: title,
-      },
-    },
-    limit: 100,
-  })
-  return brands.docs.map((b: any) => b.id)
-}
-
 export async function getProductBySlug(slug: string) {
-  const payload = await getPayload({
-    config: configPromise,
-  })
+  const payload = await getPayloadClient()
 
   const response = await payload.find({
     collection: 'products',
@@ -135,9 +35,7 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function getRelatedProducts(productId: string | number, categoryId: string | number, limit = 4) {
-  const payload = await getPayload({
-    config: configPromise,
-  })
+  const payload = await getPayloadClient()
 
   const response = await payload.find({
     collection: 'products',
@@ -162,9 +60,7 @@ export async function getRelatedProducts(productId: string | number, categoryId:
 }
 
 export async function getAllBrands() {
-  const payload = await getPayload({
-    config: configPromise,
-  })
+  const payload = await getPayloadClient()
 
   const response = await payload.find({
     collection: 'brands',
@@ -174,4 +70,19 @@ export async function getAllBrands() {
 
   // Return brand titles as strings to maintain compatibility with existing frontend
   return response.docs.map((b: any) => b.title)
+}
+
+export async function getAllProductSlugs() {
+  const payload = await getPayloadClient()
+
+  const response = await payload.find({
+    collection: 'products',
+    limit: 1000,
+    depth: 0,
+    select: {
+      slug: true,
+    },
+  })
+
+  return response.docs.map((doc) => doc.slug)
 }

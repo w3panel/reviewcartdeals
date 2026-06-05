@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
+import { headersWithCors } from 'payload'
 import { formatSlug } from '@/lib/formatSlug'
+import { findCatalogProducts } from '@/lib/productFilters'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -10,6 +12,34 @@ export const Products: CollectionConfig = {
   access: {
     read: () => true,
   },
+  endpoints: [
+    {
+      path: '/catalog',
+      method: 'get',
+      handler: async (req) => {
+        const { searchParams } = new URL(req.url!)
+        const q = searchParams.get('q') || undefined
+        const category = searchParams.get('category') || undefined
+        const brand = searchParams.get('brand') || undefined
+        const page = Number(searchParams.get('page') || '1') || 1
+
+        const result = await findCatalogProducts(req.payload, {
+          search: q,
+          categorySlug: category === 'ALL' || !category ? undefined : category,
+          brand: brand === 'ALL' || !brand ? undefined : brand,
+          page,
+          limit: 12,
+        })
+
+        return Response.json(result, {
+          headers: headersWithCors({
+            headers: new Headers(),
+            req,
+          }),
+        })
+      },
+    },
+  ],
   fields: [
     {
       name: 'title',

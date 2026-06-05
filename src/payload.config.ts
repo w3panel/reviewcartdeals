@@ -21,6 +21,7 @@ const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(valu
 
 const isCLI = process.argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -43,8 +44,11 @@ const cloudflareLogger = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any // Use PayloadLogger type when it's exported
 
+// Use wrangler during dev, CLI, and `next build`. getCloudflareContext only works
+// at runtime on Cloudflare Workers — using it during static generation causes
+// SQLITE_BUSY from competing workerd instances.
 const cloudflare =
-  isCLI || !isProduction
+  isCLI || !isProduction || isBuild
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
@@ -54,6 +58,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+  },
+  graphQL: {
+    disable: true,
   },
   collections: [Users, Media, Categories, Brands, Tags, Products],
   editor: lexicalEditor(),

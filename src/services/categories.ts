@@ -1,10 +1,7 @@
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import { getPayloadClient } from '@/lib/payload'
 
 export async function getCategories() {
-  const payload = await getPayload({
-    config: configPromise,
-  })
+  const payload = await getPayloadClient()
 
   const response = await payload.find({
     collection: 'categories',
@@ -16,9 +13,7 @@ export async function getCategories() {
 }
 
 export async function getCategoryBySlug(slug: string) {
-  const payload = await getPayload({
-    config: configPromise,
-  })
+  const payload = await getPayloadClient()
 
   const response = await payload.find({
     collection: 'categories',
@@ -31,4 +26,19 @@ export async function getCategoryBySlug(slug: string) {
   })
 
   return response.docs[0] || null
+}
+
+export async function getAllCategorySlugs() {
+  const payload = await getPayloadClient()
+
+  const response = await payload.find({
+    collection: 'categories',
+    limit: 500,
+    depth: 0,
+    select: {
+      slug: true,
+    },
+  })
+
+  return response.docs.map((doc) => doc.slug)
 }

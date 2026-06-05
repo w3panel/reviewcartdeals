@@ -2,6 +2,10 @@ import { withPayload } from '@payloadcms/next/withPayload'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    // D1/SQLite cannot handle concurrent connections during `next build`
+    staticGenerationMaxConcurrency: 1,
+  },
   images: {
     localPatterns: [
       {

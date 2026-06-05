@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getRelatedProducts } from '@/services/products'
+import { getBuildSlugs } from '@/lib/buildSlugs'
 // ProductGallery removed, using direct image
 import { RichText } from '@/components/RichText'
 import { MessageCircle, ChevronRight, ListCollapse, Award } from 'lucide-react'
@@ -15,7 +16,12 @@ interface ProductPageProps {
   }>
 }
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
+
+export async function generateStaticParams() {
+  const { productSlugs } = await getBuildSlugs()
+  return productSlugs.map((slug) => ({ slug }))
+}
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const { slug } = await params
