@@ -37,5 +37,11 @@ export const Brands: CollectionConfig = {
       name: 'description',
       type: 'textarea',
     },
+    {
+      name: 'verified',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Verified Brand',
+    },
   ],
 }

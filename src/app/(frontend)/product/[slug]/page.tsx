@@ -3,12 +3,15 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getRelatedProducts } from '@/services/products'
+import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 // ProductGallery removed, using direct image
 import { RichText } from '@/components/RichText'
 import { MessageCircle, ChevronRight, ListCollapse, Award } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { Product, Category, Brand } from '@/payload-types'
+import { LikeButton } from '@/components/LikeButton'
+import { ProductReviews } from '@/components/ProductReviews'
 
 interface ProductPageProps {
   params: Promise<{
@@ -44,6 +47,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const category = product.category as Category
   const relatedProducts = (await getRelatedProducts(product.id, category.id, 4)) as Product[]
+
+  const { reviews, stats } = await getProductReviews(product.id)
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://reviewcartdeals.com'
   const productUrl = `${siteUrl}/product/${product.slug}`
@@ -88,12 +93,19 @@ Please share more details.`
 
           {/* Right Column: Details */}
           <div className="flex flex-col">
-            <span className="font-serif text-sm font-semibold tracking-widest text-luxury-gold uppercase">
-              {typeof product.brand === 'object' && product.brand !== null ? (product.brand as Brand).title : String(product.brand)}
-            </span>
-            <h1 className="mt-2 font-serif text-3xl sm:text-4xl font-bold text-white tracking-wide uppercase">
-              {product.title}
-            </h1>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <span className="font-serif text-sm font-semibold tracking-widest text-luxury-gold uppercase">
+                  {typeof product.brand === 'object' && product.brand !== null ? (product.brand as Brand).title : String(product.brand)}
+                </span>
+                <h1 className="mt-2 font-serif text-3xl sm:text-4xl font-bold text-white tracking-wide uppercase">
+                  {product.title}
+                </h1>
+              </div>
+              <div className="flex-shrink-0 mt-1 bg-luxury-dark/50 border border-luxury-gray rounded-full">
+                <LikeButton product={product} />
+              </div>
+            </div>
             
             {/* Divider */}
             <div className="my-6 border-b border-luxury-gray/40" />
@@ -163,6 +175,9 @@ Please share more details.`
             <RichText content={product.fullDescription} />
           </div>
         </div>
+
+        {/* Product Reviews */}
+        <ProductReviews reviews={reviews} stats={stats} />
       </section>
 
       {/* Related products */}
@@ -180,6 +195,9 @@ Please share more details.`
                     key={prod.id}
                     className="group relative flex flex-col rounded border border-luxury-gray bg-[#0c0c0c] p-4 hover-gold-glow transition-all duration-300"
                   >
+                    <div className="absolute top-2 right-2 z-10">
+                      <LikeButton product={prod} />
+                    </div>
                     <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
                       <div className="relative aspect-square w-full overflow-hidden rounded bg-black flex items-center justify-center">
                         <Image

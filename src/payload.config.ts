@@ -14,6 +14,7 @@ import { Categories } from './collections/Categories'
 import { Brands } from './collections/Brands'
 import { Tags } from './collections/Tags'
 import { Products } from './collections/Products'
+import { Reviews } from './collections/Reviews'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -62,13 +63,13 @@ export default buildConfig({
   graphQL: {
     disable: true,
   },
-  collections: [Users, Media, Categories, Brands, Tags, Products],
+  collections: [Users, Media, Categories, Brands, Tags, Products, Reviews],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
+  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
     r2Storage({

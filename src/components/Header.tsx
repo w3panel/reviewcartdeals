@@ -7,6 +7,8 @@ import type { Category } from '@/payload-types'
 import { HeaderCartIcon } from './HeaderCartIcon'
 import { ThemeToggle } from './ThemeToggle'
 
+import { HeaderLikedIcon } from './HeaderLikedIcon'
+
 export async function Header() {
   const categories = await getCategories()
 
@@ -56,6 +58,7 @@ export async function Header() {
         {/* Action icons */}
         <div className="flex items-center gap-2 md:gap-4">
           <ThemeToggle />
+          <HeaderLikedIcon />
           <HeaderCartIcon />
         </div>
       </div>

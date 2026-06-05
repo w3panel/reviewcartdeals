@@ -5,11 +5,12 @@ import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
 import { 
   Search, SlidersHorizontal, ArrowUpDown, Tag as TagIcon, Star, Sparkles, 
-  ChevronUp, ChevronDown, LayoutGrid, BadgeCheck, Heart, ScanLine, MoreHorizontal
+  ChevronUp, ChevronDown, LayoutGrid, BadgeCheck, ScanLine, MoreHorizontal
 } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
-import type { Product, Category, Brand } from '@/payload-types'
+import type { Product, Category, Brand, Media } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
+import { LikeButton } from '@/components/LikeButton'
 
 export const revalidate = 60
 
@@ -191,14 +192,16 @@ export default async function HomePage() {
               </h3>
               <div className="space-y-4 px-3">
                 {brands.slice(0, 6).map(brand => (
-                  <label key={brand} className="flex items-center gap-3 cursor-pointer group">
-                    <div className="w-4 h-4 border border-gray-600 rounded-[3px] flex items-center justify-center bg-transparent group-hover:border-primary transition-colors" />
+                  <Link href={`/search?brand=${brand}`} key={brand} className="flex items-center gap-3 cursor-pointer group">
+                    <div className="w-4 h-4 border border-gray-600 rounded-[3px] flex items-center justify-center bg-transparent group-hover:border-primary transition-colors">
+                      <div className="w-2.5 h-2.5 bg-primary rounded-[1px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                     <span className="text-gray-300 font-medium text-[13px] group-hover:text-foreground transition-colors">{brand}</span>
-                  </label>
+                  </Link>
                 ))}
-                <button className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 transition-colors">
+                <Link href="/search" className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 transition-colors">
                   View More <ChevronDown className="w-4 h-4" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -222,22 +225,30 @@ export default async function HomePage() {
                   key={prod.id}
                   className="flex flex-col p-4 border border-gray-800 rounded-2xl bg-card hover:border-primary/40 transition-all relative group"
                 >
-                  <button className="absolute top-4 right-4 z-10 text-primary opacity-70 hover:opacity-100 transition-colors">
-                    <Heart className="w-5 h-5" />
-                  </button>
+                  <div className="absolute top-2 right-2 z-10">
+                    <LikeButton product={prod} />
+                  </div>
                   <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow">
                     <div className="relative flex items-center justify-center w-full bg-card rounded-xl aspect-square mb-4">
-                      <Image
-                        src={getImageUrl(prod.image)}
-                        alt={prod.title}
-                        width={180}
-                        height={180}
-                        className="object-contain p-2 transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
-                      />
+                      {(() => {
+                        const typedProd = prod as Product;
+                        const imageUrl = getImageUrl(typedProd.image as Media | number);
+                        return (
+                          <Image
+                            src={imageUrl}
+                            alt={prod.title}
+                            width={180}
+                            height={180}
+                            className="object-contain p-2 transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
+                          />
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-1 text-[11px] font-medium text-gray-300 mb-1">
                       {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
-                      <BadgeCheck className="w-3.5 h-3.5 text-primary" />
+                      {typeof prod.brand === 'object' && prod.brand !== null && (prod.brand as Brand).verified && (
+                        <BadgeCheck className="w-3.5 h-3.5 text-primary" />
+                      )}
                     </div>
                     <h3 className="text-[13px] font-normal text-foreground line-clamp-2 leading-relaxed mt-1">
                       {prod.title}

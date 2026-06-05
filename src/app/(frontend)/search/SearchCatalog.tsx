@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { Search, MessageCircle, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { Product, Category, Brand } from '@/payload-types'
+import { LikeButton } from '@/components/LikeButton'
 
 interface SearchCatalogProps {
   categories: Category[]
@@ -159,6 +160,9 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
                     key={prod.id}
                     className="group relative flex flex-col rounded border border-luxury-gray bg-[#0c0c0c] p-4 hover-gold-glow transition-all duration-300"
                   >
+                    <div className="absolute top-2 right-2 z-10">
+                      <LikeButton product={prod} />
+                    </div>
                     <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
                       <div className="relative aspect-square w-full overflow-hidden rounded bg-black flex items-center justify-center">
                         <Image

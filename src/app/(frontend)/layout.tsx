@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer'
 import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
 import { CartProvider } from '@/context/CartContext'
 import { ThemeProvider } from '@/providers/ThemeProvider'
+import { LikedProvider } from '@/context/LikedContext'
 
 export const metadata = {
   title: 'ReviewCartDeals | Premium Luxury Showcase & Concierge',
@@ -19,10 +20,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       <body className="min-h-screen flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <CartProvider>
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-            <FloatingWhatsApp />
+            <LikedProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+              <FloatingWhatsApp />
+            </LikedProvider>
           </CartProvider>
         </ThemeProvider>
       </body>
