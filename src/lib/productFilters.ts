@@ -24,12 +24,12 @@ async function getCategoryIdsBySlug(slug: string, payload: BasePayload): Promise
   return cats.docs.map((c) => String(c.id))
 }
 
-async function getBrandIdsByTitle(title: string, payload: BasePayload): Promise<string[]> {
+async function getBrandIdsByTitles(titles: string[], payload: BasePayload): Promise<string[]> {
   const brands = await payload.find({
     collection: 'brands',
     where: {
       title: {
-        equals: title,
+        in: titles,
       },
     },
     limit: 100,
@@ -54,9 +54,10 @@ export async function buildProductsWhere(
   }
 
   if (brand) {
+    const titles = brand.split(',').map((b) => b.trim()).filter(Boolean)
     andFilters.push({
       brand: {
-        in: await getBrandIdsByTitle(brand, payload),
+        in: await getBrandIdsByTitles(titles, payload),
       },
     })
   }

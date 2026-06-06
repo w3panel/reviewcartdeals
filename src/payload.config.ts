@@ -67,7 +67,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
+  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: !isProduction }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
     r2Storage({

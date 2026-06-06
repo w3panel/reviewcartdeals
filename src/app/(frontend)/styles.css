@@ -5,9 +5,9 @@
   --color-luxury-black: #080808;
   --color-luxury-dark: #121212;
   --color-luxury-gray: #1f1f1f;
-  --color-luxury-gold: #c5a880;
-  --color-luxury-gold-hover: #b3946a;
-  --color-luxury-gold-light: #f5ede3;
+  --color-luxury-gold: #F5B82A;
+  --color-luxury-gold-hover: #d49e21;
+  --color-luxury-gold-light: #fbe6af;
   
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -15,6 +15,7 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
 
@@ -27,8 +28,9 @@
   --foreground: #000000;
   --card: #FFFFFF;
   --border: rgba(245, 184, 42, 0.3);
-  --primary: #F5B82A;
-  --primary-hover: #DCA54A;
+  --primary: #000000;
+  --primary-hover: #333333;
+  --primary-foreground: #FFFFFF;
   --muted: #F3F4F6;
   --muted-foreground: #6B7280;
 }
@@ -40,6 +42,7 @@
   --border: rgba(245, 184, 42, 0.2);
   --primary: #F5B82A;
   --primary-hover: #DCA54A;
+  --primary-foreground: #000000;
   --muted: #1A1A1A;
   --muted-foreground: #9CA3AF;
 }
@@ -69,11 +72,11 @@ body {
 
 /* Custom premium overlay gradients */
 .gold-gradient {
-  background: linear-gradient(135deg, #c5a880 0%, #ecd3b0 50%, #b3946a 100%);
+  background: linear-gradient(135deg, #F5B82A 0%, #fbe6af 50%, #d49e21 100%);
 }
 
 .gold-text-gradient {
-  background: linear-gradient(135deg, #c5a880 0%, #ecd3b0 50%, #b3946a 100%);
+  background: linear-gradient(135deg, #F5B82A 0%, #fbe6af 50%, #d49e21 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -87,6 +90,6 @@ body {
   transition: all 0.3s ease;
 }
 .hover-gold-glow:hover {
-  box-shadow: 0 0 15px rgba(197, 168, 128, 0.3);
-  border-color: #c5a880;
+  box-shadow: 0 0 15px rgba(245, 184, 42, 0.3);
+  border-color: #F5B82A;
 }

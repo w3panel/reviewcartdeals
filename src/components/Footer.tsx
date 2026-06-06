@@ -1,12 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import { getCategories } from '@/services/categories'
 import { MessageCircle, Shield, Award, Clock } from 'lucide-react'
-import type { Category } from '@/payload-types'
 
 export async function Footer() {
-  const categories = await getCategories()
-
   return (
     <footer className="border-t border-luxury-gray bg-[#040404] text-gray-400">
       {/* Luxury Brand Trust Section */}
@@ -45,24 +41,7 @@ export async function Footer() {
             </p>
           </div>
 
-          {/* Column 2: Categories */}
-          <div>
-            <h5 className="text-xs font-semibold uppercase tracking-widest text-white border-b border-luxury-gray pb-2">
-              CATEGORIES
-            </h5>
-            <ul className="mt-4 space-y-2 text-sm">
-              {categories.map((cat: Category) => (
-                <li key={cat.id}>
-                  <Link
-                    href={`/category/${cat.slug}`}
-                    className="hover:text-luxury-gold transition-colors"
-                  >
-                    {cat.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+
 
           {/* Column 3: Platform */}
           <div>

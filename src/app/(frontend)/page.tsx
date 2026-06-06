@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
+import { getProductReviews } from '@/services/reviews'
 import { 
   Search, SlidersHorizontal, ArrowUpDown, Tag as TagIcon, Star, Sparkles, 
   ChevronUp, ChevronDown, LayoutGrid, BadgeCheck, ScanLine, MoreHorizontal
@@ -10,14 +11,22 @@ import {
 import { getImageUrl } from '@/lib/utils'
 import type { Product, Category, Brand, Media } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
-import { LikeButton } from '@/components/LikeButton'
-
+import { FrontPageCatalog } from './FrontPageCatalog'
 export const revalidate = 60
 
 export default async function HomePage() {
   const categories = await getCategories()
-  const { products: allProducts } = await getProducts({ limit: 12 })
+  const { products: allProducts, totalDocs } = await getProducts({ limit: 12 })
   const brands = await getAllBrands()
+
+  const productsWithStats = await Promise.all(allProducts.map(async (prod) => {
+    const { stats } = await getProductReviews(prod.id)
+    return { ...prod, stats }
+  }))
+
+  const featuredCat1 = categories[0]
+  const featuredCat2 = categories[1] || categories[0]
+  const featuredCat3 = categories[2] || categories[0]
 
   if (categories.length === 0) {
     return (
@@ -34,14 +43,14 @@ export default async function HomePage() {
         
         {/* Search Bar */}
         <div className="px-4 pt-4 md:pt-6 max-w-4xl mx-auto">
-          <div className="relative flex items-center w-full px-5 py-3 border rounded-full bg-card border-primary/40 focus-within:border-primary shadow-sm transition-colors">
-            <Search className="w-5 h-5 text-primary font-bold mr-3" strokeWidth={2.5} />
+          <div className="relative flex items-center w-full px-5 py-3 border rounded-full bg-card border-[#F5B82A] focus-within:border-[#F5B82A] shadow-sm transition-colors">
+            <Search className="w-5 h-5 text-[#F5B82A] font-bold mr-3" strokeWidth={2.5} />
             <input
               type="text"
               placeholder="Search products, brands & categories..."
               className="w-full text-[13px] text-foreground bg-transparent outline-none placeholder:text-gray-500 font-medium"
             />
-            <ScanLine className="w-5 h-5 text-primary ml-2 cursor-pointer transition-colors" />
+            <ScanLine className="w-5 h-5 text-[#F5B82A] ml-2 cursor-pointer transition-colors" />
           </div>
         </div>
 
@@ -49,15 +58,15 @@ export default async function HomePage() {
         <div className="px-4 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Main Banner */}
-            <div className="md:col-span-2 relative flex flex-col justify-center p-6 md:p-8 min-h-[160px] md:min-h-[200px] overflow-hidden rounded-2xl bg-card border border-primary/20">
+            <div className="md:col-span-2 relative flex flex-col justify-center p-6 md:p-8 min-h-[160px] md:min-h-[200px] overflow-hidden rounded-2xl bg-[#080808] border border-transparent">
               <div className="z-10 max-w-sm">
                 <h2 className="flex flex-col gap-1 text-2xl md:text-3xl font-bold leading-tight">
-                  <span className="text-primary">Best Deals</span>
-                  <span className="text-foreground font-medium mt-1">Handpicked for You! <Sparkles className="inline w-5 h-5 text-primary ml-1" /></span>
+                  <span className="text-[#F5B82A]">{featuredCat1?.title || 'Best Deals'}</span>
+                  <span className="text-white font-medium mt-1 line-clamp-2">{featuredCat1?.description || 'Handpicked for You!'} <Sparkles className="inline w-5 h-5 text-[#F5B82A] ml-1" /></span>
                 </h2>
                 <Link
-                  href="/search"
-                  className="inline-flex items-center gap-2 px-6 py-2 mt-5 text-sm font-semibold text-background bg-primary hover:bg-primary-hover rounded-full transition-colors w-fit"
+                  href={featuredCat1 ? `/category/${featuredCat1.slug}` : "/search"}
+                  className="inline-flex items-center gap-2 px-6 py-2 mt-5 text-sm font-semibold text-black bg-white hover:bg-gray-200 border border-[#F5B82A] rounded-full transition-colors w-fit"
                 >
                   Shop Now &rarr;
                 </Link>
@@ -68,206 +77,83 @@ export default async function HomePage() {
             
             {/* Side Banners */}
             <div className="flex flex-col gap-4">
-              <div className="flex-1 relative flex items-center justify-between p-5 overflow-hidden rounded-2xl bg-card border border-primary/20 cursor-pointer">
+              <Link href={featuredCat2 ? `/category/${featuredCat2.slug}` : "/search"} className="flex-1 relative flex items-center justify-between p-5 overflow-hidden rounded-2xl bg-card border border-[#F5B82A]/30 cursor-pointer hover:bg-muted transition-colors">
                 <div>
-                  <h3 className="text-[15px] font-medium text-primary">Mega Deals</h3>
-                  <p className="text-[13px] text-gray-300 mt-1">Up to 70% Off</p>
+                  <h3 className="text-[15px] font-medium text-[#F5B82A]">{featuredCat2?.title || 'Mega Deals'}</h3>
+                  <p className="text-[13px] text-gray-300 mt-1 line-clamp-1">{featuredCat2?.description || 'Up to 70% Off'}</p>
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 bg-primary/10 border border-primary/30 rounded-full text-primary backdrop-blur-sm">
                   <span className="text-xl font-bold">%</span>
                 </div>
-              </div>
-              <div className="flex-1 relative flex items-center justify-between p-5 overflow-hidden rounded-2xl bg-card border border-primary/20 cursor-pointer">
+              </Link>
+              <Link href={featuredCat3 ? `/category/${featuredCat3.slug}` : "/search"} className="flex-1 relative flex items-center justify-between p-5 overflow-hidden rounded-2xl bg-card border border-[#F5B82A]/30 cursor-pointer hover:bg-muted transition-colors">
                 <div>
-                  <h3 className="text-[15px] font-medium text-primary">Top Rated</h3>
-                  <p className="text-[13px] text-gray-300 mt-1">Products</p>
+                  <h3 className="text-[15px] font-medium text-[#F5B82A]">{featuredCat3?.title || 'Top Rated'}</h3>
+                  <p className="text-[13px] text-gray-300 mt-1 line-clamp-1">{featuredCat3?.description || 'Products'}</p>
                 </div>
-                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 border border-primary/30 rounded-full text-primary backdrop-blur-sm">
-                  <Star className="w-6 h-6 fill-primary" />
+                <div className="flex items-center justify-center w-12 h-12 bg-primary/10 border border-[#F5B82A]/50 rounded-full text-[#F5B82A] backdrop-blur-sm">
+                  <Star className="w-6 h-6 fill-[#F5B82A] text-[#F5B82A]" />
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Horizontal Categories Row */}
         <div className="mt-8 px-4">
-          <div className="flex space-x-6 md:space-x-8 overflow-x-auto no-scrollbar pb-4 items-center justify-start md:justify-center">
-            <Link href="/search" className="flex flex-col items-center flex-shrink-0 gap-3 group">
-              <div className="flex items-center justify-center w-[60px] h-[60px] rounded-full bg-transparent border border-primary/50 text-primary group-hover:bg-primary/10 transition-all">
-                <LayoutGrid className="w-6 h-6" />
+          <div className="flex space-x-6 md:space-x-8 overflow-x-auto no-scrollbar pb-6 items-start justify-start md:justify-center">
+            <Link href="/search" className="flex flex-col items-center flex-shrink-0 gap-4 group transition-transform duration-300 hover:-translate-y-1">
+              <div className="flex items-center justify-center w-[80px] h-[80px] rounded-full bg-card border border-[#F5B82A] p-1 group-hover:shadow-[0_8px_24px_rgba(245,184,42,0.2)] transition-shadow">
+                <div className="flex items-center justify-center w-full h-full rounded-full bg-[#F5B82A]">
+                  <LayoutGrid className="w-8 h-8 text-black" />
+                </div>
               </div>
-              <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">All</span>
+              <span className="text-[11px] font-bold text-foreground uppercase tracking-[0.2em]">All</span>
             </Link>
 
-            {categories.map((cat: Category) => (
+            {categories.slice(0, 6).map((cat: Category) => (
               <Link
                 key={cat.id}
                 href={`/category/${cat.slug}`}
-                className="flex flex-col items-center flex-shrink-0 gap-3 group"
+                className="flex flex-col items-center flex-shrink-0 gap-4 group transition-transform duration-300 hover:-translate-y-1"
               >
-                <div className="relative flex items-center justify-center w-[60px] h-[60px] p-3 overflow-hidden rounded-full bg-transparent border border-primary/50 group-hover:bg-primary/10 transition-all">
-                  <Image
-                    src={getImageUrl(cat.image)}
-                    alt={cat.title}
-                    width={32}
-                    height={32}
-                    className="object-contain transition-all grayscale brightness-200 contrast-200 sepia hue-rotate-[10deg] saturate-200"
-                  />
+                <div className="flex items-center justify-center w-[80px] h-[80px] rounded-full bg-card border border-[#F5B82A] p-1 group-hover:shadow-[0_8px_24px_rgba(245,184,42,0.2)] transition-shadow">
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-muted">
+                    <Image
+                      src={getImageUrl(cat.image)}
+                      alt={cat.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
-                <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">
+                <span className="text-[11px] font-bold text-foreground uppercase tracking-[0.2em]">
                   {cat.title}
                 </span>
               </Link>
             ))}
             
             {/* "More" placeholder icon */}
-            <Link href="/search" className="flex flex-col items-center flex-shrink-0 gap-3 group">
-              <div className="flex flex-col items-center justify-center w-[60px] h-[60px] rounded-full bg-transparent border border-primary/50 text-primary group-hover:bg-primary/10 transition-all">
-                <MoreHorizontal className="w-6 h-6" />
-              </div>
-              <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">More</span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Filter / Sort Horizontal Bar */}
-        <div className="px-4 mt-4">
-          <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
-            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-primary/40 rounded-full flex-shrink-0 hover:bg-primary/10 transition-all relative">
-              <SlidersHorizontal className="w-4 h-4 text-primary" /> Filters
-              <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-primary"></span>
-            </button>
-            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-gray-700 rounded-full hover:border-primary/40 transition-colors flex-shrink-0">
-              <ArrowUpDown className="w-4 h-4 text-primary" /> Sort
-            </button>
-            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-gray-700 rounded-full hover:border-primary/40 transition-colors flex-shrink-0">
-              <TagIcon className="w-4 h-4 text-primary" /> Brand
-            </button>
-            <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-gray-700 rounded-full hover:border-primary/40 transition-colors flex-shrink-0">
-              <span className="font-semibold text-primary">$</span> Price
-            </button>
-            <div className="ml-auto pl-4">
-              <button className="text-[13px] font-semibold text-primary hover:text-primary-hover transition-colors flex-shrink-0">
-                Clear All
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Split: Sidebar + Product Grid */}
-        <div className="px-4 mt-6 flex flex-col lg:flex-row gap-6">
-          
-          {/* Left Sidebar (Desktop/Tablet/Mobile) */}
-          <div className="w-full md:w-64 lg:w-72 flex-shrink-0 space-y-6">
-            {/* Categories Accordion */}
-            <div className="bg-transparent border border-gray-800 p-4 rounded-2xl">
-              <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
-                Categories
-                <ChevronUp className="w-4 h-4 text-primary" />
-              </h3>
-              <div className="space-y-1">
-                <Link href="/search" className="flex items-center gap-3 px-3 py-2.5 bg-transparent border border-primary text-primary rounded-xl font-medium text-[13px] shadow-sm">
-                  <LayoutGrid className="w-4 h-4" />
-                  All Categories
-                </Link>
-                {categories.map((cat: Category) => (
-                  <Link key={cat.id} href={`/category/${cat.slug}`} className="flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:text-primary hover:bg-muted rounded-xl transition-all text-[13px] font-medium group">
-                    <div className="w-4 h-4 relative">
-                      <Image src={getImageUrl(cat.image)} alt="" fill className="object-contain grayscale brightness-200" />
-                    </div>
-                    {cat.title}
-                  </Link>
-                ))}
-                <button className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 px-3 transition-colors">
-                  Show More <ChevronDown className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-transparent border border-gray-800 p-4 rounded-2xl">
-              <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
-                Brands
-                <ChevronUp className="w-4 h-4 text-primary" />
-              </h3>
-              <div className="space-y-4 px-3">
-                {brands.slice(0, 6).map(brand => (
-                  <Link href={`/search?brand=${brand}`} key={brand} className="flex items-center gap-3 cursor-pointer group">
-                    <div className="w-4 h-4 border border-gray-600 rounded-[3px] flex items-center justify-center bg-transparent group-hover:border-primary transition-colors">
-                      <div className="w-2.5 h-2.5 bg-primary rounded-[1px] opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <span className="text-gray-300 font-medium text-[13px] group-hover:text-foreground transition-colors">{brand}</span>
-                  </Link>
-                ))}
-                <Link href="/search" className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 transition-colors">
-                  View More <ChevronDown className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Content */}
-          <div className="flex-1">
-            {/* Product List Header */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[13px] font-medium text-primary">1,248 Products found</span>
-              <div className="flex items-center gap-1 cursor-pointer group">
-                <span className="text-[13px] text-gray-400">Sort by:</span>
-                <span className="text-[13px] font-medium text-primary">Popular</span>
-                <ChevronDown className="w-4 h-4 text-primary" />
-              </div>
-            </div>
-
-            {/* Product Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {allProducts.map((prod: Product) => (
-                <div
-                  key={prod.id}
-                  className="flex flex-col p-4 border border-gray-800 rounded-2xl bg-card hover:border-primary/40 transition-all relative group"
-                >
-                  <div className="absolute top-2 right-2 z-10">
-                    <LikeButton product={prod} />
-                  </div>
-                  <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow">
-                    <div className="relative flex items-center justify-center w-full bg-card rounded-xl aspect-square mb-4">
-                      {(() => {
-                        const typedProd = prod as Product;
-                        const imageUrl = getImageUrl(typedProd.image as Media | number);
-                        return (
-                          <Image
-                            src={imageUrl}
-                            alt={prod.title}
-                            width={180}
-                            height={180}
-                            className="object-contain p-2 transition-transform duration-500 group-hover:scale-105 drop-shadow-xl"
-                          />
-                        );
-                      })()}
-                    </div>
-                    <div className="flex items-center gap-1 text-[11px] font-medium text-gray-300 mb-1">
-                      {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
-                      {typeof prod.brand === 'object' && prod.brand !== null && (prod.brand as Brand).verified && (
-                        <BadgeCheck className="w-3.5 h-3.5 text-primary" />
-                      )}
-                    </div>
-                    <h3 className="text-[13px] font-normal text-foreground line-clamp-2 leading-relaxed mt-1">
-                      {prod.title}
-                    </h3>
-                    
-                    <div className="flex items-center gap-1.5 mt-2 mb-2">
-                      <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-                      <span className="text-xs font-medium text-primary">{(prod as any).rating || '4.7'}</span>
-                      <span className="text-[11px] text-gray-500">({(prod as any).reviewsCount || '1.2k'} reviews)</span>
-                    </div>
-                  </Link>
-                  <div className="mt-auto pt-2">
-                    <AddToCartButton product={prod} />
+            {categories.length > 6 && (
+              <Link href="/search" className="flex flex-col items-center flex-shrink-0 gap-4 group transition-transform duration-300 hover:-translate-y-1">
+                <div className="flex items-center justify-center w-[80px] h-[80px] rounded-full bg-card border border-[#F5B82A] p-1 group-hover:shadow-[0_8px_24px_rgba(245,184,42,0.2)] transition-shadow">
+                  <div className="flex items-center justify-center w-full h-full rounded-full bg-gray-200 dark:bg-gray-800">
+                    <MoreHorizontal className="w-8 h-8 text-gray-600 dark:text-gray-300" />
                   </div>
                 </div>
-              ))}
-            </div>
+                <span className="text-[11px] font-bold text-foreground uppercase tracking-[0.2em]">More</span>
+              </Link>
+            )}
           </div>
         </div>
+
+        {/* Dynamic Client-Side Catalog */}
+        <FrontPageCatalog 
+          categories={categories} 
+          brands={brands} 
+          initialProducts={productsWithStats} 
+          initialTotalDocs={totalDocs} 
+        />
       </div>
     </div>
   )
