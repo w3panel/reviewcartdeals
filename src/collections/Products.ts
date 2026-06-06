@@ -71,7 +71,7 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'fullDescription',
-      type: 'richText',
+      type: 'textarea',
       required: true,
     },
     {

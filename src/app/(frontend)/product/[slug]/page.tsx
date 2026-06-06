@@ -6,7 +6,6 @@ import { getProductBySlug, getRelatedProducts } from '@/services/products'
 import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 // ProductGallery removed, using direct image
-import { RichText } from '@/components/RichText'
 import { MessageCircle, ChevronRight, ListCollapse, Award } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { Product, Category, Brand } from '@/payload-types'
@@ -171,8 +170,8 @@ Please share more details.`
           <h2 className="font-serif text-xl sm:text-2xl font-semibold tracking-widest text-white uppercase mb-6">
             PRODUCT DETAILS
           </h2>
-          <div className="max-w-4xl text-gray-400 leading-relaxed font-light">
-            <RichText content={product.fullDescription} />
+          <div className="max-w-4xl text-gray-400 leading-relaxed font-light whitespace-pre-wrap">
+            {product.fullDescription}
           </div>
         </div>
 

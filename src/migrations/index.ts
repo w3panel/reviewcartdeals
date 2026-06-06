@@ -2,6 +2,7 @@ import * as migration_20250929_111647 from './20250929_111647';
 import * as migration_20260605_040917 from './20260605_040917';
 import * as migration_20260605_050544_reviews_collection from './20260605_050544_reviews_collection';
 import * as migration_20260605_054001_brands_verified from './20260605_054001_brands_verified';
+import * as migration_20260606_120000_convert_full_description_to_text from './20260606_120000_convert_full_description_to_text';
 
 export const migrations = [
   {
@@ -23,5 +24,10 @@ export const migrations = [
     up: migration_20260605_054001_brands_verified.up,
     down: migration_20260605_054001_brands_verified.down,
     name: '20260605_054001_brands_verified'
+  },
+  {
+    up: migration_20260606_120000_convert_full_description_to_text.up,
+    down: migration_20260606_120000_convert_full_description_to_text.down,
+    name: '20260606_120000_convert_full_description_to_text',
   },
 ];

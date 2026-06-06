@@ -1,7 +1,6 @@
 import fs from 'fs'
 import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
@@ -64,7 +63,6 @@ export default buildConfig({
     disable: true,
   },
   collections: [Users, Media, Categories, Brands, Tags, Products, Reviews],
-  editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
