@@ -23,7 +23,11 @@ const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(valu
 const isCLI = process.argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
 const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
-const migrateRemoteD1 = process.env.MIGRATE_REMOTE_D1 === '1'
+const isLocalWrangler = isCLI || !isProduction || isBuild
+// Remote preview bindings fail on some accounts ("Could not create remote preview
+// session"). Use `wrangler d1 execute --remote` for any local production context
+// (migrations, prebuild, next build SSG).
+const useRemoteD1ViaExec = isProduction && isLocalWrangler
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -49,13 +53,9 @@ const cloudflareLogger = {
 // Use wrangler during dev, CLI, and `next build`. getCloudflareContext only works
 // at runtime on Cloudflare Workers — using it during static generation causes
 // SQLITE_BUSY from competing workerd instances.
-//
-// MIGRATE_REMOTE_D1=1 uses `wrangler d1 execute --remote` instead of remote
-// preview bindings, which fail on some accounts with "Could not create remote
-// preview session".
-const cloudflare = migrateRemoteD1
-  ? await getCloudflareContextForRemoteMigration()
-  : isCLI || !isProduction || isBuild
+const cloudflare = useRemoteD1ViaExec
+  ? await getCloudflareContextWithRemoteD1Exec()
+  : isLocalWrangler
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
@@ -74,7 +74,7 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: !isProduction }),
+  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
     r2Storage({
@@ -86,16 +86,10 @@ export default buildConfig({
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
 function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
-  return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
-    ({ getPlatformProxy }) =>
-      getPlatformProxy({
-        environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction,
-      } satisfies GetPlatformProxyOptions),
-  )
+  return getCloudflareContextFromWranglerWithRemoteBindings(false)
 }
 
-async function getCloudflareContextForRemoteMigration(): Promise<CloudflareContext> {
+async function getCloudflareContextWithRemoteD1Exec(): Promise<CloudflareContext> {
   const local = await getCloudflareContextFromWranglerWithRemoteBindings(false)
 
   return {

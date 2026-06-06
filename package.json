@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "migrate:production": "NODE_ENV=production MIGRATE_REMOTE_D1=1 PAYLOAD_SECRET=ignore payload migrate",
-    "prebuild": "bun run migrate:production && NODE_ENV=production MIGRATE_REMOTE_D1=1 NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation tsx src/scripts/write-build-slugs.ts",
+    "migrate:production": "NODE_ENV=production PAYLOAD_SECRET=ignore payload migrate",
+    "prebuild": "bun run migrate:production && NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation tsx src/scripts/write-build-slugs.ts",
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build && cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/strip-vercel-og-trace.ts",
     "deploy": "bun run deploy:database && bun run deploy:app",
     "deploy:app": "bun run prebuild && opennextjs-cloudflare build --env=$CLOUDFLARE_ENV && opennextjs-cloudflare deploy --env=$CLOUDFLARE_ENV",

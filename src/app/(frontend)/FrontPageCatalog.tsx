@@ -18,6 +18,11 @@ interface FrontPageCatalogProps {
   initialTotalDocs: number
 }
 
+interface CatalogResponse {
+  docs: Product[]
+  totalDocs: number
+}
+
 export function FrontPageCatalog({ categories, brands, initialProducts, initialTotalDocs }: FrontPageCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
@@ -38,7 +43,7 @@ export function FrontPageCatalog({ categories, brands, initialProducts, initialT
       try {
         const res = await fetch(`/api/products/catalog?${params.toString()}`)
         if (res.ok) {
-          const data = await res.json()
+          const data = (await res.json()) as CatalogResponse
           setProducts(data.docs || [])
           setTotalDocs(data.totalDocs || 0)
         }
