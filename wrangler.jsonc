@@ -20,7 +20,7 @@
       "binding": "D1",
       "database_id": "05c4c3b9-9c29-48d4-b7dd-39abed73b68e",
       "database_name": "reviewcartdeals",
-      "remote": false,
+      "remote": true,
     },
   ],
   "services": [
