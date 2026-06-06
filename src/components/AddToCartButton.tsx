@@ -16,10 +16,10 @@ export function AddToCartButton({ product }: { product: Product }) {
   return (
     <button
       onClick={handleAdd}
-      className="flex items-center justify-center w-full gap-2 px-4 py-2 mt-4 text-xs font-semibold text-primary transition-colors duration-300 rounded-xl bg-transparent border border-primary hover:bg-primary/10"
+      className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3.5 text-xs font-bold text-black uppercase tracking-widest bg-[#F5B82A] transition-colors duration-300 rounded-lg hover:bg-[#d49e21]"
     >
       <ShoppingCart className="w-4 h-4" />
-      Add to Enquiry
+      ADD TO ENQUIRY
     </button>
   )
 }

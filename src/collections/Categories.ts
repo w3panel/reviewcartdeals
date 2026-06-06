@@ -35,6 +35,11 @@ export const Categories: CollectionConfig = {
       required: true,
     },
     {
+      name: 'icon',
+      type: 'upload',
+      relationTo: 'media',
+    },
+    {
       name: 'description',
       type: 'textarea',
     },

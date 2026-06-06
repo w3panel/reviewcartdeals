@@ -6,11 +6,11 @@ import { getProductBySlug, getRelatedProducts } from '@/services/products'
 import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 // ProductGallery removed, using direct image
-import { MessageCircle, ChevronRight, ListCollapse, Award } from 'lucide-react'
+import { MessageCircle, ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
-import type { Product, Category, Brand } from '@/payload-types'
-import { LikeButton } from '@/components/LikeButton'
+import type { Product, Category, Brand, Media } from '@/payload-types'
 import { ProductReviews } from '@/components/ProductReviews'
+import { AddToCartButton } from '@/components/AddToCartButton'
 
 interface ProductPageProps {
   params: Promise<{
@@ -101,9 +101,6 @@ Please share more details.`
                   {product.title}
                 </h1>
               </div>
-              <div className="flex-shrink-0 mt-1 bg-luxury-dark/50 border border-luxury-gray rounded-full">
-                <LikeButton product={product} />
-              </div>
             </div>
             
             {/* Divider */}
@@ -186,34 +183,80 @@ Please share more details.`
             <h3 className="font-serif text-xl sm:text-2xl font-semibold tracking-widest text-white uppercase mb-8">
               RELATED PRODUCTS
             </h3>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {relatedProducts.map((prod: Product) => {
-                const imageUrl = getImageUrl(prod.image)
+                const imageUrl = getImageUrl(prod.image as Media | number)
                 return (
                   <div
                     key={prod.id}
-                    className="group relative flex flex-col rounded border border-luxury-gray bg-[#0c0c0c] p-4 hover-gold-glow transition-all duration-300"
+                    className="flex flex-col p-4 sm:p-6 border border-border rounded-2xl bg-card hover:border-[#F5B82A] hover:-translate-y-1 transition-all duration-300 relative group gap-4 sm:gap-6"
                   >
-                    <div className="absolute top-2 right-2 z-10">
-                      <LikeButton product={prod} />
-                    </div>
-                    <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
-                      <div className="relative aspect-square w-full overflow-hidden rounded bg-black flex items-center justify-center">
+                    <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-4 sm:gap-6">
+                      {/* Image Frame */}
+                      <div className="relative flex items-center justify-center w-full bg-[#0e0e0e] rounded-lg aspect-square overflow-hidden">
+                        {/* Badges */}
+                        {(() => {
+                          const isNew = new Date(prod.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
+                          return (
+                            <>
+                              {isNew && (
+                                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#F5B82A] text-black px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
+                                  NEW
+                                </span>
+                              )}
+                              {prod.limitedEdition && (
+                                <span className="absolute top-3 right-3 sm:top-4 sm:right-4 border border-[#F5B82A]/40 text-[#F5B82A] px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
+                                  LIMITED EDITION
+                                </span>
+                              )}
+                            </>
+                          );
+                        })()}
                         <Image
                           src={imageUrl}
                           alt={prod.title}
-                          width={150}
-                          height={150}
-                          className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>
-                      <h3 className="mt-4 font-serif text-[10px] font-semibold tracking-widest text-luxury-gold uppercase">
-                        {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
-                      </h3>
-                      <h4 className="mt-1 text-xs font-medium text-white line-clamp-1 group-hover:text-luxury-gold transition-colors">
-                        {prod.title}
-                      </h4>
+
+                      {/* Product Info Section */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-1 text-[12px] font-bold text-[#F5B82A] uppercase tracking-[0.15em]">
+                            {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
+                            {typeof prod.brand === 'object' && prod.brand !== null && (prod.brand as Brand).verified && (
+                              <BadgeCheck className="w-3.5 h-3.5 text-[#F5B82A]" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-lg sm:text-xl font-bold text-white leading-tight">
+                          {prod.title}
+                        </h3>
+                        
+                        <p className="text-xs sm:text-sm text-gray-400 mt-1 sm:mt-2 line-clamp-2">
+                          {prod.shortDescription}
+                        </p>
+
+                        {/* Specifications Row */}
+                        {prod.specifications && prod.specifications.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 text-[10px] sm:text-[11px] text-gray-400 font-medium">
+                            {prod.specifications.slice(0, 3).map((spec: any, idx: number) => (
+                              <div key={idx} className="flex items-center gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-[#F5B82A]" />
+                                {spec.value}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </Link>
+
+                    {/* Actions */}
+                    <div className="mt-auto pt-2 flex gap-3">
+                      <AddToCartButton product={prod as Product} />
+                    </div>
                   </div>
                 )
               })}

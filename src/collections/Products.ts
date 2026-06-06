@@ -31,6 +31,13 @@ export const Products: CollectionConfig = {
           limit: 12,
         })
 
+        const { getProductReviews } = await import('@/services/reviews')
+        const docsWithStats = await Promise.all(result.docs.map(async (prod: any) => {
+          const { stats } = await getProductReviews(prod.id)
+          return { ...prod, stats }
+        }))
+        result.docs = docsWithStats
+
         return Response.json(result, {
           headers: headersWithCors({
             headers: new Headers(),
@@ -88,6 +95,11 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      name: 'limitedEdition',
       type: 'checkbox',
       defaultValue: false,
     },

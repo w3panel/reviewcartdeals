@@ -178,6 +178,7 @@ export interface Category {
   title: string;
   slug: string;
   image: number | Media;
+  icon?: (number | null) | Media;
   description?: string | null;
   featured?: boolean | null;
   updatedAt: string;
@@ -222,6 +223,7 @@ export interface Product {
   image?: (number | null) | Media;
   category: number | Category;
   featured?: boolean | null;
+  limitedEdition?: boolean | null;
   specifications?:
     | {
         key: string;
@@ -397,6 +399,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   image?: T;
+  icon?: T;
   description?: T;
   featured?: T;
   updatedAt?: T;
@@ -438,6 +441,7 @@ export interface ProductsSelect<T extends boolean = true> {
   image?: T;
   category?: T;
   featured?: T;
+  limitedEdition?: T;
   specifications?:
     | T
     | {
