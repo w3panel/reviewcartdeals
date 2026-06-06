@@ -7,6 +7,7 @@ import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 
+import { createWranglerRemoteD1Binding } from './lib/wranglerRemoteD1'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
@@ -22,6 +23,7 @@ const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(valu
 const isCLI = process.argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
 const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
+const migrateRemoteD1 = process.env.MIGRATE_REMOTE_D1 === '1'
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -47,8 +49,13 @@ const cloudflareLogger = {
 // Use wrangler during dev, CLI, and `next build`. getCloudflareContext only works
 // at runtime on Cloudflare Workers — using it during static generation causes
 // SQLITE_BUSY from competing workerd instances.
-const cloudflare =
-  isCLI || !isProduction || isBuild
+//
+// MIGRATE_REMOTE_D1=1 uses `wrangler d1 execute --remote` instead of remote
+// preview bindings, which fail on some accounts with "Could not create remote
+// preview session".
+const cloudflare = migrateRemoteD1
+  ? await getCloudflareContextForRemoteMigration()
+  : isCLI || !isProduction || isBuild
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
@@ -84,6 +91,30 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
         remoteBindings: isProduction,
+      } satisfies GetPlatformProxyOptions),
+  )
+}
+
+async function getCloudflareContextForRemoteMigration(): Promise<CloudflareContext> {
+  const local = await getCloudflareContextFromWranglerWithRemoteBindings(false)
+
+  return {
+    ...local,
+    env: {
+      ...local.env,
+      D1: createWranglerRemoteD1Binding(process.env.CLOUDFLARE_ENV),
+    },
+  }
+}
+
+function getCloudflareContextFromWranglerWithRemoteBindings(
+  remoteBindings: boolean,
+): Promise<CloudflareContext> {
+  return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
+    ({ getPlatformProxy }) =>
+      getPlatformProxy({
+        environment: process.env.CLOUDFLARE_ENV,
+        remoteBindings,
       } satisfies GetPlatformProxyOptions),
   )
 }
