@@ -40,19 +40,25 @@ function runWranglerQuery(sql: string, environment?: string): WranglerD1Response
     args.push('--env', environment)
   }
 
-  const output = execFileSync(wranglerBin, args, {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
+  try {
+    const output = execFileSync(wranglerBin, args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
 
-  const parsed = JSON.parse(output.trim()) as WranglerD1Response[] | WranglerD1Response
-  const response = Array.isArray(parsed) ? parsed[0] : parsed
+    const parsed = JSON.parse(output.trim()) as WranglerD1Response[] | WranglerD1Response
+    const response = Array.isArray(parsed) ? parsed[0] : parsed
 
-  if (!response?.success) {
-    throw new Error(response?.error ?? `Wrangler D1 query failed: ${sql}`)
+    if (!response?.success) {
+      throw new Error(response?.error ?? `Wrangler D1 query failed: ${sql}`)
+    }
+
+    return response
+  } catch (error) {
+    const execError = error as { stderr?: string; stdout?: string; message?: string }
+    const details = execError.stderr?.trim() || execError.stdout?.trim() || execError.message
+    throw new Error(`Wrangler D1 query failed${details ? `: ${details}` : ''}`)
   }
-
-  return response
 }
 
 class WranglerRemotePreparedStatement {

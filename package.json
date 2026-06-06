@@ -5,12 +5,14 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "migrate:production": "NODE_ENV=production PAYLOAD_SECRET=ignore payload migrate",
-    "prebuild": "bun run migrate:production && NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation tsx src/scripts/write-build-slugs.ts",
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build && cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/strip-vercel-og-trace.ts",
+    "migrate:production": "NODE_ENV=production PAYLOAD_SECRET=${PAYLOAD_SECRET:-ignore} payload migrate",
+    "prebuild": "bun run migrate:production && NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts",
+    "build": "NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
+    "cf:build": "bun run prebuild && bunx opennextjs-cloudflare build",
+    "cf:deploy": "bun run deploy:database && bunx opennextjs-cloudflare deploy",
     "deploy": "bun run deploy:database && bun run deploy:app",
-    "deploy:app": "bun run prebuild && opennextjs-cloudflare build --env=$CLOUDFLARE_ENV && opennextjs-cloudflare deploy --env=$CLOUDFLARE_ENV",
-    "deploy:database": "bun run migrate:production && wrangler d1 execute D1 --command 'PRAGMA optimize' --env=$CLOUDFLARE_ENV --remote",
+    "deploy:app": "bun run prebuild && bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy",
+    "deploy:database": "bun run migrate:production && bunx wrangler d1 execute D1 --command 'PRAGMA optimize' --remote",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "devsafe": "rm -rf .next && rm -rf .open-next && cross-env NODE_OPTIONS=--no-deprecation next dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
@@ -63,7 +65,7 @@
     "wrangler": "~4.61.1"
   },
   "engines": {
-    "node": ">=24.15.0"
+    "node": ">=22"
   },
   "cloudflare": {
     "bindings": {
