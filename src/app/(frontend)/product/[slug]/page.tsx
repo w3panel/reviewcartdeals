@@ -1,4 +1,5 @@
 import React from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -9,9 +10,19 @@ import { MessageCircle, ChevronRight, ListCollapse, Award, BadgeCheck } from 'lu
 import { getImageUrl, getProductMainImage, buildProductGalleryImages } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
 import type { Product, Brand } from '@/payload-types'
-import { ProductReviews } from '@/components/ProductReviews'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { ProductGallery } from '@/components/ProductGallery'
+
+const ProductReviews = dynamic(
+  () => import('@/components/ProductReviews').then((mod) => ({ default: mod.ProductReviews })),
+  {
+    loading: () => (
+      <div className="mt-16 pt-12 border-t border-border text-sm text-muted-foreground">
+        Loading reviews...
+      </div>
+    ),
+  },
+)
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>

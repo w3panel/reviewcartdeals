@@ -1,3 +1,4 @@
+import bundleAnalyzer from '@next/bundle-analyzer'
 import { withPayload } from '@payloadcms/next/withPayload'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -5,11 +6,18 @@ import { fileURLToPath } from 'url'
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const vercelOgShim = path.join(dirname, 'src/shims/vercel-og.js')
 
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: process.env.CI !== 'true',
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     // D1/SQLite cannot handle concurrent connections during `next build`
     staticGenerationMaxConcurrency: 1,
+    // Tree-shake barrel imports — https://payloadcms.com/docs/performance/overview
+    optimizePackageImports: ['lucide-react'],
   },
   images: {
     unoptimized: true,
@@ -29,7 +37,6 @@ const nextConfig = {
   // Read more: https://opennext.js.org/cloudflare/howtos/workerd
   serverExternalPackages: ['jose', 'pg-cloudflare'],
 
-  // Your Next.js config here
   webpack: (webpackConfig: any) => {
     webpackConfig.resolve.alias = {
       ...webpackConfig.resolve.alias,
@@ -47,4 +54,4 @@ const nextConfig = {
   },
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+export default withPayload(withBundleAnalyzer(nextConfig), { devBundleServerPackages: false })

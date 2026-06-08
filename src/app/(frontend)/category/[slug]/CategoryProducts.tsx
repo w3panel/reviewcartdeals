@@ -2,11 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getProducts, getAllBrands } from '@/services/products'
-import { Search, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
-import type { Product, Category, Brand, Media } from '@/payload-types'
+import type { Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
-import { BadgeCheck } from 'lucide-react'
 
 interface CategoryProductsProps {
   slug: string

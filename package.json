@@ -7,6 +7,7 @@
   "scripts": {
     "migrate:production": "NODE_ENV=production PAYLOAD_SECRET=${PAYLOAD_SECRET:-ignore} payload migrate",
     "prebuild": "bun run migrate:production && NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts",
+    "analyze": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts && cross-env ANALYZE=true NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
     "build": "NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
     "cf:build": "bun run prebuild && bunx opennextjs-cloudflare build",
     "cf:deploy": "bun run deploy:database && bunx opennextjs-cloudflare deploy",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
+    "@next/bundle-analyzer": "^16.2.7",
     "@playwright/test": "1.59.1",
     "@testing-library/react": "16.3.0",
     "@types/node": "24.12.3",

@@ -1,14 +1,20 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { SlidersHorizontal, LayoutGrid, Heart, Star, ChevronDown } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Product, Category, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
-import { FilterSheet } from '@/components/FilterSheet'
-import { SortSheet } from '@/components/SortSheet'
+
+const FilterSheet = dynamic(() =>
+  import('@/components/FilterSheet').then((mod) => ({ default: mod.FilterSheet })),
+)
+const SortSheet = dynamic(() =>
+  import('@/components/SortSheet').then((mod) => ({ default: mod.SortSheet })),
+)
 
 interface FrontPageCatalogProps {
   categories: Category[]
@@ -217,20 +223,22 @@ export function FrontPageCatalog({ categories, brands, initialProducts, initialT
         </button>
       </div>
 
-      <FilterSheet
-        isOpen={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        categories={categories}
-        brands={brands}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        selectedBrands={selectedBrands}
-        toggleBrand={toggleBrand}
-        handleClearAll={handleClearAll}
-        totalDocs={totalDocs}
-      />
+      {isFilterOpen && (
+        <FilterSheet
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          categories={categories}
+          brands={brands}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          selectedBrands={selectedBrands}
+          toggleBrand={toggleBrand}
+          handleClearAll={handleClearAll}
+          totalDocs={totalDocs}
+        />
+      )}
 
-      <SortSheet isOpen={isSortOpen} onClose={() => setIsSortOpen(false)} />
+      {isSortOpen && <SortSheet isOpen={isSortOpen} onClose={() => setIsSortOpen(false)} />}
     </>
   )
 }

@@ -4,11 +4,17 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
-import { Search, MessageCircle, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import {
+  Search,
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+  BadgeCheck,
+} from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Product, Category, Brand, Media } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
-import { BadgeCheck } from 'lucide-react'
 
 interface SearchCatalogProps {
   categories: Category[]

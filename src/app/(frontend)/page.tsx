@@ -1,10 +1,19 @@
 import React from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Search, ScanLine } from 'lucide-react'
 import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
 import { emptyProductReviewStats, getProductReviewStatsBatch } from '@/services/reviews'
-import { FrontPageCatalog } from './FrontPageCatalog'
+
+const FrontPageCatalog = dynamic(
+  () => import('./FrontPageCatalog').then((mod) => ({ default: mod.FrontPageCatalog })),
+  {
+    loading: () => (
+      <div className="px-4 py-12 text-center text-sm text-muted-foreground">Loading catalog...</div>
+    ),
+  },
+)
 
 export const revalidate = 60
 

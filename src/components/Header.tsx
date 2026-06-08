@@ -1,9 +1,11 @@
 import React from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { getCategories } from '@/services/categories'
-import { MobileMenu } from './MobileMenu'
 import type { Category } from '@/payload-types'
 import { HeaderCartIcon } from './HeaderCartIcon'
+
+const MobileMenu = dynamic(() => import('./MobileMenu'))
 
 export async function Header() {
   const categories = await getCategories()
