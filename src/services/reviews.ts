@@ -1,28 +1,12 @@
+import 'server-only'
+
 import type { BasePayload } from 'payload'
 import { getPayloadClient } from '@/lib/payload'
+import type { ProductReviewStats } from '@/lib/reviewStats'
+import { emptyProductReviewStats } from '@/lib/reviewStats'
 import type { Review } from '@/payload-types'
 
-export interface ProductReviewStats {
-  averageRating: number
-  totalReviews: number
-  ratingDistribution: {
-    1: number
-    2: number
-    3: number
-    4: number
-    5: number
-  }
-}
-
-const EMPTY_RATING_DISTRIBUTION = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as const
-
-export function emptyProductReviewStats(): ProductReviewStats {
-  return {
-    averageRating: 0,
-    totalReviews: 0,
-    ratingDistribution: { ...EMPTY_RATING_DISTRIBUTION },
-  }
-}
+export type { ProductReviewStats } from '@/lib/reviewStats'
 
 function resolveProductId(product: Review['product']): string | number | null {
   if (product == null) return null

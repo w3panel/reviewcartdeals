@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { getPayloadClient } from '@/lib/payload'
 import { findCatalogProducts, type CatalogQueryOptions } from '@/lib/productFilters'
 

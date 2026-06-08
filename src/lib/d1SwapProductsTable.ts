@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { MigrateUpArgs } from '@payloadcms/db-d1-sqlite'
 import { sql } from '@payloadcms/db-d1-sqlite'
 

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import fs from 'fs'
 import path from 'path'
 import { getPayloadClient } from '@/lib/payload'

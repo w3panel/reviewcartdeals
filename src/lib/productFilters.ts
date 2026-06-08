@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { BasePayload, Where } from 'payload'
 
 export interface CatalogQueryOptions {

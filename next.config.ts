@@ -1,56 +1,4 @@
-// import path from 'path'
 import { withPayload } from '@payloadcms/next/withPayload'
-// import { fileURLToPath } from 'url'
-
-// const dirname = path.dirname(fileURLToPath(import.meta.url))
-// const vercelOgShim = path.join(dirname, 'src/shims/vercel-og.js')
-
-// const dateFnsLocalePaths = [
-//   'ar',
-//   'az',
-//   'bg',
-//   'bn',
-//   'ca',
-//   'cs',
-//   'da',
-//   'de',
-//   'es',
-//   'et',
-//   'fa-IR',
-//   'fr',
-//   'he',
-//   'hr',
-//   'hu',
-//   'id',
-//   'is',
-//   'it',
-//   'ja',
-//   'ko',
-//   'lt',
-//   'lv',
-//   'nb',
-//   'nl',
-//   'pl',
-//   'pt',
-//   'ro',
-//   'ru',
-//   'sk',
-//   'sl',
-//   'sr',
-//   'sr-Latn',
-//   'sv',
-//   'ta',
-//   'th',
-//   'tr',
-//   'uk',
-//   'vi',
-//   'zh-CN',
-//   'zh-TW',
-// ]
-
-// const dateFnsLocaleAliases = Object.fromEntries(
-//   dateFnsLocalePaths.map((locale) => [`date-fns/locale/${locale}`, 'date-fns/locale/en-US']),
-// )
 
 const withBundleAnalyzer = (config: typeof nextConfig) => config
 
@@ -97,14 +45,6 @@ const nextConfig = {
       '**/node_modules/pino-pretty/**',
       '**/node_modules/next/dist/compiled/@vercel/og/**',
     ],
-  },
-
-  turbopack: {
-    resolveAlias: {
-      // ...dateFnsLocaleAliases,
-      // 'next/dist/compiled/@vercel/og/index.node.js': vercelOgShim,
-      // 'next/dist/compiled/@vercel/og/index.edge.js': vercelOgShim,
-    },
   },
 }
 

@@ -1,3 +1,5 @@
+import 'server-only'
+
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
 /* Modified by vite-plugin-vinext-payload: extracted serverFunction to separate
    'use server' module for Vite RSC compatibility. */

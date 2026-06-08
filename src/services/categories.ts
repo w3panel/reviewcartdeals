@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { getPayloadClient } from '@/lib/payload'
 
 export async function getCategories() {

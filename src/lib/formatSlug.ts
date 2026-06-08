@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { FieldHook } from 'payload'
 
 const format = (val: string): string =>

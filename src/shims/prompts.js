@@ -1,4 +1,7 @@
 /** CLI-only interactive prompts — stubbed for workerd runtime bundles. */
-export default async function prompts() {
+async function prompts() {
   return { confirm: true }
 }
+
+export default prompts
+export { prompts }

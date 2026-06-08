@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
 import type { Review, Media } from '@/payload-types'
-import type { ProductReviewStats } from '@/services/reviews'
+import type { ProductReviewStats } from '@/lib/reviewStats'
 
 interface ProductReviewsProps {
   reviews: Review[]

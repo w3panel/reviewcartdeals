@@ -1,4 +1,4 @@
-/** Minimal stub so Payload's logger module can load on Workers without pino-pretty. */
-export function build(options = {}) {
-  return options
+/** pino-pretty stub — dev-only formatter, not used in workerd runtime bundles. */
+export function build() {
+  return () => {}
 }

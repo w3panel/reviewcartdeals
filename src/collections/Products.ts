@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
 import { formatSlug } from '@/lib/formatSlug'

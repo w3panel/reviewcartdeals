@@ -1,3 +1,5 @@
+import 'server-only'
+
 import fs from 'fs'
 import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'

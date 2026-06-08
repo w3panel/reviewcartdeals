@@ -1,3 +1,5 @@
+import 'server-only'
+
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
 /* Modified by vite-plugin-vinext-payload: normalize empty segments for vinext. */
 import type { Metadata } from 'next'

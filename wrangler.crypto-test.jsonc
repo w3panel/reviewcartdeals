@@ -1,0 +1,6 @@
+{
+  "name": "crypto-test",
+  "main": "src/scripts/test-crypto-worker.js",
+  "compatibility_date": "2025-08-15",
+  "compatibility_flags": ["nodejs_compat"],
+}

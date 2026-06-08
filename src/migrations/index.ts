@@ -1,3 +1,5 @@
+import 'server-only'
+
 import * as migration_20250929_111647 from './20250929_111647'
 import * as migration_20260605_040917 from './20260605_040917'
 import * as migration_20260605_050544_reviews_collection from './20260605_050544_reviews_collection'

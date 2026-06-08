@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { CollectionConfig } from 'payload'
 
 export const Users: CollectionConfig = {

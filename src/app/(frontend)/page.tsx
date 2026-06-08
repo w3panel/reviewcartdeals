@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { Search, ScanLine } from 'lucide-react'
 import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
-import { emptyProductReviewStats, getProductReviewStatsBatch } from '@/services/reviews'
+import { getProductReviewStatsBatch } from '@/services/reviews'
+import { emptyProductReviewStats } from '@/lib/reviewStats'
 
 const FrontPageCatalog = dynamic(
   () => import('./FrontPageCatalog').then((mod) => ({ default: mod.FrontPageCatalog })),
