@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
 import { formatSlug } from '@/lib/formatSlug'
 import { findCatalogProducts } from '@/lib/productFilters'
+import { getProductReviewStatsBatch } from '@/services/reviews'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -31,12 +32,14 @@ export const Products: CollectionConfig = {
           limit: 12,
         })
 
-        const { getProductReviews } = await import('@/services/reviews')
-        const docsWithStats = await Promise.all(result.docs.map(async (prod: any) => {
-          const { stats } = await getProductReviews(prod.id)
-          return { ...prod, stats }
+        const statsByProduct = await getProductReviewStatsBatch(
+          result.docs.map((prod) => prod.id),
+          req.payload,
+        )
+        result.docs = result.docs.map((prod) => ({
+          ...prod,
+          stats: statsByProduct.get(prod.id),
         }))
-        result.docs = docsWithStats
 
         return Response.json(result, {
           headers: headersWithCors({
@@ -70,6 +73,7 @@ export const Products: CollectionConfig = {
       type: 'relationship',
       relationTo: 'brands',
       required: true,
+      index: true,
     },
     {
       name: 'description',
@@ -105,11 +109,13 @@ export const Products: CollectionConfig = {
       type: 'relationship',
       relationTo: 'categories',
       required: true,
+      index: true,
     },
     {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
+      index: true,
     },
     {
       name: 'limitedEdition',

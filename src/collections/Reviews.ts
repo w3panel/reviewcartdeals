@@ -15,6 +15,7 @@ export const Reviews: CollectionConfig = {
       type: 'relationship',
       relationTo: 'products',
       required: true,
+      index: true,
       admin: {
         position: 'sidebar',
       },

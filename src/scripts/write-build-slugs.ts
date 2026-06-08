@@ -8,19 +8,22 @@ const SLUGS_FILE = path.join(process.cwd(), '.next-build', 'slugs.json')
 async function main() {
   const payload = await getPayloadClient()
 
-  const categories = await payload.find({
-    collection: 'categories',
-    limit: 500,
-    depth: 0,
-    select: { slug: true },
-  })
-
-  const products = await payload.find({
-    collection: 'products',
-    limit: 1000,
-    depth: 0,
-    select: { slug: true },
-  })
+  const [categories, products] = await Promise.all([
+    payload.find({
+      collection: 'categories',
+      limit: 500,
+      depth: 0,
+      pagination: false,
+      select: { slug: true },
+    }),
+    payload.find({
+      collection: 'products',
+      limit: 1000,
+      depth: 0,
+      pagination: false,
+      select: { slug: true },
+    }),
+  ])
 
   const slugs = {
     categorySlugs: categories.docs.map((doc) => doc.slug),

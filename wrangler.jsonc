@@ -15,12 +15,14 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  // Keep D1 and the Worker in the same region to minimize query latency.
+  // https://payloadcms.com/docs/performance/overview#database-proximity
   "d1_databases": [
     {
       "binding": "D1",
       "database_id": "05c4c3b9-9c29-48d4-b7dd-39abed73b68e",
       "database_name": "reviewcartdeals",
-      "remote": true,
+      "remote": false,
     },
   ],
   "services": [

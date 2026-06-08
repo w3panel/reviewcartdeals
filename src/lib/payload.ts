@@ -1,6 +1,8 @@
 import { getPayload, type Payload } from 'payload'
 import configPromise from '@payload-config'
 
+/** Cached Payload instance — see https://payloadcms.com/docs/performance/overview */
+
 type PayloadCache = {
   client: Payload | null
   promise: Promise<Payload> | null

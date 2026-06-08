@@ -47,6 +47,7 @@ export const Categories: CollectionConfig = {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
+      index: true,
     },
   ],
 }

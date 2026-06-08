@@ -24,6 +24,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
     collection: 'categories',
     limit: 500,
     depth: 0,
+    pagination: false,
     select: { slug: true },
   })
 
@@ -31,6 +32,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
     collection: 'products',
     limit: 1000,
     depth: 0,
+    pagination: false,
     select: { slug: true },
   })
 

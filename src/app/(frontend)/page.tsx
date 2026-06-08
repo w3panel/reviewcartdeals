@@ -3,22 +3,23 @@ import Link from 'next/link'
 import { Search, ScanLine } from 'lucide-react'
 import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
-import { getProductReviews } from '@/services/reviews'
+import { emptyProductReviewStats, getProductReviewStatsBatch } from '@/services/reviews'
 import { FrontPageCatalog } from './FrontPageCatalog'
 
 export const revalidate = 60
 
 export default async function HomePage() {
-  const categories = await getCategories()
-  const { products: allProducts, totalDocs } = await getProducts({ limit: 12 })
-  const brands = await getAllBrands()
+  const [categories, { products: allProducts, totalDocs }, brands] = await Promise.all([
+    getCategories(),
+    getProducts({ limit: 12 }),
+    getAllBrands(),
+  ])
 
-  const productsWithStats = await Promise.all(
-    allProducts.map(async (prod) => {
-      const { stats } = await getProductReviews(prod.id)
-      return { ...prod, stats }
-    }),
-  )
+  const statsByProduct = await getProductReviewStatsBatch(allProducts.map((prod) => prod.id))
+  const productsWithStats = allProducts.map((prod) => ({
+    ...prod,
+    stats: statsByProduct.get(prod.id) ?? emptyProductReviewStats(),
+  }))
 
   if (categories.length === 0) {
     return (

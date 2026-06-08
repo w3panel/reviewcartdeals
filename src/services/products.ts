@@ -55,7 +55,17 @@ export async function getRelatedProducts(productId: string | number, categoryId:
       ],
     },
     limit,
-    depth: 2,
+    depth: 1,
+    select: {
+      title: true,
+      slug: true,
+      brand: true,
+      gallery: true,
+      description: true,
+      category: true,
+      updatedAt: true,
+      createdAt: true,
+    },
   })
 
   return response.docs
@@ -67,11 +77,15 @@ export async function getAllBrands() {
   const response = await payload.find({
     collection: 'brands',
     limit: 300,
+    depth: 0,
     sort: 'title',
+    pagination: false,
+    select: {
+      title: true,
+    },
   })
 
-  // Return brand titles as strings to maintain compatibility with existing frontend
-  return response.docs.map((b: any) => b.title)
+  return response.docs.map((brand) => brand.title)
 }
 
 export async function getAllProductSlugs() {
@@ -81,6 +95,7 @@ export async function getAllProductSlugs() {
     collection: 'products',
     limit: 1000,
     depth: 0,
+    pagination: false,
     select: {
       slug: true,
     },

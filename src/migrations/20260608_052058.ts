@@ -1,5 +1,5 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
-import { swapProductsTable } from './d1SwapProductsTable'
+import { swapProductsTable } from './lib/d1SwapProductsTable'
 
 async function productsHasColumn(db: MigrateUpArgs['db'], column: string): Promise<boolean> {
   const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(products)`)
@@ -13,12 +13,62 @@ async function tableExists(db: MigrateUpArgs['db'], name: string): Promise<boole
   return rows.length > 0
 }
 
-export async function up({ db }: MigrateUpArgs): Promise<void> {
-  if (!(await productsHasColumn(db, 'main_image_id'))) {
-    // Clean up leftovers from a failed prior attempt on remote D1.
-    await db.run(sql`DROP TABLE IF EXISTS \`__new_products\``)
-    await db.run(sql`DROP TABLE IF EXISTS \`products_variants\``)
+async function indexExists(db: MigrateUpArgs['db'], name: string): Promise<boolean> {
+  const rows = await db.all<{ name: string }>(
+    sql`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ${name}`,
+  )
+  return rows.length > 0
+}
 
+async function ensureProductsIndexes(db: MigrateUpArgs['db']): Promise<void> {
+  if (!(await indexExists(db, 'products_slug_idx'))) {
+    await db.run(sql`CREATE UNIQUE INDEX \`products_slug_idx\` ON \`products\` (\`slug\`);`)
+  }
+  if (!(await indexExists(db, 'products_brand_idx'))) {
+    await db.run(sql`CREATE INDEX \`products_brand_idx\` ON \`products\` (\`brand_id\`);`)
+  }
+  if (!(await indexExists(db, 'products_category_idx'))) {
+    await db.run(sql`CREATE INDEX \`products_category_idx\` ON \`products\` (\`category_id\`);`)
+  }
+  if (!(await indexExists(db, 'products_main_image_idx'))) {
+    await db.run(sql`CREATE INDEX \`products_main_image_idx\` ON \`products\` (\`main_image_id\`);`)
+  }
+  if (!(await indexExists(db, 'products_updated_at_idx'))) {
+    await db.run(sql`CREATE INDEX \`products_updated_at_idx\` ON \`products\` (\`updated_at\`);`)
+  }
+  if (!(await indexExists(db, 'products_created_at_idx'))) {
+    await db.run(sql`CREATE INDEX \`products_created_at_idx\` ON \`products\` (\`created_at\`);`)
+  }
+}
+
+async function ensureProductsVariantsTable(db: MigrateUpArgs['db']): Promise<void> {
+  if (await tableExists(db, 'products_variants')) {
+    return
+  }
+
+  await db.run(sql`CREATE TABLE \`products_variants\` (
+  	\`_order\` integer NOT NULL,
+  	\`_parent_id\` integer NOT NULL,
+  	\`id\` text PRIMARY KEY NOT NULL,
+  	\`title\` text NOT NULL,
+  	\`sku\` text,
+  	\`color\` text,
+  	\`size\` text,
+  	\`material\` text,
+  	\`price\` numeric,
+  	\`stock\` numeric DEFAULT 0,
+  	FOREIGN KEY (\`_parent_id\`) REFERENCES \`products\`(\`id\`) ON UPDATE no action ON DELETE cascade
+  );
+  `)
+  await db.run(sql`CREATE INDEX \`products_variants_order_idx\` ON \`products_variants\` (\`_order\`);`)
+  await db.run(sql`CREATE INDEX \`products_variants_parent_id_idx\` ON \`products_variants\` (\`_parent_id\`);`)
+}
+
+export async function up({ db }: MigrateUpArgs): Promise<void> {
+  // Clean up leftovers from a failed prior attempt on remote D1.
+  await db.run(sql`DROP TABLE IF EXISTS \`__new_products\``)
+
+  if (!(await productsHasColumn(db, 'main_image_id'))) {
     await db.run(sql`CREATE TABLE \`__new_products\` (
     	\`id\` integer PRIMARY KEY NOT NULL,
     	\`title\` text NOT NULL,
@@ -42,32 +92,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     // Source schema (20260605_040917) uses image_id, not main_image_id, and has no limited_edition.
     await db.run(sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "short_description", "full_description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", "short_description", "full_description", "image_id", "featured", 0, "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`)
     await swapProductsTable(db)
-    await db.run(sql`CREATE UNIQUE INDEX \`products_slug_idx\` ON \`products\` (\`slug\`);`)
-    await db.run(sql`CREATE INDEX \`products_brand_idx\` ON \`products\` (\`brand_id\`);`)
-    await db.run(sql`CREATE INDEX \`products_category_idx\` ON \`products\` (\`category_id\`);`)
-    await db.run(sql`CREATE INDEX \`products_main_image_idx\` ON \`products\` (\`main_image_id\`);`)
-    await db.run(sql`CREATE INDEX \`products_updated_at_idx\` ON \`products\` (\`updated_at\`);`)
-    await db.run(sql`CREATE INDEX \`products_created_at_idx\` ON \`products\` (\`created_at\`);`)
-
-    if (!(await tableExists(db, 'products_variants'))) {
-      await db.run(sql`CREATE TABLE \`products_variants\` (
-      	\`_order\` integer NOT NULL,
-      	\`_parent_id\` integer NOT NULL,
-      	\`id\` text PRIMARY KEY NOT NULL,
-      	\`title\` text NOT NULL,
-      	\`sku\` text,
-      	\`color\` text,
-      	\`size\` text,
-      	\`material\` text,
-      	\`price\` numeric,
-      	\`stock\` numeric DEFAULT 0,
-      	FOREIGN KEY (\`_parent_id\`) REFERENCES \`products\`(\`id\`) ON UPDATE no action ON DELETE cascade
-      );
-      `)
-      await db.run(sql`CREATE INDEX \`products_variants_order_idx\` ON \`products_variants\` (\`_order\`);`)
-      await db.run(sql`CREATE INDEX \`products_variants_parent_id_idx\` ON \`products_variants\` (\`_parent_id\`);`)
-    }
   }
+
+  await ensureProductsIndexes(db)
+  await ensureProductsVariantsTable(db)
   const categoryColumns = await db.all<{ name: string }>(sql`PRAGMA table_info(categories)`)
   if (!categoryColumns.some((col) => col.name === 'icon_id')) {
     await db.run(sql`ALTER TABLE \`categories\` ADD \`icon_id\` integer REFERENCES media(id);`)

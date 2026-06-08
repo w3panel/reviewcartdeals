@@ -96,9 +96,8 @@ function createD1LikeDb() {
   return {
     run: async (query: SQL) => {
       const text = compileSql(query)
-      if (text.includes('PRAGMA foreign_keys=OFF; DROP TABLE')) {
+      if (text.includes('ALTER TABLE `products` RENAME TO `__products_swap_old`')) {
         const conn = getShared()
-        conn.run('PRAGMA foreign_keys=OFF')
         for (const part of text.split(';').map((s) => s.trim()).filter(Boolean)) {
           conn.run(part)
         }

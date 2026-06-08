@@ -41,9 +41,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!product) notFound()
 
-  const category = await resolveProductCategory(product.category)
-  const relatedProducts = (await getRelatedProducts(product.id, getCategoryId(product.category), 4)) as Product[]
-  const { reviews, stats } = await getProductReviews(product.id)
+  const [category, relatedProducts, { reviews, stats }] = await Promise.all([
+    resolveProductCategory(product.category),
+    getRelatedProducts(product.id, getCategoryId(product.category), 4),
+    getProductReviews(product.id),
+  ])
+  const related = relatedProducts as Product[]
   const galleryImages = buildProductGalleryImages(product)
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://reviewcartdeals.com'
@@ -128,14 +131,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductReviews reviews={reviews} stats={stats} />
       </section>
 
-      {relatedProducts.length > 0 && (
+      {related.length > 0 && (
         <section className="border-t border-border bg-card py-10 sm:py-14 mt-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h3 className="text-lg sm:text-xl font-semibold tracking-widest text-foreground uppercase mb-6 sm:mb-8">
               Related Products
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {relatedProducts.map((prod) => (
+              {related.map((prod) => (
                 <div key={prod.id} className="flex flex-col p-3 sm:p-5 border border-border rounded-2xl bg-background hover:border-primary transition-colors group">
                   <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-3">
                     <div className="relative aspect-square bg-card rounded-xl overflow-hidden">
