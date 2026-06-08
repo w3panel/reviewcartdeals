@@ -1,5 +1,5 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
-import { swapProductsTable } from './lib/d1SwapProductsTable'
+import { swapProductsTable } from '../lib/d1SwapProductsTable'
 
 async function productsHasColumn(db: MigrateUpArgs['db'], column: string): Promise<boolean> {
   const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(products)`)
