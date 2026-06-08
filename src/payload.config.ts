@@ -3,7 +3,6 @@ import path from 'path'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
-import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 
@@ -20,12 +19,19 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(value) : undefined)
 
-const isCLI = process.argv.some((value) =>
-  realpath(value)?.endsWith(path.join('payload', 'bin.js')),
-)
+const argv = process.argv ?? []
+const isCLI = argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
-const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
-const isLocalWrangler = isCLI || !isProduction || isBuild
+const isBuild =
+  process.env.VINEXT_BUILD === '1' || argv.some((value) => realpath(value)?.includes('vite'))
+
+type CloudflareContext = {
+  env: CloudflareEnv
+}
+
+const isWorkerd = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers'
+// Use wrangler in Node (dev, CLI, build, vinext start). cloudflare:workers only in workerd.
+const isLocalWrangler = isCLI || isBuild || !isWorkerd
 // Remote D1 via `wrangler d1 execute --remote` is for Cloudflare CI only.
 // Local prebuild uses the local D1 binding from getPlatformProxy (avoids Windows
 // wrangler exec crashes and does not require remote credentials).
@@ -55,14 +61,14 @@ const cloudflareLogger = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any // Use PayloadLogger type when it's exported
 
-// Use wrangler during dev, CLI, and `next build`. getCloudflareContext only works
-// at runtime on Cloudflare Workers — using it during static generation causes
+// Use wrangler during dev, CLI, and build. cloudflare:workers bindings are used
+// at runtime on Cloudflare Workers — using them during static generation causes
 // SQLITE_BUSY from competing workerd instances.
 const cloudflare = useRemoteD1ViaExec
   ? await getCloudflareContextWithRemoteD1Exec()
   : isLocalWrangler
     ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
+    : await getCloudflareContextFromWorkers()
 
 export default buildConfig({
   admin: {
@@ -79,7 +85,12 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
+  db: sqliteD1Adapter({
+    binding: cloudflare.env.D1,
+    push: false,
+    // Avoid process.cwd() in workerd — findMigrationDir falls back to cwd when unset.
+    migrationDir: path.resolve(dirname, 'migrations'),
+  }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
     r2Storage({
@@ -90,6 +101,12 @@ export default buildConfig({
 })
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
+async function getCloudflareContextFromWorkers(): Promise<CloudflareContext> {
+  const workersModule = ['cloudflare', 'workers'].join(':')
+  const { env } = await import(/* @vite-ignore */ workersModule)
+  return { env: env as CloudflareEnv }
+}
+
 function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
   return getCloudflareContextFromWranglerWithRemoteBindings(false)
 }
@@ -109,7 +126,7 @@ async function getCloudflareContextWithRemoteD1Exec(): Promise<CloudflareContext
 function getCloudflareContextFromWranglerWithRemoteBindings(
   remoteBindings: boolean,
 ): Promise<CloudflareContext> {
-  return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
+  return import(/* @vite-ignore */ `${'__wrangler'.replaceAll('_', '')}`).then(
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,

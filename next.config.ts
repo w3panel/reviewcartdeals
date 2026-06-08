@@ -1,62 +1,58 @@
-import bundleAnalyzer from '@next/bundle-analyzer'
+// import path from 'path'
 import { withPayload } from '@payloadcms/next/withPayload'
-import path from 'path'
-import { fileURLToPath } from 'url'
+// import { fileURLToPath } from 'url'
 
-const dirname = path.dirname(fileURLToPath(import.meta.url))
-const vercelOgShim = path.join(dirname, 'src/shims/vercel-og.js')
+// const dirname = path.dirname(fileURLToPath(import.meta.url))
+// const vercelOgShim = path.join(dirname, 'src/shims/vercel-og.js')
 
-const dateFnsLocalePaths = [
-  'ar',
-  'az',
-  'bg',
-  'bn',
-  'ca',
-  'cs',
-  'da',
-  'de',
-  'es',
-  'et',
-  'fa-IR',
-  'fr',
-  'he',
-  'hr',
-  'hu',
-  'id',
-  'is',
-  'it',
-  'ja',
-  'ko',
-  'lt',
-  'lv',
-  'nb',
-  'nl',
-  'pl',
-  'pt',
-  'ro',
-  'ru',
-  'sk',
-  'sl',
-  'sr',
-  'sr-Latn',
-  'sv',
-  'ta',
-  'th',
-  'tr',
-  'uk',
-  'vi',
-  'zh-CN',
-  'zh-TW',
-]
+// const dateFnsLocalePaths = [
+//   'ar',
+//   'az',
+//   'bg',
+//   'bn',
+//   'ca',
+//   'cs',
+//   'da',
+//   'de',
+//   'es',
+//   'et',
+//   'fa-IR',
+//   'fr',
+//   'he',
+//   'hr',
+//   'hu',
+//   'id',
+//   'is',
+//   'it',
+//   'ja',
+//   'ko',
+//   'lt',
+//   'lv',
+//   'nb',
+//   'nl',
+//   'pl',
+//   'pt',
+//   'ro',
+//   'ru',
+//   'sk',
+//   'sl',
+//   'sr',
+//   'sr-Latn',
+//   'sv',
+//   'ta',
+//   'th',
+//   'tr',
+//   'uk',
+//   'vi',
+//   'zh-CN',
+//   'zh-TW',
+// ]
 
-const dateFnsLocaleAliases = Object.fromEntries(
-  dateFnsLocalePaths.map((locale) => [`date-fns/locale/${locale}`, 'date-fns/locale/en-US']),
-)
+// const dateFnsLocaleAliases = Object.fromEntries(
+//   dateFnsLocalePaths.map((locale) => [`date-fns/locale/${locale}`, 'date-fns/locale/en-US']),
+// )
 
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-  openAnalyzer: process.env.CI !== 'true',
-})
+const withBundleAnalyzer = (config: typeof nextConfig) => config
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -105,9 +101,9 @@ const nextConfig = {
 
   turbopack: {
     resolveAlias: {
-      ...dateFnsLocaleAliases,
-      'next/dist/compiled/@vercel/og/index.node.js': vercelOgShim,
-      'next/dist/compiled/@vercel/og/index.edge.js': vercelOgShim,
+      // ...dateFnsLocaleAliases,
+      // 'next/dist/compiled/@vercel/og/index.node.js': vercelOgShim,
+      // 'next/dist/compiled/@vercel/og/index.edge.js': vercelOgShim,
     },
   },
 }

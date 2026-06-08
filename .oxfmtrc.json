@@ -8,7 +8,8 @@
   "ignorePatterns": [
     "**/node_modules/**",
     ".next/**",
-    ".open-next/**",
+    "dist/**",
+    ".vinext/**",
     "out/**",
     "build/**",
     "bundled/**",

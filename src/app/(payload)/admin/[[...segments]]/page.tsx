@@ -1,5 +1,5 @@
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY PAYLOAD. */
-/* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
+/* Modified by vite-plugin-vinext-payload: normalize empty segments for vinext. */
 import type { Metadata } from 'next'
 
 import config from '@payload-config'
@@ -15,10 +15,20 @@ type Args = {
   }>
 }
 
+// vinext passes segments=[] for /admin; Next.js passes undefined.
+// Normalize so Payload's dashboard route resolves correctly.
+const normalizeParams = async (params: Args['params']): Promise<{ segments: string[] }> => {
+  const resolved = await params
+  if (Array.isArray(resolved.segments) && resolved.segments.length === 0) {
+    return { ...resolved, segments: undefined as unknown as string[] }
+  }
+  return resolved
+}
+
 export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> =>
-  generatePageMetadata({ config, params, searchParams })
+  generatePageMetadata({ config, params: normalizeParams(params), searchParams })
 
 const Page = ({ params, searchParams }: Args) =>
-  RootPage({ config, params, searchParams, importMap })
+  RootPage({ config, params: normalizeParams(params), searchParams, importMap })
 
 export default Page

@@ -13,7 +13,8 @@
     "build/**",
     "next-env.d.ts",
     "**/node_modules/**",
-    ".open-next/**",
+    "dist/**",
+    ".vinext/**",
     "src/payload-types.ts",
     "src/payload-generated-schema.ts"
   ],
