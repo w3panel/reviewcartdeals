@@ -1,4 +1,5 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
+import { swapProductsTable } from './d1SwapProductsTable'
 
 async function productsHasColumn(db: MigrateUpArgs['db'], column: string): Promise<boolean> {
   const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(products)`)
@@ -27,7 +28,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     return
   }
 
-  await db.run(sql`PRAGMA foreign_keys=OFF;`)
   await db.run(sql`CREATE TABLE \`__new_products\` (
   	\`id\` integer PRIMARY KEY NOT NULL,
   	\`title\` text NOT NULL,
@@ -47,9 +47,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   	FOREIGN KEY (\`main_image_id\`) REFERENCES \`media\`(\`id\`) ON UPDATE no action ON DELETE set null
   );`)
   await db.run(sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", COALESCE("description", ''), "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`)
-  await db.run(sql`DROP TABLE \`products\`;`)
-  await db.run(sql`ALTER TABLE \`__new_products\` RENAME TO \`products\`;`)
-  await db.run(sql`PRAGMA foreign_keys=ON;`)
+  await swapProductsTable(db)
   await db.run(sql`CREATE UNIQUE INDEX \`products_slug_idx\` ON \`products\` (\`slug\`);`)
   await db.run(sql`CREATE INDEX \`products_brand_idx\` ON \`products\` (\`brand_id\`);`)
   await db.run(sql`CREATE INDEX \`products_category_idx\` ON \`products\` (\`category_id\`);`)
