@@ -30,7 +30,9 @@ const isLocalWrangler = isCLI || !isProduction || isBuild
 // Local prebuild uses the local D1 binding from getPlatformProxy (avoids Windows
 // wrangler exec crashes and does not require remote credentials).
 const useRemoteD1ViaExec =
-  isProduction && isLocalWrangler && (process.env.CF_PAGES === '1' || process.env.USE_REMOTE_D1 === '1')
+  isProduction &&
+  isLocalWrangler &&
+  (process.env.CF_PAGES === '1' || process.env.USE_REMOTE_D1 === '1')
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {

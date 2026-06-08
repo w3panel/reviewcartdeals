@@ -38,20 +38,11 @@ const nextConfig = {
   // Read more: https://opennext.js.org/cloudflare/howtos/workerd
   serverExternalPackages: ['jose', 'pg-cloudflare'],
 
-  webpack: (webpackConfig: any) => {
-    webpackConfig.resolve.alias = {
-      ...webpackConfig.resolve.alias,
+  turbopack: {
+    resolveAlias: {
       'next/dist/compiled/@vercel/og/index.node.js': vercelOgShim,
       'next/dist/compiled/@vercel/og/index.edge.js': vercelOgShim,
-    }
-
-    webpackConfig.resolve.extensionAlias = {
-      '.cjs': ['.cts', '.cjs'],
-      '.js': ['.ts', '.tsx', '.js', '.jsx'],
-      '.mjs': ['.mts', '.mjs'],
-    }
-
-    return webpackConfig
+    },
   },
 }
 
