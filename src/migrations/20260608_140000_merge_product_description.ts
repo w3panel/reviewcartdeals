@@ -1,14 +1,32 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
 
+async function productsHasColumn(db: MigrateUpArgs['db'], column: string): Promise<boolean> {
+  const columns = await db.all<{ name: string }>(sql`PRAGMA table_info(products)`)
+  return columns.some((col) => col.name === column)
+}
+
 export async function up({ db }: MigrateUpArgs): Promise<void> {
-  await db.run(sql`ALTER TABLE \`products\` ADD \`description\` text;`)
-  await db.run(sql`
-    UPDATE \`products\`
-    SET \`description\` = CASE
-      WHEN \`full_description\` IS NOT NULL AND trim(\`full_description\`) != '' THEN \`full_description\`
-      ELSE \`short_description\`
-    END
-  `)
+  if ((await productsHasColumn(db, 'description')) && !(await productsHasColumn(db, 'short_description'))) {
+    return
+  }
+
+  await db.run(sql`DROP TABLE IF EXISTS \`__new_products\``)
+
+  if (!(await productsHasColumn(db, 'description'))) {
+    await db.run(sql`ALTER TABLE \`products\` ADD \`description\` text;`)
+    await db.run(sql`
+      UPDATE \`products\`
+      SET \`description\` = CASE
+        WHEN \`full_description\` IS NOT NULL AND trim(\`full_description\`) != '' THEN \`full_description\`
+        ELSE \`short_description\`
+      END
+    `)
+  }
+
+  if (!(await productsHasColumn(db, 'short_description'))) {
+    return
+  }
+
   await db.run(sql`PRAGMA foreign_keys=OFF;`)
   await db.run(sql`CREATE TABLE \`__new_products\` (
   	\`id\` integer PRIMARY KEY NOT NULL,
