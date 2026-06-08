@@ -13,6 +13,8 @@
     "deploy": "bun run deploy:database && bun run deploy:app",
     "deploy:app": "bun run prebuild && bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy",
     "deploy:database": "bun run migrate:production && bunx wrangler d1 execute D1 --command 'PRAGMA optimize' --remote",
+    "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "predev": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "devsafe": "rm -rf .next && rm -rf .open-next && cross-env NODE_OPTIONS=--no-deprecation next dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",

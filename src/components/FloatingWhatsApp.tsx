@@ -10,7 +10,7 @@ export function FloatingWhatsApp() {
       href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-green-600 text-white shadow-2xl transition-all duration-300 hover:scale-110 hover:bg-green-500 hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] md:bottom-8 md:right-8"
+      className="fixed bottom-20 right-4 sm:right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-2xl transition-all duration-300 hover:scale-110 md:bottom-8 md:right-8"
       aria-label="Contact via WhatsApp"
     >
       <MessageCircle className="h-7 w-7" />

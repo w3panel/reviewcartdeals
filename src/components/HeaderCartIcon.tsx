@@ -11,12 +11,12 @@ export function HeaderCartIcon() {
   return (
     <Link
       href="/cart"
-      className="relative rounded-full p-2 text-[#F5B82A] hover:text-[#DCA54A] transition-colors"
-      aria-label="View Inquiry Cart"
+      className="relative p-2 text-foreground hover:text-primary transition-colors flex items-center justify-center"
+      aria-label="View Cart"
     >
-      <ShoppingCart className="h-6 w-6" />
+      <ShoppingCart className="h-6 w-6" strokeWidth={2} />
       {itemCount > 0 && (
-        <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground shadow-lg">
+        <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
           {itemCount}
         </span>
       )}

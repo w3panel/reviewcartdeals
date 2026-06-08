@@ -37,8 +37,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const bannerImageUrl = getImageUrl(category.image)
 
   return (
-    <div className="w-full min-h-screen bg-luxury-black pb-20">
-      <section className="relative h-[40vh] w-full overflow-hidden border-b border-luxury-gray">
+    <div className="w-full min-h-screen bg-background pb-20 md:pb-12">
+      <section className="relative h-[30vh] sm:h-[40vh] w-full overflow-hidden border-b border-border">
         <Image
           src={bannerImageUrl}
           alt={category.title}
@@ -47,18 +47,18 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           sizes="100vw"
           className="object-cover opacity-40 blur-[1px]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-luxury-black to-black/30" />
-        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-12 mx-auto max-w-7xl">
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-black/30" />
+        <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-12 mx-auto max-w-7xl">
           <Link
             href="/"
-            className="flex items-center gap-1 text-xs font-semibold tracking-widest text-luxury-gold uppercase hover:text-white transition-colors mb-4"
+            className="flex items-center gap-1 text-xs font-semibold tracking-widest text-primary uppercase hover:text-foreground transition-colors mb-3 sm:mb-4"
           >
-            <ChevronLeft className="h-4 w-4" /> BACK TO CATALOG
+            <ChevronLeft className="h-4 w-4" /> Back to catalog
           </Link>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-wider uppercase">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground tracking-wide">
             {category.title}
           </h1>
-          <p className="mt-2 text-sm text-gray-300 max-w-2xl leading-relaxed font-light">
+          <p className="mt-2 text-sm text-muted-foreground max-w-2xl leading-relaxed">
             {category.description}
           </p>
         </div>

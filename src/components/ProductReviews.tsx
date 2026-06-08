@@ -133,7 +133,7 @@ export function ProductReviews({ reviews, stats }: ProductReviewsProps) {
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=I%20want%20the%20best%20deal`}
               target="_blank"
               rel="noreferrer"
-              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground py-3.5 rounded-xl border border-[#F5B82A] text-xs font-bold tracking-widest uppercase transition-all shadow-lg shadow-primary/20"
+              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground py-3.5 rounded-xl border border-primary text-xs font-bold tracking-widest uppercase transition-all"
             >
               Get Best Deals <MessageCircle className="w-4 h-4" />
             </a>
@@ -198,7 +198,7 @@ export function ProductReviews({ reviews, stats }: ProductReviewsProps) {
             ))}
           </div>
 
-          <button className="w-full mt-4 bg-transparent border border-[#F5B82A] text-primary py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase hover:bg-primary hover:text-primary-foreground transition-colors">
+          <button type="button" className="w-full mt-4 bg-transparent border border-primary text-primary py-3.5 rounded-xl text-xs font-bold tracking-widest uppercase hover:bg-primary hover:text-primary-foreground transition-colors">
             View All {stats.totalReviews.toLocaleString()} Reviews
           </button>
         </div>

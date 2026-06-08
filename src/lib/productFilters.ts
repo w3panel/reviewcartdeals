@@ -79,7 +79,7 @@ export async function buildProductsWhere(
           },
         },
         {
-          shortDescription: {
+          description: {
             like: search,
           },
         },
@@ -99,7 +99,7 @@ export async function findCatalogProducts(payload: BasePayload, options: Catalog
     where,
     page,
     limit,
-    depth: 1,
+    depth: 2,
     sort: '-createdAt',
   })
 }

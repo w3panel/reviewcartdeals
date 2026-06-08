@@ -1,16 +1,13 @@
-import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-d1-sqlite'
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
 import { lexicalToPlainText } from '@/lib/lexicalToPlainText'
 
-export async function up({ payload }: MigrateUpArgs): Promise<void> {
-  const { docs } = await payload.find({
-    collection: 'products',
-    limit: 1000,
-    depth: 0,
-    pagination: false,
-  })
+export async function up({ db }: MigrateUpArgs): Promise<void> {
+  const rows = await db.all<{ id: number; full_description: string }>(
+    sql`SELECT id, full_description FROM products`,
+  )
 
-  for (const product of docs) {
-    const current = product.fullDescription as unknown
+  for (const row of rows) {
+    const current = row.full_description
 
     if (typeof current === 'string' && !current.trim().startsWith('{')) {
       continue
@@ -22,13 +19,9 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
       continue
     }
 
-    await payload.update({
-      collection: 'products',
-      id: product.id,
-      data: {
-        fullDescription: plainText,
-      },
-    })
+    await db.run(
+      sql`UPDATE products SET full_description = ${plainText} WHERE id = ${row.id}`,
+    )
   }
 }
 

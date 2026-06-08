@@ -218,12 +218,25 @@ export interface Product {
   title: string;
   slug: string;
   brand: number | Brand;
-  shortDescription: string;
-  fullDescription: string;
-  image?: (number | null) | Media;
+  /**
+   * Product description shown on listings and the product page.
+   */
+  description: string;
+  /**
+   * Add as many product images as needed. The first image is used as the listing thumbnail.
+   */
+  gallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   category: number | Category;
   featured?: boolean | null;
   limitedEdition?: boolean | null;
+  /**
+   * Add as many specification rows as needed. Each row is a name/value pair.
+   */
   specifications?:
     | {
         key: string;
@@ -436,9 +449,13 @@ export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   brand?: T;
-  shortDescription?: T;
-  fullDescription?: T;
-  image?: T;
+  description?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   category?: T;
   featured?: T;
   limitedEdition?: T;

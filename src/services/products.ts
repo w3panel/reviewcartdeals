@@ -29,6 +29,7 @@ export async function getProductBySlug(slug: string) {
       },
     },
     limit: 1,
+    depth: 2,
   })
 
   return response.docs[0] || null
@@ -54,6 +55,7 @@ export async function getRelatedProducts(productId: string | number, categoryId:
       ],
     },
     limit,
+    depth: 2,
   })
 
   return response.docs

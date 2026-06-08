@@ -2,59 +2,60 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-
-interface Media {
-  id: string
-  url?: string
-  alt: string
-}
+import { getImageUrl } from '@/lib/utils'
+import type { Media } from '@/payload-types'
 
 interface ProductGalleryProps {
-  gallery: Media[]
+  images: Media[]
+  title: string
 }
 
-export function ProductGallery({ gallery }: ProductGalleryProps) {
+export function ProductGallery({ images, title }: ProductGalleryProps) {
+  const validImages = (images ?? []).filter(
+    (img): img is Media => img != null && typeof img === 'object' && 'id' in img,
+  )
+
   const [activeIndex, setActiveIndex] = useState(0)
 
-  if (!gallery || gallery.length === 0) {
+  if (validImages.length === 0) {
     return (
-      <div className="relative aspect-square w-full rounded-lg bg-black flex items-center justify-center border border-luxury-gray">
-        <span className="text-gray-500">No Image Available</span>
+      <div className="relative aspect-square w-full rounded-2xl bg-background flex items-center justify-center border border-border">
+        <span className="text-muted-foreground text-sm">No image available</span>
       </div>
     )
   }
 
-  const activeImage = gallery[activeIndex]
+  const safeIndex = activeIndex < validImages.length ? activeIndex : 0
+  const activeImage = validImages[safeIndex]
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Main Image View */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-black border border-luxury-gray flex items-center justify-center p-4">
+    <div className="flex flex-col gap-3 sm:gap-4">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-background border border-border flex items-center justify-center p-4 sm:p-6">
         <Image
-          src={activeImage.url || '/placeholder.webp'}
-          alt={activeImage.alt || 'Product Image'}
+          src={getImageUrl(activeImage)}
+          alt={activeImage.alt || title}
           fill
           priority
           sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-contain p-4 transition-all duration-500 hover:scale-105"
+          className="object-contain transition-transform duration-300"
         />
       </div>
 
-      {/* Thumbnails strip (Only render if there is more than 1 image) */}
-      {gallery.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {gallery.map((img, idx) => (
+      {validImages.length > 1 && (
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-1">
+          {validImages.map((img, idx) => (
             <button
-              key={img.id}
+              key={img.id ?? `gallery-thumb-${idx}`}
+              type="button"
               onClick={() => setActiveIndex(idx)}
-              className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded border bg-black transition-all ${
-                idx === activeIndex
-                  ? 'border-luxury-gold ring-1 ring-luxury-gold'
-                  : 'border-luxury-gray hover:border-gray-400'
+              className={`relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0 overflow-hidden rounded-lg border bg-card transition-all ${
+                idx === safeIndex
+                  ? 'border-primary ring-1 ring-primary'
+                  : 'border-border hover:border-muted-foreground'
               }`}
             >
               <Image
-                src={img.url || '/placeholder.webp'}
+                src={getImageUrl(img)}
                 alt={img.alt || 'Thumbnail'}
                 fill
                 sizes="80px"

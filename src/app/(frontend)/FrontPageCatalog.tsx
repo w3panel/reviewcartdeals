@@ -3,13 +3,12 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { 
-  SlidersHorizontal, ArrowUpDown, Tag as TagIcon, Star, 
-  ChevronUp, ChevronDown, LayoutGrid, BadgeCheck 
-} from 'lucide-react'
-import { getImageUrl } from '@/lib/utils'
-import type { Product, Category, Brand, Media } from '@/payload-types'
+import { SlidersHorizontal, LayoutGrid, Heart, Star, ChevronDown } from 'lucide-react'
+import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import type { Product, Category, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
+import { FilterSheet } from '@/components/FilterSheet'
+import { SortSheet } from '@/components/SortSheet'
 
 interface FrontPageCatalogProps {
   categories: Category[]
@@ -26,20 +25,19 @@ interface CatalogResponse {
 export function FrontPageCatalog({ categories, brands, initialProducts, initialTotalDocs }: FrontPageCatalogProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
-  
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [totalDocs, setTotalDocs] = useState<number>(initialTotalDocs)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isSortOpen, setIsSortOpen] = useState(false)
 
   useEffect(() => {
-    // If no filters are applied, and we just mounted, we can rely on initial data to save a request.
-    // However, if filters change, we fetch.
     const fetchFilteredProducts = async () => {
       setIsLoading(true)
       const params = new URLSearchParams()
       if (selectedCategory) params.set('category', selectedCategory)
       if (selectedBrands.length > 0) params.set('brand', selectedBrands.join(','))
-      
+
       try {
         const res = await fetch(`/api/products/catalog?${params.toString()}`)
         if (res.ok) {
@@ -58,10 +56,8 @@ export function FrontPageCatalog({ categories, brands, initialProducts, initialT
   }, [selectedCategory, selectedBrands])
 
   const toggleBrand = (brandTitle: string) => {
-    setSelectedBrands(prev => 
-      prev.includes(brandTitle)
-        ? prev.filter(b => b !== brandTitle)
-        : [...prev, brandTitle]
+    setSelectedBrands((prev) =>
+      prev.includes(brandTitle) ? prev.filter((b) => b !== brandTitle) : [...prev, brandTitle],
     )
   }
 
@@ -70,216 +66,171 @@ export function FrontPageCatalog({ categories, brands, initialProducts, initialT
     setSelectedBrands([])
   }
 
+  const activeFilterCount = (selectedCategory ? 1 : 0) + selectedBrands.length
+
   return (
     <>
-      {/* Filter / Sort Horizontal Bar */}
-      <div className="px-4 mt-4">
-        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2">
-          <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-border rounded-full flex-shrink-0 hover:border-[#F5B82A] transition-all relative">
-            <SlidersHorizontal className="w-4 h-4 text-[#F5B82A]" /> Filters
-            {(selectedCategory || selectedBrands.length > 0) && (
-              <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-[#F5B82A]"></span>
-            )}
+      <div className="px-4 mt-6 sm:mt-8 pb-32 md:pb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">Categories</h2>
+          <Link href="/search" className="text-sm text-muted-foreground hover:text-primary">
+            See all
+          </Link>
+        </div>
+
+        <div className="flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar pb-6">
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(null)}
+            className="flex flex-col items-center flex-shrink-0 gap-2"
+          >
+            <div className={`flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full transition-colors ${
+              selectedCategory === null ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
+            }`}>
+              <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <span className="text-xs font-medium text-foreground">All</span>
           </button>
-          <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-border rounded-full hover:border-[#F5B82A] transition-colors flex-shrink-0">
-            <ArrowUpDown className="w-4 h-4 text-[#F5B82A]" /> Sort
+
+          {categories.slice(0, 8).map((cat: Category) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setSelectedCategory(selectedCategory === cat.slug ? null : cat.slug!)}
+              className="flex flex-col items-center flex-shrink-0 gap-2"
+            >
+              <div className={`relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden transition-colors ${
+                selectedCategory === cat.slug ? 'ring-2 ring-primary' : ''
+              } bg-muted`}>
+                {cat.image ? (
+                  <Image src={getImageUrl(cat.image)} alt={cat.title} fill className="object-cover" />
+                ) : (
+                  <span className="text-lg font-bold text-foreground">{cat.title.charAt(0)}</span>
+                )}
+              </div>
+              <span className="text-xs font-medium text-foreground max-w-[64px] truncate">{cat.title}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6">
+          <button type="button" onClick={() => setIsFilterOpen(true)} className="flex flex-col items-center gap-2 flex-shrink-0">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted text-foreground">
+              <SlidersHorizontal className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Filters</span>
           </button>
-          <button className="flex items-center gap-2 px-5 py-2 text-[13px] font-medium text-foreground bg-transparent border border-border rounded-full hover:border-[#F5B82A] transition-colors flex-shrink-0">
-            <TagIcon className="w-4 h-4 text-[#F5B82A]" /> Brand
+
+          <button type="button" onClick={() => setIsSortOpen(true)} className="flex flex-col items-center gap-2 flex-shrink-0">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted text-foreground">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+            </div>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sort</span>
           </button>
 
           {(selectedCategory || selectedBrands.length > 0) && (
-            <div className="ml-auto pl-4">
-              <button 
-                onClick={handleClearAll}
-                className="text-[13px] font-semibold text-primary hover:text-primary-hover transition-colors flex-shrink-0"
-              >
-                Clear All
-              </button>
-            </div>
+            <button type="button" onClick={handleClearAll} className="flex-shrink-0 ml-1">
+              <span className="text-[11px] font-bold text-primary border-b border-primary pb-0.5">Clear All</span>
+            </button>
           )}
         </div>
-      </div>
 
-      {/* Main Content Split: Sidebar + Product Grid */}
-      <div className="px-4 mt-6 flex flex-col lg:flex-row gap-6">
-        
-        {/* Left Sidebar (Desktop/Tablet/Mobile) */}
-        <div className="w-full md:w-64 lg:w-72 flex-shrink-0 space-y-6">
-          {/* Categories Accordion */}
-          <div className="bg-transparent border border-border p-4 rounded-2xl">
-            <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
-              Categories
-              <ChevronUp className="w-4 h-4 text-primary" />
-            </h3>
-            <div className="space-y-1">
-              <button 
-                onClick={() => setSelectedCategory(null)}
-                className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all ${selectedCategory === null ? 'bg-transparent border border-primary text-primary shadow-sm' : 'text-gray-300 hover:text-primary hover:bg-muted border border-transparent'}`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-                All Categories
-              </button>
-              {categories.slice(0, 6).map((cat: Category) => (
-                <button 
-                  key={cat.id} 
-                  onClick={() => setSelectedCategory(cat.slug || null)}
-                  className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[13px] font-medium group ${selectedCategory === cat.slug ? 'bg-transparent border border-primary text-primary shadow-sm' : 'text-gray-300 hover:text-primary hover:bg-muted border border-transparent'}`}
-                >
-                  <div className="w-4 h-4 relative flex items-center justify-center flex-shrink-0">
-                    <Image src={getImageUrl((cat as any).icon || cat.image)} alt="" fill className={`object-contain transition-all dark:brightness-0 dark:invert ${selectedCategory === cat.slug ? 'grayscale-0 opacity-100' : 'opacity-70 grayscale group-hover:grayscale-0 group-hover:opacity-100'}`} />
-                  </div>
-                  <span className="text-left truncate">{cat.title}</span>
-                </button>
-              ))}
-              {categories.length > 6 && (
-                <button className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 px-3 transition-colors">
-                  Show More <ChevronDown className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+        {(selectedCategory || selectedBrands.length > 0) && (
+          <div className="flex items-center gap-2 flex-wrap mb-6">
+            {selectedCategory && (
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground">
+                {categories.find((c) => c.slug === selectedCategory)?.title}
+                <button type="button" onClick={() => setSelectedCategory(null)} className="ml-2 text-muted-foreground">✕</button>
+              </span>
+            )}
+            {selectedBrands.map((brand) => (
+              <span key={brand} className="inline-flex items-center px-3 py-1.5 rounded-full bg-muted text-xs font-medium text-foreground">
+                {brand}
+                <button type="button" onClick={() => toggleBrand(brand)} className="ml-2 text-muted-foreground">✕</button>
+              </span>
+            ))}
           </div>
+        )}
 
-          <div className="bg-transparent border border-border p-4 rounded-2xl">
-            <h3 className="text-[15px] font-medium text-primary flex justify-between items-center mb-4 cursor-pointer">
-              Brands
-              <ChevronUp className="w-4 h-4 text-primary" />
-            </h3>
-            <div className="space-y-4 px-3">
-              {brands.slice(0, 6).map(brand => {
-                const isSelected = selectedBrands.includes(brand)
-                return (
-                  <button 
-                    onClick={() => toggleBrand(brand)}
-                    key={brand} 
-                    className="flex w-full items-center gap-3 cursor-pointer group"
-                  >
-                    <div className={`w-4 h-4 border rounded-[3px] flex items-center justify-center transition-colors ${isSelected ? 'border-primary bg-transparent' : 'border-gray-600 bg-transparent group-hover:border-primary'}`}>
-                      <div className={`w-2.5 h-2.5 bg-primary rounded-[1px] transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
-                    </div>
-                    <span className={`font-medium text-[13px] transition-colors ${isSelected ? 'text-foreground' : 'text-gray-300 group-hover:text-foreground'}`}>{brand}</span>
-                  </button>
-                )
-              })}
-              {brands.length > 6 && (
-                <button className="flex items-center justify-between w-full text-primary text-[13px] font-medium mt-2 pt-2 transition-colors">
-                  View More <ChevronDown className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
+        <div className="flex items-center justify-between mb-6 border-t border-border pt-6">
+          <span className="text-sm font-medium text-foreground">
+            {isLoading ? 'Loading...' : <><span className="text-lg font-bold">{totalDocs.toLocaleString()}</span> products</>}
+          </span>
+          <button type="button" onClick={() => setIsSortOpen(true)} className="flex items-center gap-1 text-sm font-medium text-muted-foreground">
+            Sort by: Popular <ChevronDown className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Right Content */}
-        <div className="flex-1">
-          {/* Product List Header */}
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[13px] font-medium text-primary">
-              {isLoading ? 'Loading...' : `${totalDocs.toLocaleString()} Products found`}
-            </span>
-            <div className="flex items-center gap-1 cursor-pointer group">
-              <span className="text-[13px] text-gray-400">Sort by:</span>
-              <span className="text-[13px] font-medium text-primary">Popular</span>
-              <ChevronDown className="w-4 h-4 text-primary" />
-            </div>
+        {products.length === 0 && !isLoading ? (
+          <div className="py-16 text-center rounded-2xl bg-card border border-border">
+            <p className="text-muted-foreground">No products found matching your filters.</p>
           </div>
-
-          {/* Product Grid */}
-          {products.length === 0 && !isLoading ? (
-            <div className="py-20 text-center rounded border border-border bg-card">
-              <p className="text-gray-500 text-lg">No products found matching your filters.</p>
-              <button
-                onClick={handleClearAll}
-                className="mt-4 inline-block text-xs font-semibold tracking-widest text-[#F5B82A] uppercase border-b border-[#F5B82A] pb-0.5 hover:text-white transition-colors"
-              >
-                Clear Filters
-              </button>
-            </div>
-          ) : (
-            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 transition-opacity duration-300 ${isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-              {products.map((prod: any) => (
-                <div
-                  key={prod.id}
-                  className="flex flex-col p-4 sm:p-6 border border-border rounded-2xl bg-card hover:border-[#F5B82A] hover:-translate-y-1 transition-all duration-300 relative group gap-4 sm:gap-6"
-                >
-                  <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-4 sm:gap-6">
-                    {/* Image Frame */}
-                    <div className="relative flex items-center justify-center w-full bg-[#0e0e0e] rounded-lg aspect-square overflow-hidden">
-                      {/* Badges */}
-                      {(() => {
-                        const isNew = new Date(prod.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
-                        return (
-                          <>
-                            {isNew && (
-                              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#F5B82A] text-black px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
-                                NEW
-                              </span>
-                            )}
-                            {prod.limitedEdition && (
-                              <span className="absolute top-3 right-3 sm:top-4 sm:right-4 border border-[#F5B82A]/40 text-[#F5B82A] px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
-                                LIMITED EDITION
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()}
-                      {(() => {
-                        const typedProd = prod as Product;
-                        const imageUrl = getImageUrl(typedProd.image as Media | number);
-                        return (
-                          <Image
-                            src={imageUrl}
-                            alt={prod.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        );
-                      })()}
+        ) : (
+          <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 transition-opacity ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+            {products.map((prod) => (
+              <div key={prod.id} className="flex flex-col bg-card rounded-2xl overflow-hidden border border-border group">
+                <Link href={`/product/${prod.slug}`} className="flex flex-col h-full">
+                  <div className="relative w-full aspect-square bg-background flex items-center justify-center p-3 sm:p-4">
+                    <button type="button" className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-card/80 backdrop-blur flex items-center justify-center" aria-label="Save product">
+                      <Heart className="w-4 h-4 text-foreground" />
+                    </button>
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={getImageUrl(getProductMainImage(prod))}
+                        alt={prod.title}
+                        fill
+                        className="object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
                     </div>
-
-                    {/* Product Info Section */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-1 text-[12px] font-bold text-[#F5B82A] uppercase tracking-[0.15em]">
-                          {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
-                          {typeof prod.brand === 'object' && prod.brand !== null && (prod.brand as Brand).verified && (
-                            <BadgeCheck className="w-3.5 h-3.5 text-[#F5B82A]" />
-                          )}
-                        </div>
-                      </div>
-                      
-                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight">
-                        {prod.title}
-                      </h3>
-                      
-                      <p className="text-xs sm:text-sm text-gray-400 mt-1 sm:mt-2 line-clamp-3">
-                        {prod.shortDescription}
-                      </p>
-
-                      {/* Specifications Row */}
-                      {prod.specifications && prod.specifications.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 text-[10px] sm:text-[11px] text-gray-400 font-medium">
-                          {prod.specifications.slice(0, 3).map((spec: any, idx: number) => (
-                            <div key={idx} className="flex items-center gap-1.5">
-                              <span className="w-1 h-1 rounded-full bg-[#F5B82A]" />
-                              {spec.value}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-
-                  {/* Actions */}
-                  <div className="mt-auto pt-2 flex gap-3">
-                    <AddToCartButton product={prod as Product} />
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+
+                  <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                      {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
+                    </span>
+                    <h3 className="text-sm font-medium text-foreground leading-snug line-clamp-2 mb-2 flex-grow">
+                      {prod.title}
+                    </h3>
+                    <div className="flex items-center gap-1 mb-3">
+                      <Star className="w-3 h-3 fill-primary text-primary" />
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        {(prod as Product & { stats?: { averageRating?: number } }).stats?.averageRating?.toFixed(1) ?? '—'}
+                      </span>
+                    </div>
+                    <AddToCartButton product={prod} />
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 md:hidden">
+        <button
+          type="button"
+          onClick={() => setIsFilterOpen(true)}
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full shadow-lg font-medium text-sm"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          Filters {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
+        </button>
+      </div>
+
+      <FilterSheet
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        categories={categories}
+        brands={brands}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        selectedBrands={selectedBrands}
+        toggleBrand={toggleBrand}
+        handleClearAll={handleClearAll}
+        totalDocs={totalDocs}
+      />
+
+      <SortSheet isOpen={isSortOpen} onClose={() => setIsSortOpen(false)} />
     </>
   )
 }

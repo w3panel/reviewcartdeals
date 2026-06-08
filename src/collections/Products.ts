@@ -72,20 +72,33 @@ export const Products: CollectionConfig = {
       required: true,
     },
     {
-      name: 'shortDescription',
+      name: 'description',
       type: 'textarea',
       required: true,
+      admin: {
+        description: 'Product description shown on listings and the product page.',
+      },
     },
     {
-      name: 'fullDescription',
-      type: 'textarea',
-      required: true,
-    },
-    {
-      name: 'image',
-      type: 'relationship',
-      relationTo: 'media',
-      // Single image, optional
+      name: 'gallery',
+      type: 'array',
+      labels: {
+        singular: 'Gallery',
+        plural: 'Gallery',
+      },
+      admin: {
+        description: 'Add as many product images as needed. The first image is used as the listing thumbnail.',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'image',
+          label: 'Image',
+          type: 'relationship',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
     },
     {
       name: 'category',
@@ -106,14 +119,23 @@ export const Products: CollectionConfig = {
     {
       name: 'specifications',
       type: 'array',
+      labels: {
+        singular: 'Specification',
+        plural: 'Specifications',
+      },
+      admin: {
+        description: 'Add as many specification rows as needed. Each row is a name/value pair.',
+      },
       fields: [
         {
           name: 'key',
+          label: 'Name',
           type: 'text',
           required: true,
         },
         {
           name: 'value',
+          label: 'Value',
           type: 'text',
           required: true,
         },
