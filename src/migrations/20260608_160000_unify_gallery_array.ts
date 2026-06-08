@@ -22,7 +22,10 @@ async function indexExists(db: MigrateUpArgs['db'], name: string): Promise<boole
 }
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
-  if (await tableExists(db, 'products_gallery') && !(await productsHasColumn(db, 'main_image_id'))) {
+  if (
+    (await tableExists(db, 'products_gallery')) &&
+    !(await productsHasColumn(db, 'main_image_id'))
+  ) {
     return
   }
 
@@ -37,9 +40,15 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   	FOREIGN KEY (\`_parent_id\`) REFERENCES \`products\`(\`id\`) ON UPDATE no action ON DELETE cascade,
   	FOREIGN KEY (\`image_id\`) REFERENCES \`media\`(\`id\`) ON UPDATE no action ON DELETE set null
   );`)
-    await db.run(sql`CREATE INDEX \`products_gallery_order_idx\` ON \`products_gallery\` (\`_order\`);`)
-    await db.run(sql`CREATE INDEX \`products_gallery_parent_id_idx\` ON \`products_gallery\` (\`_parent_id\`);`)
-    await db.run(sql`CREATE INDEX \`products_gallery_image_idx\` ON \`products_gallery\` (\`image_id\`);`)
+    await db.run(
+      sql`CREATE INDEX \`products_gallery_order_idx\` ON \`products_gallery\` (\`_order\`);`,
+    )
+    await db.run(
+      sql`CREATE INDEX \`products_gallery_parent_id_idx\` ON \`products_gallery\` (\`_parent_id\`);`,
+    )
+    await db.run(
+      sql`CREATE INDEX \`products_gallery_image_idx\` ON \`products_gallery\` (\`image_id\`);`,
+    )
 
     const products = await db.all<{ id: number; main_image_id: number | null }>(
       sql`SELECT id, main_image_id FROM products`,
@@ -98,7 +107,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   	FOREIGN KEY (\`brand_id\`) REFERENCES \`brands\`(\`id\`) ON UPDATE no action ON DELETE set null,
   	FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON UPDATE no action ON DELETE set null
   );`)
-  await db.run(sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "description", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", "description", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`)
+  await db.run(
+    sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "description", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", "description", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`,
+  )
   await swapProductsTable(db)
 
   if (!(await indexExists(db, 'products_slug_idx'))) {

@@ -12,12 +12,16 @@ export async function Footer() {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3 text-center md:text-left">
             <div className="flex flex-col items-center md:items-start gap-2">
               <Award className="h-6 w-6 text-primary" />
-              <h4 className="text-sm font-semibold tracking-wider text-foreground">Curated Luxury</h4>
+              <h4 className="text-sm font-semibold tracking-wider text-foreground">
+                Curated Luxury
+              </h4>
               <p className="text-xs">Premium watches, leather goods, and designer accessories.</p>
             </div>
             <div className="flex flex-col items-center md:items-start gap-2">
               <Shield className="h-6 w-6 text-primary" />
-              <h4 className="text-sm font-semibold tracking-wider text-foreground">Secure Inquiry</h4>
+              <h4 className="text-sm font-semibold tracking-wider text-foreground">
+                Secure Inquiry
+              </h4>
               <p className="text-xs">Discuss details and delivery privately on WhatsApp.</p>
             </div>
             <div className="flex flex-col items-center md:items-start gap-2">
@@ -36,8 +40,8 @@ export async function Footer() {
               Review<span className="gold-text-gradient">Cart</span>Deals
             </span>
             <p className="mt-4 text-sm max-w-md leading-relaxed">
-              Discover a curated catalog of exquisite timepieces, designer bags, and premium accessories.
-              Connect directly with our team on WhatsApp for personal assistance.
+              Discover a curated catalog of exquisite timepieces, designer bags, and premium
+              accessories. Connect directly with our team on WhatsApp for personal assistance.
             </p>
           </div>
 
@@ -46,8 +50,16 @@ export async function Footer() {
               Platform
             </h5>
             <ul className="mt-4 space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-primary transition-colors">Home</Link></li>
-              <li><Link href="/search" className="hover:text-primary transition-colors">Browse Catalog</Link></li>
+              <li>
+                <Link href="/" className="hover:text-primary transition-colors">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link href="/search" className="hover:text-primary transition-colors">
+                  Browse Catalog
+                </Link>
+              </li>
               <li>
                 <a
                   href={`https://wa.me/${whatsappNumber}`}

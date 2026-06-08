@@ -65,7 +65,9 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <Suspense fallback={<div className="py-20 text-center text-gray-500">Loading products...</div>}>
+        <Suspense
+          fallback={<div className="py-20 text-center text-gray-500">Loading products...</div>}
+        >
           <CategoryProducts slug={slug} searchParams={searchParams} />
         </Suspense>
       </section>

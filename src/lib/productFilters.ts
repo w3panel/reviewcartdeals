@@ -55,7 +55,10 @@ export async function buildProductsWhere(
   }
 
   if (brand) {
-    const titles = brand.split(',').map((b) => b.trim()).filter(Boolean)
+    const titles = brand
+      .split(',')
+      .map((b) => b.trim())
+      .filter(Boolean)
     andFilters.push({
       brand: {
         in: await getBrandIdsByTitles(titles, payload),

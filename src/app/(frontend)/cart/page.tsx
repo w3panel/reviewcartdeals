@@ -20,11 +20,13 @@ export default function CartPage() {
     e.preventDefault()
     // Here you would typically send the data to an API
     // For now, we can format a WhatsApp message as an example, or just clear and show success
-    const productList = cartItems.map((item) => `- ${item.product.title} (Qty: ${item.quantity})`).join('\n')
+    const productList = cartItems
+      .map((item) => `- ${item.product.title} (Qty: ${item.quantity})`)
+      .join('\n')
     const waText = encodeURIComponent(
-      `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`
+      `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`,
     )
-    
+
     // Open whatsapp
     const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
     window.open(`https://wa.me/${whatsappNumber}?text=${waText}`, '_blank')
@@ -39,7 +41,8 @@ export default function CartPage() {
         </div>
         <h1 className="text-2xl font-sans font-bold text-primary mb-2">Your Enquiry is Empty</h1>
         <p className="text-muted-foreground text-center mb-8 max-w-sm text-sm">
-          Browse our exclusive collections and add items you&apos;re interested in to send us an enquiry.
+          Browse our exclusive collections and add items you&apos;re interested in to send us an
+          enquiry.
         </p>
         <Link
           href="/"
@@ -110,9 +113,15 @@ export default function CartPage() {
         {/* Enquiry Form */}
         <section>
           <h2 className="text-sm font-medium text-primary mb-4 px-1">Client Details</h2>
-          <form onSubmit={handleSubmit} className="bg-card rounded-3xl p-6 shadow-lg border border-primary/20 space-y-5">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-card rounded-3xl p-6 shadow-lg border border-primary/20 space-y-5"
+          >
             <div>
-              <label htmlFor="name" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label
+                htmlFor="name"
+                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+              >
                 Full Name *
               </label>
               <input
@@ -126,9 +135,12 @@ export default function CartPage() {
                 placeholder="John Doe"
               />
             </div>
-            
+
             <div>
-              <label htmlFor="phone" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label
+                htmlFor="phone"
+                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+              >
                 Phone Number *
               </label>
               <input
@@ -144,7 +156,10 @@ export default function CartPage() {
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+              <label
+                htmlFor="message"
+                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+              >
                 Additional Message
               </label>
               <textarea

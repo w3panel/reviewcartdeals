@@ -10,9 +10,19 @@ export function BottomNav() {
 
   const navItems = [
     { label: 'Home', href: '/', icon: Home, match: (p: string) => p === '/' },
-    { label: 'Browse', href: '/search', icon: LayoutGrid, match: (p: string) => p.startsWith('/search') || p.startsWith('/category') },
+    {
+      label: 'Browse',
+      href: '/search',
+      icon: LayoutGrid,
+      match: (p: string) => p.startsWith('/search') || p.startsWith('/category'),
+    },
     { label: 'Saved', href: '/liked', icon: Heart, match: (p: string) => p.startsWith('/liked') },
-    { label: 'Enquiry', href: '/cart', icon: ShoppingCart, match: (p: string) => p.startsWith('/cart') },
+    {
+      label: 'Enquiry',
+      href: '/cart',
+      icon: ShoppingCart,
+      match: (p: string) => p.startsWith('/cart'),
+    },
   ]
 
   return (

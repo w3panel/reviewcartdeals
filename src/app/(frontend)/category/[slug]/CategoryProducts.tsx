@@ -32,7 +32,10 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
 
   return (
     <>
-      <form method="GET" className="flex flex-col md:flex-row gap-4 items-center justify-between border-b border-border pb-8 mb-8">
+      <form
+        method="GET"
+        className="flex flex-col md:flex-row gap-4 items-center justify-between border-b border-border pb-8 mb-8"
+      >
         <div className="relative w-full md:max-w-md">
           <input
             type="text"
@@ -87,12 +90,16 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                   key={prod.id}
                   className="flex flex-col p-4 sm:p-6 border border-border rounded-2xl bg-card hover:border-primary transition-all duration-300 relative group gap-4 sm:gap-6"
                 >
-                  <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-4 sm:gap-6">
+                  <Link
+                    href={`/product/${prod.slug}`}
+                    className="flex flex-col flex-grow gap-4 sm:gap-6"
+                  >
                     {/* Image Frame */}
                     <div className="relative flex items-center justify-center w-full bg-background rounded-lg aspect-square overflow-hidden">
                       {/* Badges */}
                       {(() => {
-                        const isNew = new Date(prod.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000;
+                        const isNew =
+                          new Date(prod.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
                         return (
                           <>
                             {isNew && (
@@ -106,7 +113,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                               </span>
                             )}
                           </>
-                        );
+                        )
                       })()}
                       <Image
                         src={imageUrl}
@@ -120,17 +127,21 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-1 text-[12px] font-bold text-primary uppercase tracking-[0.15em]">
-                          {typeof prod.brand === 'object' && prod.brand !== null ? (prod.brand as Brand).title : String(prod.brand)}
-                          {typeof prod.brand === 'object' && prod.brand !== null && (prod.brand as Brand).verified && (
-                            <BadgeCheck className="w-3.5 h-3.5 text-primary" />
-                          )}
+                          {typeof prod.brand === 'object' && prod.brand !== null
+                            ? (prod.brand as Brand).title
+                            : String(prod.brand)}
+                          {typeof prod.brand === 'object' &&
+                            prod.brand !== null &&
+                            (prod.brand as Brand).verified && (
+                              <BadgeCheck className="w-3.5 h-3.5 text-primary" />
+                            )}
                         </div>
                       </div>
-                      
+
                       <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight">
                         {prod.title}
                       </h3>
-                      
+
                       <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-3">
                         {prod.description}
                       </p>
@@ -138,12 +149,19 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                       {/* Specifications Row */}
                       {prod.specifications && prod.specifications.length > 0 && (
                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 text-[10px] sm:text-[11px] text-gray-400 font-medium">
-                          {prod.specifications.slice(0, 3).map((spec: { key: string; value: string; id?: string | null }, idx: number) => (
-                            <div key={spec.id ?? idx} className="flex items-center gap-1.5">
-                                <span className="w-1 h-1 rounded-full bg-primary" />
-                              {spec.value}
-                            </div>
-                          ))}
+                          {prod.specifications
+                            .slice(0, 3)
+                            .map(
+                              (
+                                spec: { key: string; value: string; id?: string | null },
+                                idx: number,
+                              ) => (
+                                <div key={spec.id ?? idx} className="flex items-center gap-1.5">
+                                  <span className="w-1 h-1 rounded-full bg-primary" />
+                                  {spec.value}
+                                </div>
+                              ),
+                            )}
                         </div>
                       )}
                     </div>

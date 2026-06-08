@@ -20,9 +20,16 @@ interface FilterSheetProps {
 }
 
 export function FilterSheet({
-  isOpen, onClose, categories, brands,
-  selectedCategory, setSelectedCategory,
-  selectedBrands, toggleBrand, handleClearAll, totalDocs,
+  isOpen,
+  onClose,
+  categories,
+  brands,
+  selectedCategory,
+  setSelectedCategory,
+  selectedBrands,
+  toggleBrand,
+  handleClearAll,
+  totalDocs,
 }: FilterSheetProps) {
   if (!isOpen) return null
 
@@ -38,7 +45,11 @@ export function FilterSheet({
             </button>
             <h2 className="text-xl font-bold text-foreground">Filters</h2>
           </div>
-          <button type="button" onClick={handleClearAll} className="text-sm font-medium text-primary">
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="text-sm font-medium text-primary"
+          >
             Reset
           </button>
         </div>
@@ -53,15 +64,26 @@ export function FilterSheet({
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => setSelectedCategory(selectedCategory === cat.slug ? null : cat.slug!)}
+                  onClick={() =>
+                    setSelectedCategory(selectedCategory === cat.slug ? null : cat.slug!)
+                  }
                   className="flex flex-col items-center gap-2 flex-shrink-0"
                 >
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors overflow-hidden ${
-                    selectedCategory === cat.slug ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'
-                  }`}>
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors overflow-hidden ${
+                      selectedCategory === cat.slug
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-foreground'
+                    }`}
+                  >
                     {cat.image ? (
                       <div className="w-full h-full relative">
-                        <Image src={getImageUrl(cat.image)} alt={cat.title} fill className="object-cover" />
+                        <Image
+                          src={getImageUrl(cat.image)}
+                          alt={cat.title}
+                          fill
+                          className="object-cover"
+                        />
                       </div>
                     ) : (
                       <span className="text-xl font-bold">{cat.title.charAt(0)}</span>
@@ -75,7 +97,9 @@ export function FilterSheet({
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Brand</h3>
+              <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+                Brand
+              </h3>
               <Search className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="space-y-4">
@@ -88,12 +112,24 @@ export function FilterSheet({
                     onClick={() => toggleBrand(brand)}
                     className="flex items-center gap-3 w-full"
                   >
-                    <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${
-                      isSelected ? 'bg-primary border-primary' : 'border-border bg-transparent'
-                    }`}>
+                    <div
+                      className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${
+                        isSelected ? 'bg-primary border-primary' : 'border-border bg-transparent'
+                      }`}
+                    >
                       {isSelected && (
-                        <svg className="w-3.5 h-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-3.5 h-3.5 text-primary-foreground"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       )}
                     </div>

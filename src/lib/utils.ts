@@ -18,7 +18,9 @@ function isMediaObject(value: unknown): value is Media {
 }
 
 /** Extract a media reference from a gallery array row (supports current and legacy shapes). */
-function getMediaFromGalleryRow(row: GalleryRow | Media | null | undefined): number | Media | null | undefined {
+function getMediaFromGalleryRow(
+  row: GalleryRow | Media | null | undefined,
+): number | Media | null | undefined {
   if (!row || typeof row !== 'object') return undefined
 
   // Current shape: { image: Media | number }
@@ -44,7 +46,5 @@ export function getProductMainImage(product: Product): number | Media | null | u
 export function buildProductGalleryImages(product: Product): Media[] {
   if (!product.gallery?.length) return []
 
-  return product.gallery
-    .map((row) => getMediaFromGalleryRow(row))
-    .filter(isMediaObject)
+  return product.gallery.map((row) => getMediaFromGalleryRow(row)).filter(isMediaObject)
 }

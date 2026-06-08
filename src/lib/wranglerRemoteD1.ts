@@ -121,7 +121,10 @@ class WranglerRemoteD1Database {
   constructor(private readonly environment?: string) {}
 
   prepare(query: string): D1PreparedStatement {
-    return new WranglerRemotePreparedStatement(query, this.environment) as unknown as D1PreparedStatement
+    return new WranglerRemotePreparedStatement(
+      query,
+      this.environment,
+    ) as unknown as D1PreparedStatement
   }
 
   async batch<T = unknown>(statements: D1PreparedStatement[]): Promise<D1Result<T>[]> {

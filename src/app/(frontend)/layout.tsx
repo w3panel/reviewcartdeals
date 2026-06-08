@@ -11,7 +11,8 @@ import { BottomNav } from '@/components/BottomNav'
 
 export const metadata = {
   title: 'ReviewCartDeals | Premium Luxury Showcase & Concierge',
-  description: 'Browse our curated collection of luxury watches, designer sunglasses, fine leather goods, and premium accessories. Inquire directly on WhatsApp.',
+  description:
+    'Browse our curated collection of luxury watches, designer sunglasses, fine leather goods, and premium accessories. Inquire directly on WhatsApp.',
 }
 
 export default async function RootLayout(props: { children: React.ReactNode }) {

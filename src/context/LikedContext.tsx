@@ -61,7 +61,9 @@ export function LikedProvider({ children }: { children: React.ReactNode }) {
   const likedCount = likedItems.length
 
   return (
-    <LikedContext.Provider value={{ likedItems, toggleLike, removeLike, isLiked, clearLiked, likedCount }}>
+    <LikedContext.Provider
+      value={{ likedItems, toggleLike, removeLike, isLiked, clearLiked, likedCount }}
+    >
       {children}
     </LikedContext.Provider>
   )

@@ -16,6 +16,10 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
   	\`stock\` numeric DEFAULT 0,
   	FOREIGN KEY (\`_parent_id\`) REFERENCES \`products\`(\`id\`) ON UPDATE no action ON DELETE cascade
   );`)
-  await db.run(sql`CREATE INDEX \`products_variants_order_idx\` ON \`products_variants\` (\`_order\`);`)
-  await db.run(sql`CREATE INDEX \`products_variants_parent_id_idx\` ON \`products_variants\` (\`_parent_id\`);`)
+  await db.run(
+    sql`CREATE INDEX \`products_variants_order_idx\` ON \`products_variants\` (\`_order\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`products_variants_parent_id_idx\` ON \`products_variants\` (\`_parent_id\`);`,
+  )
 }

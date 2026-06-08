@@ -1,13 +1,13 @@
-import * as migration_20250929_111647 from './20250929_111647';
-import * as migration_20260605_040917 from './20260605_040917';
-import * as migration_20260605_050544_reviews_collection from './20260605_050544_reviews_collection';
-import * as migration_20260605_054001_brands_verified from './20260605_054001_brands_verified';
-import * as migration_20260606_120000_convert_full_description_to_text from './20260606_120000_convert_full_description_to_text';
-import * as migration_20260608_052058 from './20260608_052058';
-import * as migration_20260608_120000_remove_variants from './20260608_120000_remove_variants';
-import * as migration_20260608_140000_merge_product_description from './20260608_140000_merge_product_description';
-import * as migration_20260608_150000_remove_extra_gallery from './20260608_150000_remove_extra_gallery';
-import * as migration_20260608_160000_unify_gallery_array from './20260608_160000_unify_gallery_array';
+import * as migration_20250929_111647 from './20250929_111647'
+import * as migration_20260605_040917 from './20260605_040917'
+import * as migration_20260605_050544_reviews_collection from './20260605_050544_reviews_collection'
+import * as migration_20260605_054001_brands_verified from './20260605_054001_brands_verified'
+import * as migration_20260606_120000_convert_full_description_to_text from './20260606_120000_convert_full_description_to_text'
+import * as migration_20260608_052058 from './20260608_052058'
+import * as migration_20260608_120000_remove_variants from './20260608_120000_remove_variants'
+import * as migration_20260608_140000_merge_product_description from './20260608_140000_merge_product_description'
+import * as migration_20260608_150000_remove_extra_gallery from './20260608_150000_remove_extra_gallery'
+import * as migration_20260608_160000_unify_gallery_array from './20260608_160000_unify_gallery_array'
 
 export const migrations = [
   {
@@ -60,4 +60,4 @@ export const migrations = [
     down: migration_20260608_160000_unify_gallery_array.down,
     name: '20260608_160000_unify_gallery_array',
   },
-];
+]

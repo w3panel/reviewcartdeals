@@ -17,9 +17,13 @@ export async function Header() {
           <MobileMenu categories={categories} />
 
           <nav className="hidden md:flex ml-8 space-x-8 text-sm font-medium text-foreground">
-            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+            <Link href="/" className="hover:text-primary transition-colors">
+              Home
+            </Link>
             <div className="relative group flex items-center">
-              <span className="cursor-pointer hover:text-primary transition-colors">Categories</span>
+              <span className="cursor-pointer hover:text-primary transition-colors">
+                Categories
+              </span>
               <div className="absolute left-0 top-full mt-2 hidden w-56 rounded-xl border border-border bg-card p-2 shadow-xl group-hover:block z-50">
                 {categories.map((cat: Category) => (
                   <Link
@@ -32,7 +36,9 @@ export async function Header() {
                 ))}
               </div>
             </div>
-            <Link href="/search" className="hover:text-primary transition-colors">Browse</Link>
+            <Link href="/search" className="hover:text-primary transition-colors">
+              Browse
+            </Link>
           </nav>
         </div>
 

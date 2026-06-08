@@ -35,7 +35,11 @@ export async function getProductBySlug(slug: string) {
   return response.docs[0] || null
 }
 
-export async function getRelatedProducts(productId: string | number, categoryId: string | number, limit = 4) {
+export async function getRelatedProducts(
+  productId: string | number,
+  categoryId: string | number,
+  limit = 4,
+) {
   const payload = await getPayloadClient()
 
   const response = await payload.find({

@@ -1,22 +1,22 @@
-"use client";
+'use client'
 // src/components/MobileMenu.tsx
 // Premium responsive mobile navigation menu for ReviewCartDeals
 // This component matches the dark‑gold aesthetic used throughout the site.
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
-import type { Category } from '@/payload-types';
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
+import type { Category } from '@/payload-types'
 
 interface MobileMenuProps {
   /** Array of categories fetched from the Payload CMS */
-  categories: Category[];
+  categories: Category[]
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ categories }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
-  const toggleMenu = () => setOpen(!open);
+  const toggleMenu = () => setOpen(!open)
 
   return (
     <div className="relative md:hidden">
@@ -40,9 +40,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ categories }) => {
         <div className="flex h-full flex-col p-6">
           {/* Close button at top */}
           <div className="flex justify-between items-center w-full mb-8">
-            <span className="font-sans text-xl font-bold tracking-tight text-foreground">
-              Menu
-            </span>
+            <span className="font-sans text-xl font-bold tracking-tight text-foreground">Menu</span>
             <button
               onClick={toggleMenu}
               aria-label="Close menu"
@@ -75,7 +73,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ categories }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MobileMenu;
+export default MobileMenu

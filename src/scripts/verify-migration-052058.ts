@@ -98,7 +98,10 @@ function createD1LikeDb() {
       const text = compileSql(query)
       if (text.includes('ALTER TABLE `products` RENAME TO `__products_swap_old`')) {
         const conn = getShared()
-        for (const part of text.split(';').map((s) => s.trim()).filter(Boolean)) {
+        for (const part of text
+          .split(';')
+          .map((s) => s.trim())
+          .filter(Boolean)) {
           conn.run(part)
         }
         return
@@ -121,19 +124,26 @@ async function main() {
   const columns = sqlite.query('PRAGMA table_info(products)').all() as { name: string }[]
   const names = columns.map((c) => c.name)
 
-  if (!names.includes('main_image_id')) throw new Error('main_image_id column missing after migration')
-  if (!names.includes('limited_edition')) throw new Error('limited_edition column missing after migration')
+  if (!names.includes('main_image_id'))
+    throw new Error('main_image_id column missing after migration')
+  if (!names.includes('limited_edition'))
+    throw new Error('limited_edition column missing after migration')
   if (names.includes('image_id')) throw new Error('legacy image_id column should be removed')
 
-  const row = sqlite.query('SELECT main_image_id, limited_edition FROM products WHERE id = 1').get() as {
+  const row = sqlite
+    .query('SELECT main_image_id, limited_edition FROM products WHERE id = 1')
+    .get() as {
     main_image_id: number
     limited_edition: number
   }
 
   if (row.main_image_id !== 5) throw new Error(`expected main_image_id=5, got ${row.main_image_id}`)
-  if (row.limited_edition !== 0) throw new Error(`expected limited_edition=0, got ${row.limited_edition}`)
+  if (row.limited_edition !== 0)
+    throw new Error(`expected limited_edition=0, got ${row.limited_edition}`)
 
-  const relCount = sqlite.query('SELECT COUNT(*) AS c FROM products_rels WHERE parent_id = 1').get() as { c: number }
+  const relCount = sqlite
+    .query('SELECT COUNT(*) AS c FROM products_rels WHERE parent_id = 1')
+    .get() as { c: number }
   if (relCount.c !== 1) throw new Error('products_rels row lost after table swap')
 
   console.log('verify-migration-052058: OK (D1-like FK isolation)')

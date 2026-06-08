@@ -14,7 +14,10 @@ async function indexExists(db: MigrateUpArgs['db'], name: string): Promise<boole
 }
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
-  if ((await productsHasColumn(db, 'description')) && !(await productsHasColumn(db, 'short_description'))) {
+  if (
+    (await productsHasColumn(db, 'description')) &&
+    !(await productsHasColumn(db, 'short_description'))
+  ) {
     return
   }
 
@@ -53,7 +56,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   	FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON UPDATE no action ON DELETE set null,
   	FOREIGN KEY (\`main_image_id\`) REFERENCES \`media\`(\`id\`) ON UPDATE no action ON DELETE set null
   );`)
-  await db.run(sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", COALESCE("description", ''), "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`)
+  await db.run(
+    sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", COALESCE("description", ''), "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`,
+  )
   await swapProductsTable(db)
 
   if (!(await indexExists(db, 'products_slug_idx'))) {
@@ -97,7 +102,9 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
   	FOREIGN KEY (\`category_id\`) REFERENCES \`categories\`(\`id\`) ON UPDATE no action ON DELETE set null,
   	FOREIGN KEY (\`main_image_id\`) REFERENCES \`media\`(\`id\`) ON UPDATE no action ON DELETE set null
   );`)
-  await db.run(sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "short_description", "full_description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", substr("description", 1, 200), "description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`)
+  await db.run(
+    sql`INSERT INTO \`__new_products\`("id", "title", "slug", "brand_id", "category_id", "short_description", "full_description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at") SELECT "id", "title", "slug", "brand_id", "category_id", substr("description", 1, 200), "description", "main_image_id", "featured", "limited_edition", "seo_title", "seo_description", "updated_at", "created_at" FROM \`products\`;`,
+  )
   await db.run(sql`DROP TABLE \`products\`;`)
   await db.run(sql`ALTER TABLE \`__new_products\` RENAME TO \`products\`;`)
   await db.run(sql`PRAGMA foreign_keys=ON;`)

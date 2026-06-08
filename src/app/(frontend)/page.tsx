@@ -34,7 +34,9 @@ export default async function HomePage() {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center bg-background">
         <h2 className="text-2xl sm:text-3xl font-bold text-primary">No products yet</h2>
-        <p className="mt-4 text-sm text-muted-foreground">Add categories and products in the admin panel.</p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Add categories and products in the admin panel.
+        </p>
       </div>
     )
   }
@@ -43,9 +45,14 @@ export default async function HomePage() {
     <div className="w-full bg-background pb-8 text-foreground min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="px-4 pt-4 md:pt-6 max-w-4xl mx-auto">
-          <Link href="/search" className="relative flex items-center w-full px-4 sm:px-5 py-3 border rounded-full bg-card border-primary shadow-sm">
+          <Link
+            href="/search"
+            className="relative flex items-center w-full px-4 sm:px-5 py-3 border rounded-full bg-card border-primary shadow-sm"
+          >
             <Search className="w-5 h-5 text-primary mr-3" strokeWidth={2.5} />
-            <span className="text-[13px] text-muted-foreground font-medium">Search products, brands & categories...</span>
+            <span className="text-[13px] text-muted-foreground font-medium">
+              Search products, brands & categories...
+            </span>
             <ScanLine className="w-5 h-5 text-primary ml-auto" />
           </Link>
         </div>

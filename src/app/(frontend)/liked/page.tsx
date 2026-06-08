@@ -47,7 +47,10 @@ export default function LikedPage() {
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {likedItems.map((prod) => (
-            <div key={prod.id} className="group relative flex flex-col rounded-2xl border border-border bg-card p-3 sm:p-4">
+            <div
+              key={prod.id}
+              className="group relative flex flex-col rounded-2xl border border-border bg-card p-3 sm:p-4"
+            >
               <button
                 type="button"
                 onClick={() => removeLike(prod.id)}
@@ -70,7 +73,9 @@ export default function LikedPage() {
                     ? (prod.brand as Brand).title
                     : String(prod.brand)}
                 </p>
-                <h4 className="mt-1 text-sm font-medium text-foreground line-clamp-2">{prod.title}</h4>
+                <h4 className="mt-1 text-sm font-medium text-foreground line-clamp-2">
+                  {prod.title}
+                </h4>
               </Link>
               <div className="mt-3 pt-3 border-t border-border">
                 <AddToCartButton product={prod} />

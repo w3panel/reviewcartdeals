@@ -14,7 +14,8 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // D1/SQLite cannot handle concurrent connections during `next build`
+    // D1/SQLite cannot handle concurrent workerd instances during `next build`
+    cpus: 1,
     staticGenerationMaxConcurrency: 1,
     // Tree-shake barrel imports — https://payloadcms.com/docs/performance/overview
     optimizePackageImports: ['lucide-react'],

@@ -20,7 +20,11 @@ export default async function SearchPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 lg:px-8">
-        <Suspense fallback={<div className="py-20 text-center text-muted-foreground">Loading catalog...</div>}>
+        <Suspense
+          fallback={
+            <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
+          }
+        >
           <SearchCatalog categories={categories} brands={brands} />
         </Suspense>
       </section>

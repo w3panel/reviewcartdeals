@@ -91,7 +91,8 @@ export const Products: CollectionConfig = {
         plural: 'Gallery',
       },
       admin: {
-        description: 'Add as many product images as needed. The first image is used as the listing thumbnail.',
+        description:
+          'Add as many product images as needed. The first image is used as the listing thumbnail.',
         initCollapsed: false,
       },
       fields: [

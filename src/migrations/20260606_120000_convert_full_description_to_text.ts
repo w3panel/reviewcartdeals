@@ -19,9 +19,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       continue
     }
 
-    await db.run(
-      sql`UPDATE products SET full_description = ${plainText} WHERE id = ${row.id}`,
-    )
+    await db.run(sql`UPDATE products SET full_description = ${plainText} WHERE id = ${row.id}`)
   }
 }
 

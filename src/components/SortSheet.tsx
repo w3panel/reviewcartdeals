@@ -26,7 +26,12 @@ export function SortSheet({ isOpen, onClose }: SortSheetProps) {
 
         <div className="flex items-center justify-between px-6 py-4">
           <h2 className="text-xl font-bold text-foreground">Sort By</h2>
-          <button type="button" onClick={onClose} className="p-2 bg-muted rounded-full" aria-label="Close sort">
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 bg-muted rounded-full"
+            aria-label="Close sort"
+          >
             <X className="w-4 h-4 text-foreground" />
           </button>
         </div>

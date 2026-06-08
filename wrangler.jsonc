@@ -35,7 +35,8 @@
   "r2_buckets": [
     {
       "binding": "R2",
-      "bucket_name": "reviewcartdeals","preview_bucket_name": "reviewcartdeals",
+      "bucket_name": "reviewcartdeals",
+      "preview_bucket_name": "reviewcartdeals",
     },
     // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
     // {
