@@ -11,7 +11,7 @@ import { getImageUrl, getProductMainImage, buildProductGalleryImages } from '@/l
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
 import type { Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
-import { ProductGallery } from '@/components/ProductGallery'
+import { ProductDetailGrid } from '@/components/ProductDetailGrid'
 
 const ProductReviews = dynamic(
   () => import('@/components/ProductReviews').then((mod) => ({ default: mod.ProductReviews })),
@@ -91,70 +91,63 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </nav>
 
       <section className="mx-auto max-w-7xl px-4 py-6 sm:py-10 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:gap-12 md:grid-cols-2">
-          <ProductGallery images={galleryImages} title={product.title} />
+        <ProductDetailGrid
+          product={product}
+          defaultGalleryImages={galleryImages}
+          whatsappLink={whatsappLink}
+          beforeActions={
+            <>
+              <span className="text-xs sm:text-sm font-semibold tracking-widest text-primary uppercase">
+                {brandTitle}
+              </span>
+              <h1 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+                {product.title}
+              </h1>
 
-          <div className="flex flex-col">
-            <span className="text-xs sm:text-sm font-semibold tracking-widest text-primary uppercase">
-              {brandTitle}
-            </span>
-            <h1 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-              {product.title}
-            </h1>
+              <div className="my-5 sm:my-6 border-b border-border" />
 
-            <div className="my-5 sm:my-6 border-b border-border" />
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                {product.description}
+              </p>
+            </>
+          }
+          afterActions={
+            <>
+              <p className="mt-6 text-xs text-muted-foreground flex items-center gap-1.5">
+                <Award className="h-4 w-4 text-primary flex-shrink-0" />
+                Concierge assistance for custom specifications and delivery.
+              </p>
 
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-              {product.description}
-            </p>
-
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex flex-1 items-center justify-center gap-2 sm:gap-3 rounded-xl bg-whatsapp px-6 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-white hover:opacity-90 transition-opacity"
-              >
-                <MessageCircle className="h-5 w-5" />
-                Enquire via WhatsApp
-              </a>
-              <AddToCartButton product={product} />
-            </div>
-
-            <p className="mt-3 text-xs text-muted-foreground flex items-center gap-1.5">
-              <Award className="h-4 w-4 text-primary flex-shrink-0" />
-              Concierge assistance for custom specifications and delivery.
-            </p>
-
-            {product.specifications && product.specifications.length > 0 && (
-              <div className="mt-8">
-                <h3 className="flex items-center gap-2 text-sm font-semibold tracking-widest text-foreground uppercase mb-4">
-                  <ListCollapse className="h-4 w-4 text-primary" />
-                  Specifications
-                </h3>
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <table className="w-full text-xs sm:text-sm text-left">
-                    <tbody>
-                      {product.specifications.map((spec, idx) => (
-                        <tr
-                          key={spec.id ?? idx}
-                          className={idx % 2 === 0 ? 'bg-background' : 'bg-card'}
-                        >
-                          <td className="px-4 py-3 font-semibold text-muted-foreground w-1/3 border-b border-border uppercase tracking-wider">
-                            {spec.key}
-                          </td>
-                          <td className="px-4 py-3 text-foreground border-b border-border">
-                            {spec.value}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {product.specifications && product.specifications.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold tracking-widest text-foreground uppercase mb-4">
+                    <ListCollapse className="h-4 w-4 text-primary" />
+                    Specifications
+                  </h3>
+                  <div className="rounded-xl border border-border bg-card overflow-hidden">
+                    <table className="w-full text-xs sm:text-sm text-left">
+                      <tbody>
+                        {product.specifications.map((spec, idx) => (
+                          <tr
+                            key={spec.id ?? idx}
+                            className={idx % 2 === 0 ? 'bg-background' : 'bg-card'}
+                          >
+                            <td className="px-4 py-3 font-semibold text-muted-foreground w-1/3 border-b border-border uppercase tracking-wider">
+                              {spec.key}
+                            </td>
+                            <td className="px-4 py-3 text-foreground border-b border-border">
+                              {spec.value}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </>
+          }
+        />
 
         <ProductReviews reviews={reviews} stats={stats} />
       </section>

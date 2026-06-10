@@ -66,6 +66,7 @@ export async function getRelatedProducts(
       brand: true,
       gallery: true,
       description: true,
+      variants: true,
       category: true,
       updatedAt: true,
       createdAt: true,

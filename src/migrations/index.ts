@@ -8,6 +8,11 @@ import * as migration_20260608_120000_remove_variants from './20260608_120000_re
 import * as migration_20260608_140000_merge_product_description from './20260608_140000_merge_product_description'
 import * as migration_20260608_150000_remove_extra_gallery from './20260608_150000_remove_extra_gallery'
 import * as migration_20260608_160000_unify_gallery_array from './20260608_160000_unify_gallery_array'
+import * as migration_20260610_000000_add_product_variants from './20260610_000000_add_product_variants'
+import * as migration_20260610_010000_variant_gallery from './20260610_010000_variant_gallery'
+import * as migration_20260610_020000_variant_original_price from './20260610_020000_variant_original_price'
+import * as migration_20260610_030000_variant_attributes from './20260610_030000_variant_attributes'
+import * as migration_20260610_040000_remove_variant_title from './20260610_040000_remove_variant_title'
 
 export const migrations = [
   {
@@ -59,5 +64,30 @@ export const migrations = [
     up: migration_20260608_160000_unify_gallery_array.up,
     down: migration_20260608_160000_unify_gallery_array.down,
     name: '20260608_160000_unify_gallery_array',
+  },
+  {
+    up: migration_20260610_000000_add_product_variants.up,
+    down: migration_20260610_000000_add_product_variants.down,
+    name: '20260610_000000_add_product_variants',
+  },
+  {
+    up: migration_20260610_010000_variant_gallery.up,
+    down: migration_20260610_010000_variant_gallery.down,
+    name: '20260610_010000_variant_gallery',
+  },
+  {
+    up: migration_20260610_020000_variant_original_price.up,
+    down: migration_20260610_020000_variant_original_price.down,
+    name: '20260610_020000_variant_original_price',
+  },
+  {
+    up: migration_20260610_030000_variant_attributes.up,
+    down: migration_20260610_030000_variant_attributes.down,
+    name: '20260610_030000_variant_attributes',
+  },
+  {
+    up: migration_20260610_040000_remove_variant_title.up,
+    down: migration_20260610_040000_remove_variant_title.down,
+    name: '20260610_040000_remove_variant_title',
   },
 ]
