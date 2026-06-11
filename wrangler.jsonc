@@ -15,12 +15,14 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  // Keep D1 and the Worker in the same region to minimize query latency.
+  // https://payloadcms.com/docs/performance/overview#database-proximity
   "d1_databases": [
     {
       "binding": "D1",
       "database_id": "05c4c3b9-9c29-48d4-b7dd-39abed73b68e",
       "database_name": "reviewcartdeals",
-      "remote": true,
+      "remote": false,
     },
   ],
   "services": [
@@ -33,7 +35,8 @@
   "r2_buckets": [
     {
       "binding": "R2",
-      "bucket_name": "reviewcartdeals","preview_bucket_name": "reviewcartdeals",
+      "bucket_name": "reviewcartdeals",
+      "preview_bucket_name": "reviewcartdeals",
     },
     // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
     // {

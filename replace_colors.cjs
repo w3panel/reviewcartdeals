@@ -1,10 +1,10 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
 const filePaths = [
   path.join(__dirname, 'src/app/(frontend)/page.tsx'),
   path.join(__dirname, 'src/app/(frontend)/cart/page.tsx'),
-];
+]
 
 const replacements = [
   { search: /bg-\[#0A0A0A\]/g, replace: 'bg-background' },
@@ -29,13 +29,13 @@ const replacements = [
   { search: /text-white/g, replace: 'text-foreground' },
   { search: /text-black/g, replace: 'text-background' },
   { search: /bg-transparent/g, replace: 'bg-transparent' },
-];
+]
 
 filePaths.forEach((filePath) => {
-  let content = fs.readFileSync(filePath, 'utf8');
+  let content = fs.readFileSync(filePath, 'utf8')
   replacements.forEach(({ search, replace }) => {
-    content = content.replace(search, replace);
-  });
-  fs.writeFileSync(filePath, content, 'utf8');
-  console.log(`Updated ${filePath}`);
-});
+    content = content.replace(search, replace)
+  })
+  fs.writeFileSync(filePath, content, 'utf8')
+  console.log(`Updated ${filePath}`)
+})

@@ -12,7 +12,7 @@ interface LikeButtonProps {
 
 export function LikeButton({ product, className = '' }: LikeButtonProps) {
   const { isLiked, toggleLike } = useLiked()
-  
+
   const liked = isLiked(product.id)
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -22,17 +22,17 @@ export function LikeButton({ product, className = '' }: LikeButtonProps) {
   }
 
   return (
-    <button 
+    <button
       onClick={handleToggle}
       className={`relative p-2 rounded-full transition-all group ${className}`}
-      aria-label={liked ? "Remove from liked" : "Add to liked"}
+      aria-label={liked ? 'Remove from liked' : 'Add to liked'}
     >
-      <Heart 
+      <Heart
         className={`w-5 h-5 transition-all ${
-          liked 
-            ? 'fill-primary text-primary scale-110' 
+          liked
+            ? 'fill-primary text-primary scale-110'
             : 'text-primary/70 group-hover:text-primary group-hover:scale-110'
-        }`} 
+        }`}
       />
     </button>
   )

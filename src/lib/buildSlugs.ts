@@ -24,6 +24,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
     collection: 'categories',
     limit: 500,
     depth: 0,
+    pagination: false,
     select: { slug: true },
   })
 
@@ -31,6 +32,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
     collection: 'products',
     limit: 1000,
     depth: 0,
+    pagination: false,
     select: { slug: true },
   })
 
@@ -51,9 +53,7 @@ export async function getBuildSlugs(): Promise<BuildSlugs> {
       return cached
     }
 
-    throw new Error(
-      `Missing ${SLUGS_FILE}. The prebuild script should run before next build.`,
-    )
+    throw new Error(`Missing ${SLUGS_FILE}. The prebuild script should run before next build.`)
   }
 
   return fetchBuildSlugs()

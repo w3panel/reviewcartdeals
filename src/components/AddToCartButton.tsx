@@ -1,25 +1,51 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { ShoppingCart } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { hasVariants, type ProductVariant } from '@/lib/productVariants'
 import type { Product } from '@/payload-types'
 
-export function AddToCartButton({ product }: { product: Product }) {
+type AddToCartButtonProps = {
+  product: Product
+  variant?: ProductVariant | null
+  disabled?: boolean
+}
+
+export function AddToCartButton({
+  product,
+  variant = null,
+  disabled = false,
+}: AddToCartButtonProps) {
   const { addItem } = useCart()
+  const productHasVariants = hasVariants(product)
+
+  if (productHasVariants && !variant) {
+    return (
+      <Link
+        href={`/product/${product.slug}`}
+        className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3 text-xs font-bold text-primary-foreground uppercase tracking-widest bg-primary transition-colors duration-300 rounded-lg hover:bg-primary-hover"
+      >
+        Select Options
+      </Link>
+    )
+  }
 
   const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault() // prevent navigating if inside a link
-    addItem(product)
+    e.preventDefault()
+    addItem(product, variant)
   }
 
   return (
     <button
+      type="button"
       onClick={handleAdd}
-      className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3.5 text-xs font-bold text-black uppercase tracking-widest bg-[#F5B82A] transition-colors duration-300 rounded-lg hover:bg-[#d49e21]"
+      disabled={disabled}
+      className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3 text-xs font-bold text-primary-foreground uppercase tracking-widest bg-primary transition-colors duration-300 rounded-lg hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
     >
       <ShoppingCart className="w-4 h-4" />
-      ADD TO ENQUIRY
+      Add to Enquiry
     </button>
   )
 }

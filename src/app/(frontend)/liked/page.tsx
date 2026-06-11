@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Heart } from 'lucide-react'
 import { useLiked } from '@/context/LikedContext'
-import { getImageUrl } from '@/lib/utils'
+import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import type { Brand } from '@/payload-types'
 
@@ -14,17 +14,17 @@ export default function LikedPage() {
 
   if (likedItems.length === 0) {
     return (
-      <div className="min-h-[70vh] bg-luxury-black flex flex-col items-center justify-center p-6">
-        <div className="w-16 h-16 bg-[#0c0c0c] border border-luxury-gray/40 rounded-full flex items-center justify-center mb-6 shadow-lg">
-          <Heart className="w-8 h-8 text-luxury-gold" />
+      <div className="min-h-[70vh] bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-16 h-16 bg-card border border-border rounded-full flex items-center justify-center mb-6">
+          <Heart className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="font-serif text-2xl font-bold tracking-widest text-white uppercase mb-2">No Liked Pieces</h1>
-        <p className="text-gray-500 text-center mb-8 max-w-sm text-sm">
-          Browse our exclusive collections and tap the heart icon to save pieces you love.
+        <h1 className="text-2xl font-bold text-foreground mb-2">No Saved Items</h1>
+        <p className="text-muted-foreground text-center mb-8 max-w-sm text-sm">
+          Browse our collections and tap the heart icon to save pieces you love.
         </p>
         <Link
           href="/"
-          className="bg-luxury-gold text-luxury-black px-8 py-3.5 rounded font-bold uppercase tracking-wide hover:bg-luxury-gold-hover transition-colors shadow-lg text-xs"
+          className="bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-bold text-sm hover:bg-primary-hover transition-colors"
         >
           Explore Collections
         </Link>
@@ -33,58 +33,55 @@ export default function LikedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-luxury-black pb-24 text-gray-200">
-      <header className="sticky top-0 z-20 bg-luxury-black/90 backdrop-blur-md border-b border-luxury-gray/40 px-4 h-16 flex items-center">
-        <Link href="/" className="p-2 -ml-2 text-luxury-gold hover:text-white transition-colors">
+    <div className="min-h-screen bg-background pb-24 text-foreground">
+      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur border-b border-border px-4 h-14 flex items-center">
+        <Link href="/" className="p-2 -ml-2 text-primary">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="font-serif text-lg font-bold tracking-widest text-white uppercase ml-2">Liked Pieces</h1>
-        <div className="ml-auto bg-luxury-gold text-luxury-black text-[10px] font-bold px-3 py-1.5 rounded uppercase tracking-wider">
-          {likedItems.length} items
+        <h1 className="text-lg font-bold ml-2">Saved Items</h1>
+        <div className="ml-auto bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+          {likedItems.length}
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
-          {likedItems.map((prod) => {
-            const imageUrl = getImageUrl(prod.image)
-            return (
-              <div
-                key={prod.id}
-                className="group relative flex flex-col rounded border border-luxury-gray bg-[#0c0c0c] p-4 hover-gold-glow transition-all duration-300"
+      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {likedItems.map((prod) => (
+            <div
+              key={prod.id}
+              className="group relative flex flex-col rounded-2xl border border-border bg-card p-3 sm:p-4"
+            >
+              <button
+                type="button"
+                onClick={() => removeLike(prod.id)}
+                className="absolute top-2 right-2 z-10 p-2 rounded-full text-primary"
+                aria-label="Remove from saved"
               >
-                <button
-                  onClick={() => removeLike(prod.id)}
-                  className="absolute top-2 right-2 z-10 p-2 rounded-full transition-all text-luxury-gold hover:bg-luxury-gray/40"
-                  aria-label="Remove from liked"
-                >
-                  <Heart className="w-5 h-5 fill-luxury-gold text-luxury-gold" />
-                </button>
-                <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
-                  <div className="relative aspect-square w-full overflow-hidden rounded bg-black flex items-center justify-center">
-                    <Image
-                      src={imageUrl}
-                      alt={prod.title}
-                      width={200}
-                      height={200}
-                      className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  <h3 className="mt-4 font-serif text-xs font-semibold tracking-widest text-luxury-gold uppercase">
-                    {typeof prod.brand === 'object' && prod.brand !== null
-                      ? (prod.brand as Brand).title
-                      : String(prod.brand)}
-                  </h3>
-                  <h4 className="mt-1 text-sm font-medium text-white line-clamp-1 group-hover:text-luxury-gold transition-colors">
-                    {prod.title}
-                  </h4>
-                </Link>
-                <div className="mt-4 border-t border-luxury-gray/40 pt-4 flex flex-col gap-2">
-                   <AddToCartButton product={prod} />
+                <Heart className="w-5 h-5 fill-primary" />
+              </button>
+              <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
+                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-background">
+                  <Image
+                    src={getImageUrl(getProductMainImage(prod))}
+                    alt={prod.title}
+                    fill
+                    className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
+                <p className="mt-3 text-[10px] font-bold text-primary uppercase tracking-wider">
+                  {typeof prod.brand === 'object' && prod.brand !== null
+                    ? (prod.brand as Brand).title
+                    : String(prod.brand)}
+                </p>
+                <h4 className="mt-1 text-sm font-medium text-foreground line-clamp-2">
+                  {prod.title}
+                </h4>
+              </Link>
+              <div className="mt-3 pt-3 border-t border-border">
+                <AddToCartButton product={prod} />
               </div>
-            )
-          })}
+            </div>
+          ))}
         </div>
       </main>
     </div>

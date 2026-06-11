@@ -1,4 +1,3 @@
-
 import type { BasePayload, Where } from 'payload'
 
 export interface CatalogQueryOptions {
@@ -18,8 +17,9 @@ async function getCategoryIdsBySlug(slug: string, payload: BasePayload): Promise
         equals: slug,
       },
     },
-    limit: 100,
+    limit: 1,
     depth: 0,
+    pagination: false,
   })
   return cats.docs.map((c) => String(c.id))
 }
@@ -32,8 +32,9 @@ async function getBrandIdsByTitles(titles: string[], payload: BasePayload): Prom
         in: titles,
       },
     },
-    limit: 100,
+    limit: titles.length,
     depth: 0,
+    pagination: false,
   })
   return brands.docs.map((b) => String(b.id))
 }
@@ -54,7 +55,10 @@ export async function buildProductsWhere(
   }
 
   if (brand) {
-    const titles = brand.split(',').map((b) => b.trim()).filter(Boolean)
+    const titles = brand
+      .split(',')
+      .map((b) => b.trim())
+      .filter(Boolean)
     andFilters.push({
       brand: {
         in: await getBrandIdsByTitles(titles, payload),
@@ -79,7 +83,7 @@ export async function buildProductsWhere(
           },
         },
         {
-          shortDescription: {
+          description: {
             like: search,
           },
         },
@@ -99,7 +103,21 @@ export async function findCatalogProducts(payload: BasePayload, options: Catalog
     where,
     page,
     limit,
-    depth: 1,
+    depth: 2,
     sort: '-createdAt',
+    select: {
+      title: true,
+      slug: true,
+      description: true,
+      brand: true,
+      category: true,
+      gallery: true,
+      featured: true,
+      limitedEdition: true,
+      variants: true,
+      specifications: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   })
 }

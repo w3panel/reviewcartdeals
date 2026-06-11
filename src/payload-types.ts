@@ -218,12 +218,52 @@ export interface Product {
   title: string;
   slug: string;
   brand: number | Brand;
-  shortDescription: string;
-  fullDescription: string;
-  image?: (number | null) | Media;
+  /**
+   * Product description shown on listings and the product page.
+   */
+  description: string;
+  /**
+   * Add as many product images as needed. The first image is used as the listing thumbnail.
+   */
+  gallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   category: number | Category;
   featured?: boolean | null;
   limitedEdition?: boolean | null;
+  /**
+   * Optional product options. Shoppers pick a variant before adding to their enquiry.
+   */
+  variants?:
+    | {
+        /**
+         * Add any attribute-value pairs for this variant, e.g. RAM → 8GB, Storage → 128GB.
+         */
+        attributes?:
+          | {
+              key: string;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Optional images for this variant. When selected, these replace the main product gallery.
+         */
+        gallery?:
+          | {
+              image: number | Media;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Add as many specification rows as needed. Each row is a name/value pair.
+   */
   specifications?:
     | {
         key: string;
@@ -436,12 +476,34 @@ export interface ProductsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   brand?: T;
-  shortDescription?: T;
-  fullDescription?: T;
-  image?: T;
+  description?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   category?: T;
   featured?: T;
   limitedEdition?: T;
+  variants?:
+    | T
+    | {
+        attributes?:
+          | T
+          | {
+              key?: T;
+              value?: T;
+              id?: T;
+            };
+        gallery?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   specifications?:
     | T
     | {

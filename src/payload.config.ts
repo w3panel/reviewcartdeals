@@ -20,14 +20,19 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(value) : undefined)
 
-const isCLI = process.argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')))
+const isCLI = process.argv.some((value) =>
+  realpath(value)?.endsWith(path.join('payload', 'bin.js')),
+)
 const isProduction = process.env.NODE_ENV === 'production'
 const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
 const isLocalWrangler = isCLI || !isProduction || isBuild
-// Remote preview bindings fail on some accounts ("Could not create remote preview
-// session"). Use `wrangler d1 execute --remote` for any local production context
-// (migrations, prebuild, next build SSG).
-const useRemoteD1ViaExec = isProduction && isLocalWrangler
+// Remote D1 via `wrangler d1 execute --remote` is for Cloudflare CI only.
+// Local prebuild uses the local D1 binding from getPlatformProxy (avoids Windows
+// wrangler exec crashes and does not require remote credentials).
+const useRemoteD1ViaExec =
+  isProduction &&
+  isLocalWrangler &&
+  (process.env.CF_PAGES === '1' || process.env.USE_REMOTE_D1 === '1')
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -47,7 +52,7 @@ const cloudflareLogger = {
   error: createLog('error', console.error),
   fatal: createLog('fatal', console.error),
   silent: () => {},
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any // Use PayloadLogger type when it's exported
 
 // Use wrangler during dev, CLI, and `next build`. getCloudflareContext only works

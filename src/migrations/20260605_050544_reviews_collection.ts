@@ -11,7 +11,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   );
   `)
   await db.run(sql`CREATE INDEX \`reviews_images_order_idx\` ON \`reviews_images\` (\`_order\`);`)
-  await db.run(sql`CREATE INDEX \`reviews_images_parent_id_idx\` ON \`reviews_images\` (\`_parent_id\`);`)
+  await db.run(
+    sql`CREATE INDEX \`reviews_images_parent_id_idx\` ON \`reviews_images\` (\`_parent_id\`);`,
+  )
   await db.run(sql`CREATE INDEX \`reviews_images_image_idx\` ON \`reviews_images\` (\`image_id\`);`)
   await db.run(sql`CREATE TABLE \`reviews\` (
   	\`id\` integer PRIMARY KEY NOT NULL,
@@ -28,8 +30,12 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.run(sql`CREATE INDEX \`reviews_product_idx\` ON \`reviews\` (\`product_id\`);`)
   await db.run(sql`CREATE INDEX \`reviews_updated_at_idx\` ON \`reviews\` (\`updated_at\`);`)
   await db.run(sql`CREATE INDEX \`reviews_created_at_idx\` ON \`reviews\` (\`created_at\`);`)
-  await db.run(sql`ALTER TABLE \`payload_locked_documents_rels\` ADD \`reviews_id\` integer REFERENCES reviews(id);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_reviews_id_idx\` ON \`payload_locked_documents_rels\` (\`reviews_id\`);`)
+  await db.run(
+    sql`ALTER TABLE \`payload_locked_documents_rels\` ADD \`reviews_id\` integer REFERENCES reviews(id);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_reviews_id_idx\` ON \`payload_locked_documents_rels\` (\`reviews_id\`);`,
+  )
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
@@ -56,17 +62,39 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
   	FOREIGN KEY (\`products_id\`) REFERENCES \`products\`(\`id\`) ON UPDATE no action ON DELETE cascade
   );
   `)
-  await db.run(sql`INSERT INTO \`__new_payload_locked_documents_rels\`("id", "order", "parent_id", "path", "users_id", "media_id", "categories_id", "brands_id", "tags_id", "products_id") SELECT "id", "order", "parent_id", "path", "users_id", "media_id", "categories_id", "brands_id", "tags_id", "products_id" FROM \`payload_locked_documents_rels\`;`)
+  await db.run(
+    sql`INSERT INTO \`__new_payload_locked_documents_rels\`("id", "order", "parent_id", "path", "users_id", "media_id", "categories_id", "brands_id", "tags_id", "products_id") SELECT "id", "order", "parent_id", "path", "users_id", "media_id", "categories_id", "brands_id", "tags_id", "products_id" FROM \`payload_locked_documents_rels\`;`,
+  )
   await db.run(sql`DROP TABLE \`payload_locked_documents_rels\`;`)
-  await db.run(sql`ALTER TABLE \`__new_payload_locked_documents_rels\` RENAME TO \`payload_locked_documents_rels\`;`)
+  await db.run(
+    sql`ALTER TABLE \`__new_payload_locked_documents_rels\` RENAME TO \`payload_locked_documents_rels\`;`,
+  )
   await db.run(sql`PRAGMA foreign_keys=ON;`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_order_idx\` ON \`payload_locked_documents_rels\` (\`order\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_parent_idx\` ON \`payload_locked_documents_rels\` (\`parent_id\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_path_idx\` ON \`payload_locked_documents_rels\` (\`path\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_users_id_idx\` ON \`payload_locked_documents_rels\` (\`users_id\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_media_id_idx\` ON \`payload_locked_documents_rels\` (\`media_id\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_categories_id_idx\` ON \`payload_locked_documents_rels\` (\`categories_id\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_brands_id_idx\` ON \`payload_locked_documents_rels\` (\`brands_id\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_tags_id_idx\` ON \`payload_locked_documents_rels\` (\`tags_id\`);`)
-  await db.run(sql`CREATE INDEX \`payload_locked_documents_rels_products_id_idx\` ON \`payload_locked_documents_rels\` (\`products_id\`);`)
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_order_idx\` ON \`payload_locked_documents_rels\` (\`order\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_parent_idx\` ON \`payload_locked_documents_rels\` (\`parent_id\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_path_idx\` ON \`payload_locked_documents_rels\` (\`path\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_users_id_idx\` ON \`payload_locked_documents_rels\` (\`users_id\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_media_id_idx\` ON \`payload_locked_documents_rels\` (\`media_id\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_categories_id_idx\` ON \`payload_locked_documents_rels\` (\`categories_id\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_brands_id_idx\` ON \`payload_locked_documents_rels\` (\`brands_id\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_tags_id_idx\` ON \`payload_locked_documents_rels\` (\`tags_id\`);`,
+  )
+  await db.run(
+    sql`CREATE INDEX \`payload_locked_documents_rels_products_id_idx\` ON \`payload_locked_documents_rels\` (\`products_id\`);`,
+  )
 }

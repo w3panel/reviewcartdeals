@@ -24,7 +24,8 @@ async function seedReviews() {
         product: firstProduct.id,
         reviewerName: 'John Doe',
         rating: 5,
-        comment: 'Absolutely stunning. The craftsmanship is unparalleled and it exceeded all my expectations.',
+        comment:
+          'Absolutely stunning. The craftsmanship is unparalleled and it exceeded all my expectations.',
         verifiedPurchase: true,
       },
     })
@@ -35,7 +36,8 @@ async function seedReviews() {
         product: firstProduct.id,
         reviewerName: 'Jane Smith',
         rating: 4,
-        comment: 'Very high quality, but took a little longer to ship than expected. Still highly recommend.',
+        comment:
+          'Very high quality, but took a little longer to ship than expected. Still highly recommend.',
         verifiedPurchase: true,
       },
     })
