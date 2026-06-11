@@ -19,7 +19,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-app="storefront">
       <body className="min-h-screen flex flex-col bg-background text-foreground pb-16 md:pb-0">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <CartProvider>

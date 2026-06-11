@@ -16,7 +16,7 @@ const FrontPageCatalog = dynamic(
   },
 )
 
-export const revalidate = 60
+export const revalidate = 3600
 
 export default async function HomePage() {
   const [categories, { products: allProducts, totalDocs }, brands] = await Promise.all([

@@ -1,0 +1,187 @@
+'use client'
+
+import React, { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowLeft, Trash2, Send } from 'lucide-react'
+import { useCart } from '@/context/CartContext'
+import { getImageUrl, getProductMainImage } from '@/lib/utils'
+
+export function CartClient() {
+  const { items: cartItems, removeItem: removeFromCart, clearCart } = useCart()
+  const [formData, setFormData] = useState({ name: '', phone: '', message: '' })
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const productList = cartItems
+      .map((item) => `- ${item.product.title} (Qty: ${item.quantity})`)
+      .join('\n')
+    const waText = encodeURIComponent(
+      `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`,
+    )
+
+    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
+    window.open(`https://wa.me/${whatsappNumber}?text=${waText}`, '_blank')
+    clearCart()
+  }
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-[70vh] bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-16 h-16 bg-card border border-primary/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
+          <Send className="w-8 h-8 text-primary" />
+        </div>
+        <h1 className="text-2xl font-sans font-bold text-primary mb-2">Your Enquiry is Empty</h1>
+        <p className="text-muted-foreground text-center mb-8 max-w-sm text-sm">
+          Browse our exclusive collections and add items you&apos;re interested in to send us an
+          enquiry.
+        </p>
+        <Link
+          href="/"
+          className="bg-primary text-background px-8 py-3.5 rounded-full font-bold uppercase tracking-wide hover:bg-primary-hover transition-colors shadow-lg text-sm"
+        >
+          Explore Collections
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background pb-24 text-foreground">
+      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-primary/20 px-4 h-16 flex items-center">
+        <Link href="/" className="p-2 -ml-2 text-primary hover:text-foreground transition-colors">
+          <ArrowLeft className="w-6 h-6" />
+        </Link>
+        <h1 className="text-lg font-sans font-bold text-primary ml-2">Your Enquiry</h1>
+        <div className="ml-auto bg-primary text-background text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+          {cartItems.length} items
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
+        <section>
+          <h2 className="text-sm font-medium text-primary mb-4 px-1">Selected Pieces</h2>
+          <div className="bg-card rounded-3xl p-2 shadow-lg border border-border divide-y divide-border">
+            {cartItems.map((item) => (
+              <div key={item.product.id} className="flex gap-4 p-4 relative group">
+                <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
+                  {getProductMainImage(item.product) ? (
+                    <Image
+                      src={getImageUrl(getProductMainImage(item.product))}
+                      alt={item.product.title}
+                      fill
+                      className="object-contain p-2"
+                      sizes="96px"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-card" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 py-1">
+                  <h3 className="text-sm md:text-base font-sans font-medium text-foreground leading-tight pr-8 group-hover:text-primary transition-colors">
+                    {item.product.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+                    {item.product.description}
+                  </p>
+                  <p className="text-xs font-bold text-primary mt-3 uppercase tracking-wider">
+                    Qty: {item.quantity}
+                  </p>
+                </div>
+                <button
+                  onClick={() => removeFromCart(item.product.id)}
+                  className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-500 bg-muted hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"
+                  aria-label="Remove item"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-medium text-primary mb-4 px-1">Client Details</h2>
+          <form
+            onSubmit={handleSubmit}
+            className="bg-card rounded-3xl p-6 shadow-lg border border-primary/20 space-y-5"
+          >
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+              >
+                Full Name *
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full bg-muted border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
+                placeholder="John Doe"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="phone"
+                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+              >
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                required
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full bg-muted border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
+                placeholder="+1 234 567 8900"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="message"
+                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+              >
+                Additional Message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                rows={3}
+                value={formData.message}
+                onChange={handleInputChange}
+                className="w-full bg-muted border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none placeholder:text-muted-foreground"
+                placeholder="Any specific requests or questions?"
+              />
+            </div>
+
+            <div className="pt-6 border-t border-primary/10">
+              <button
+                type="submit"
+                className="w-full bg-whatsapp text-white rounded-xl py-4 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
+              >
+                <span>Send via WhatsApp</span>
+                <Send className="w-5 h-5" />
+              </button>
+              <p className="text-center text-[11px] text-gray-500 mt-4 tracking-wide">
+                By submitting this enquiry, you agree to be contacted via WhatsApp by our concierge.
+              </p>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  )
+}
