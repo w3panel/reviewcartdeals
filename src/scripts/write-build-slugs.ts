@@ -4,6 +4,9 @@ import path from 'path'
 import { getPayloadClient } from '@/lib/payload'
 
 const SLUGS_FILE = path.join(process.cwd(), '.next-build', 'slugs.json')
+console.log('PAYLOAD_SECRET exists:', !!process.env.PAYLOAD_SECRET)
+console.log('PAYLOAD_SECRET length:', process.env.PAYLOAD_SECRET?.length)
+
 
 async function main() {
   const payload = await getPayloadClient()
