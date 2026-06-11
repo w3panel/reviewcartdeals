@@ -62,6 +62,13 @@ const cloudflare = useRemoteD1ViaExec
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
+
+console.log('NODE_ENV:', process.env.NODE_ENV)
+console.log('CF_PAGES:', process.env.CF_PAGES)
+console.log(
+  'PAYLOAD_SECRET:',
+  process.env.PAYLOAD_SECRET ? 'FOUND' : 'MISSING'
+)
 export default buildConfig({
   admin: {
     user: Users.slug,
