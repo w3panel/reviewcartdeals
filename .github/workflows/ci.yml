@@ -13,6 +13,8 @@ jobs:
   lint:
     name: Format, lint, typecheck & unit tests
     runs-on: ubuntu-latest
+    env:
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
     steps:
       - uses: actions/checkout@v4
 
