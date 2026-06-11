@@ -5,8 +5,6 @@ import { getPayloadClient } from '@/lib/payload'
 
 const SLUGS_FILE = path.join(process.cwd(), '.next-build', 'slugs.json')
 
-
-
 async function main() {
   const payload = await getPayloadClient()
 
