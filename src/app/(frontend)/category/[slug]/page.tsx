@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getCategoryBySlug } from '@/services/categories'
+import { getProducts, getAllBrands } from '@/services/products'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { ChevronLeft } from 'lucide-react'
 import { getImageUrl } from '@/lib/utils'
@@ -11,11 +12,6 @@ import { CategoryProducts } from './CategoryProducts'
 interface CategoryPageProps {
   params: Promise<{
     slug: string
-  }>
-  searchParams: Promise<{
-    q?: string
-    brand?: string
-    page?: string
   }>
 }
 
@@ -26,13 +22,18 @@ export async function generateStaticParams() {
   return categorySlugs.map((slug) => ({ slug }))
 }
 
-export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params
   const category = await getCategoryBySlug(slug)
 
   if (!category) {
     notFound()
   }
+
+  const [brands, { products, totalPages }] = await Promise.all([
+    getAllBrands(),
+    getProducts({ categorySlug: slug, page: 1, limit: 8 }),
+  ])
 
   const bannerImageUrl = getImageUrl(category.image)
 
@@ -68,7 +69,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <Suspense
           fallback={<div className="py-20 text-center text-gray-500">Loading products...</div>}
         >
-          <CategoryProducts slug={slug} searchParams={searchParams} />
+          <CategoryProducts
+            slug={slug}
+            brands={brands}
+            initialProducts={products}
+            initialTotalPages={totalPages}
+          />
         </Suspense>
       </section>
     </div>

@@ -6,6 +6,53 @@ import { fileURLToPath } from 'url'
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const vercelOgShim = path.join(dirname, 'src/shims/vercel-og.js')
 
+const dateFnsLocalePaths = [
+  'ar',
+  'az',
+  'bg',
+  'bn',
+  'ca',
+  'cs',
+  'da',
+  'de',
+  'es',
+  'et',
+  'fa-IR',
+  'fr',
+  'he',
+  'hr',
+  'hu',
+  'id',
+  'is',
+  'it',
+  'ja',
+  'ko',
+  'lt',
+  'lv',
+  'nb',
+  'nl',
+  'pl',
+  'pt',
+  'ro',
+  'ru',
+  'sk',
+  'sl',
+  'sr',
+  'sr-Latn',
+  'sv',
+  'ta',
+  'th',
+  'tr',
+  'uk',
+  'vi',
+  'zh-CN',
+  'zh-TW',
+]
+
+const dateFnsLocaleAliases = Object.fromEntries(
+  dateFnsLocalePaths.map((locale) => [`date-fns/locale/${locale}`, 'date-fns/locale/en-US']),
+)
+
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
   openAnalyzer: process.env.CI !== 'true',
@@ -36,22 +83,32 @@ const nextConfig = {
   },
   // Packages with Cloudflare Workers (workerd) specific code
   // Read more: https://opennext.js.org/cloudflare/howtos/workerd
-  serverExternalPackages: ['jose', 'pg-cloudflare'],
+  serverExternalPackages: [
+    'jose',
+    'pg-cloudflare',
+    '@payloadcms/db-d1-sqlite',
+    'drizzle-kit',
+    'sharp',
+    'pino-pretty',
+  ],
 
-  webpack: (webpackConfig: any) => {
-    webpackConfig.resolve.alias = {
-      ...webpackConfig.resolve.alias,
+  outputFileTracingExcludes: {
+    '**/*': [
+      '**/node_modules/drizzle-kit/**',
+      '**/node_modules/sharp/**',
+      '**/node_modules/@img/**',
+      '**/node_modules/wrangler/**',
+      '**/node_modules/pino-pretty/**',
+      '**/node_modules/next/dist/compiled/@vercel/og/**',
+    ],
+  },
+
+  turbopack: {
+    resolveAlias: {
+      ...dateFnsLocaleAliases,
       'next/dist/compiled/@vercel/og/index.node.js': vercelOgShim,
       'next/dist/compiled/@vercel/og/index.edge.js': vercelOgShim,
-    }
-
-    webpackConfig.resolve.extensionAlias = {
-      '.cjs': ['.cts', '.cjs'],
-      '.js': ['.ts', '.tsx', '.js', '.jsx'],
-      '.mjs': ['.mts', '.mjs'],
-    }
-
-    return webpackConfig
+    },
   },
 }
 

@@ -1,7 +1,9 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getProducts, getAllBrands } from '@/services/products'
+import { useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Product, Brand } from '@/payload-types'
@@ -9,26 +11,60 @@ import { AddToCartButton } from '@/components/AddToCartButton'
 
 interface CategoryProductsProps {
   slug: string
-  searchParams: Promise<{
-    q?: string
-    brand?: string
-    page?: string
-  }>
+  brands: string[]
+  initialProducts: Product[]
+  initialTotalPages: number
 }
 
-export async function CategoryProducts({ slug, searchParams }: CategoryProductsProps) {
-  const { q = '', brand = '', page = '1' } = await searchParams
+interface CatalogResponse {
+  docs: Product[]
+  totalPages: number
+}
+
+export function CategoryProducts({
+  slug,
+  brands,
+  initialProducts,
+  initialTotalPages,
+}: CategoryProductsProps) {
+  const searchParams = useSearchParams()
+  const q = searchParams.get('q') || ''
+  const brand = searchParams.get('brand') || ''
+  const page = searchParams.get('page') || '1'
   const currentPage = Number(page) || 1
 
-  const { products, totalPages } = await getProducts({
-    categorySlug: slug,
-    search: q,
-    brand: brand === 'ALL' ? undefined : brand,
-    page: currentPage,
-    limit: 8,
-  })
+  const hasFilters = Boolean(q) || (Boolean(brand) && brand !== 'ALL') || currentPage > 1
 
-  const brands = await getAllBrands()
+  const [products, setProducts] = useState(initialProducts)
+  const [totalPages, setTotalPages] = useState(initialTotalPages)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!hasFilters) {
+      setProducts(initialProducts)
+      setTotalPages(initialTotalPages)
+      return
+    }
+
+    const params = new URLSearchParams()
+    params.set('category', slug)
+    if (q) params.set('q', q)
+    if (brand) params.set('brand', brand)
+    if (page) params.set('page', page)
+
+    setLoading(true)
+    fetch(`/api/products/catalog?${params.toString()}`)
+      .then((res) => res.json() as Promise<CatalogResponse>)
+      .then((result) => {
+        setProducts(result.docs ?? [])
+        setTotalPages(result.totalPages ?? 1)
+      })
+      .catch(() => {
+        setProducts([])
+        setTotalPages(1)
+      })
+      .finally(() => setLoading(false))
+  }, [q, brand, page, slug, hasFilters, initialProducts, initialTotalPages])
 
   return (
     <>
@@ -70,7 +106,9 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
         </div>
       </form>
 
-      {products.length === 0 ? (
+      {loading ? (
+        <div className="py-20 text-center text-gray-500">Loading products...</div>
+      ) : products.length === 0 ? (
         <div className="py-20 text-center">
           <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
           <Link
@@ -83,7 +121,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
       ) : (
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {products.map((prod: any) => {
+            {products.map((prod) => {
               const imageUrl = getImageUrl(getProductMainImage(prod))
               return (
                 <div
@@ -94,9 +132,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                     href={`/product/${prod.slug}`}
                     className="flex flex-col flex-grow gap-4 sm:gap-6"
                   >
-                    {/* Image Frame */}
                     <div className="relative flex items-center justify-center w-full bg-background rounded-lg aspect-square overflow-hidden">
-                      {/* Badges */}
                       {(() => {
                         const isNew =
                           new Date(prod.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
@@ -123,7 +159,6 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                       />
                     </div>
 
-                    {/* Product Info Section */}
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-1 text-[12px] font-bold text-primary uppercase tracking-[0.15em]">
@@ -146,30 +181,21 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                         {prod.description}
                       </p>
 
-                      {/* Specifications Row */}
                       {prod.specifications && prod.specifications.length > 0 && (
                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 text-[10px] sm:text-[11px] text-gray-400 font-medium">
-                          {prod.specifications
-                            .slice(0, 3)
-                            .map(
-                              (
-                                spec: { key: string; value: string; id?: string | null },
-                                idx: number,
-                              ) => (
-                                <div key={spec.id ?? idx} className="flex items-center gap-1.5">
-                                  <span className="w-1 h-1 rounded-full bg-primary" />
-                                  {spec.value}
-                                </div>
-                              ),
-                            )}
+                          {prod.specifications.slice(0, 3).map((spec, idx) => (
+                            <div key={spec.id ?? idx} className="flex items-center gap-1.5">
+                              <span className="w-1 h-1 rounded-full bg-primary" />
+                              {spec.value}
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
                   </Link>
 
-                  {/* Actions */}
                   <div className="mt-auto pt-2 flex gap-3">
-                    <AddToCartButton product={prod as Product} />
+                    <AddToCartButton product={prod} />
                   </div>
                 </div>
               )
