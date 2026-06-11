@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import sharp from 'sharp'
 
-let k
+
 const dir = path.join(process.cwd(), 'public/seed')
 const files = fs.readdirSync(dir).filter(f => f.endsWith('.png') || f.endsWith('.jpg') || f.endsWith('.jpeg'))
 
