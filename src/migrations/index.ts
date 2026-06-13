@@ -13,6 +13,7 @@ import * as migration_20260610_010000_variant_gallery from './20260610_010000_va
 import * as migration_20260610_020000_variant_original_price from './20260610_020000_variant_original_price'
 import * as migration_20260610_030000_variant_attributes from './20260610_030000_variant_attributes'
 import * as migration_20260610_040000_remove_variant_title from './20260610_040000_remove_variant_title'
+import * as migration_20260613_drafts_autosave from './20260613_drafts_autosave'
 
 export const migrations = [
   {
@@ -89,5 +90,10 @@ export const migrations = [
     up: migration_20260610_040000_remove_variant_title.up,
     down: migration_20260610_040000_remove_variant_title.down,
     name: '20260610_040000_remove_variant_title',
+  },
+  {
+    up: migration_20260613_drafts_autosave.up,
+    down: migration_20260613_drafts_autosave.down,
+    name: '20260613_drafts_autosave',
   },
 ]

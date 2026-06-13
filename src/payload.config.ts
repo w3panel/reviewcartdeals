@@ -8,6 +8,7 @@ import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 
 import { createWranglerRemoteD1Binding } from './lib/wranglerRemoteD1'
+import { autoDraftPlugin } from './plugins/autoDraft'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
@@ -82,6 +83,7 @@ export default buildConfig({
   db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
+    autoDraftPlugin(),
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },

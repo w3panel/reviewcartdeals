@@ -1,4 +1,5 @@
 import type { BasePayload, Where } from 'payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 
 export interface CatalogQueryOptions {
   categorySlug?: string
@@ -12,11 +13,11 @@ export interface CatalogQueryOptions {
 async function getCategoryIdsBySlug(slug: string, payload: BasePayload): Promise<string[]> {
   const cats = await payload.find({
     collection: 'categories',
-    where: {
+    where: withPublishedOnly({
       slug: {
         equals: slug,
       },
-    },
+    }),
     limit: 1,
     depth: 0,
     pagination: false,
@@ -27,11 +28,11 @@ async function getCategoryIdsBySlug(slug: string, payload: BasePayload): Promise
 async function getBrandIdsByTitles(titles: string[], payload: BasePayload): Promise<string[]> {
   const brands = await payload.find({
     collection: 'brands',
-    where: {
+    where: withPublishedOnly({
       title: {
         in: titles,
       },
-    },
+    }),
     limit: titles.length,
     depth: 0,
     pagination: false,
@@ -100,7 +101,7 @@ export async function findCatalogProducts(payload: BasePayload, options: Catalog
 
   return payload.find({
     collection: 'products',
-    where,
+    where: withPublishedOnly(where),
     page,
     limit,
     depth: 2,

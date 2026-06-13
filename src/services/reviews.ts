@@ -1,5 +1,6 @@
 import type { BasePayload } from 'payload'
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 import type { Review } from '@/payload-types'
 
 export interface ProductReviewStats {
@@ -73,11 +74,11 @@ export async function getProductReviewStatsBatch(
   const client = await resolvePayload(payload)
   const response = await client.find({
     collection: 'reviews',
-    where: {
+    where: withPublishedOnly({
       product: {
         in: uniqueIds,
       },
-    },
+    }),
     depth: 0,
     limit: uniqueIds.length * 100,
     pagination: false,
@@ -110,11 +111,11 @@ export async function getProductReviews(productId: string | number, payload?: Ba
 
   const response = await client.find({
     collection: 'reviews',
-    where: {
+    where: withPublishedOnly({
       product: {
         equals: productId,
       },
-    },
+    }),
     limit: 100,
     depth: 2,
     sort: '-createdAt',

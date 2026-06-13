@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 
 export type BuildSlugs = {
   categorySlugs: string[]
@@ -22,6 +23,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
 
   const categories = await payload.find({
     collection: 'categories',
+    where: withPublishedOnly(),
     limit: 500,
     depth: 0,
     pagination: false,
@@ -30,6 +32,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
 
   const products = await payload.find({
     collection: 'products',
+    where: withPublishedOnly(),
     limit: 1000,
     depth: 0,
     pagination: false,

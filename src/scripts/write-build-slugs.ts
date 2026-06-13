@@ -2,6 +2,7 @@ import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 
 const SLUGS_FILE = path.join(process.cwd(), '.next-build', 'slugs.json')
 
@@ -11,6 +12,7 @@ async function main() {
   const [categories, products] = await Promise.all([
     payload.find({
       collection: 'categories',
+      where: withPublishedOnly(),
       limit: 500,
       depth: 0,
       pagination: false,
@@ -18,6 +20,7 @@ async function main() {
     }),
     payload.find({
       collection: 'products',
+      where: withPublishedOnly(),
       limit: 1000,
       depth: 0,
       pagination: false,

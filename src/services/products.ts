@@ -1,4 +1,5 @@
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 import { findCatalogProducts, type CatalogQueryOptions } from '@/lib/productFilters'
 
 export type GetProductsOptions = CatalogQueryOptions
@@ -23,11 +24,11 @@ export async function getProductBySlug(slug: string) {
 
   const response = await payload.find({
     collection: 'products',
-    where: {
+    where: withPublishedOnly({
       slug: {
         equals: slug,
       },
-    },
+    }),
     limit: 1,
     depth: 2,
   })
@@ -44,7 +45,7 @@ export async function getRelatedProducts(
 
   const response = await payload.find({
     collection: 'products',
-    where: {
+    where: withPublishedOnly({
       and: [
         {
           category: {
@@ -57,7 +58,7 @@ export async function getRelatedProducts(
           },
         },
       ],
-    },
+    }),
     limit,
     depth: 1,
     select: {
@@ -81,6 +82,7 @@ export async function getAllBrands() {
 
   const response = await payload.find({
     collection: 'brands',
+    where: withPublishedOnly(),
     limit: 300,
     depth: 0,
     sort: 'title',
@@ -98,6 +100,7 @@ export async function getAllProductSlugs() {
 
   const response = await payload.find({
     collection: 'products',
+    where: withPublishedOnly(),
     limit: 1000,
     depth: 0,
     pagination: false,
