@@ -14,6 +14,11 @@ import * as migration_20260610_020000_variant_original_price from './20260610_02
 import * as migration_20260610_030000_variant_attributes from './20260610_030000_variant_attributes'
 import * as migration_20260610_040000_remove_variant_title from './20260610_040000_remove_variant_title'
 import * as migration_20260613_drafts_autosave from './20260613_drafts_autosave'
+import * as migration_20260613_draft_nullable_fields from './20260613_draft_nullable_fields'
+import * as migration_20260613_fix_draft_child_fks from './20260613_fix_draft_child_fks'
+import * as migration_20260614_add_nav_items from './20260614_add_nav_items'
+import * as migration_20260615_nav_device_visibility from './20260615_nav_device_visibility'
+import * as migration_20260616_reseed_nav_items from './20260616_reseed_nav_items'
 
 export const migrations = [
   {
@@ -95,5 +100,30 @@ export const migrations = [
     up: migration_20260613_drafts_autosave.up,
     down: migration_20260613_drafts_autosave.down,
     name: '20260613_drafts_autosave',
+  },
+  {
+    up: migration_20260613_draft_nullable_fields.up,
+    down: migration_20260613_draft_nullable_fields.down,
+    name: '20260613_draft_nullable_fields',
+  },
+  {
+    up: migration_20260613_fix_draft_child_fks.up,
+    down: migration_20260613_fix_draft_child_fks.down,
+    name: '20260613_fix_draft_child_fks',
+  },
+  {
+    up: migration_20260614_add_nav_items.up,
+    down: migration_20260614_add_nav_items.down,
+    name: '20260614_add_nav_items',
+  },
+  {
+    up: migration_20260615_nav_device_visibility.up,
+    down: migration_20260615_nav_device_visibility.down,
+    name: '20260615_nav_device_visibility',
+  },
+  {
+    up: migration_20260616_reseed_nav_items.up,
+    down: migration_20260616_reseed_nav_items.down,
+    name: '20260616_reseed_nav_items',
   },
 ]

@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { getProductBySlug, getRelatedProducts } from '@/services/products'
+import { getProductBySlug, getProductVariants, getRelatedProducts } from '@/services/products'
 import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { MessageCircle, ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
   if (!product) return {}
 
   return {
-    title: `${product.seo?.title || product.title} | ReviewCartDeals`,
+    title: product.seo?.title || product.title,
     description: product.seo?.description || product.description,
   }
 }
@@ -52,10 +52,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!product) notFound()
 
-  const [category, relatedProducts, { reviews, stats }] = await Promise.all([
+  const [category, relatedProducts, { reviews, stats }, variants] = await Promise.all([
     resolveProductCategory(product.category),
     getRelatedProducts(product.id, getCategoryId(product.category), 4),
     getProductReviews(product.id),
+    getProductVariants(product.id),
   ])
   const related = relatedProducts as Product[]
   const galleryImages = buildProductGalleryImages(product)
@@ -93,6 +94,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <section className="mx-auto max-w-7xl px-4 py-6 sm:py-10 lg:px-8">
         <ProductDetailGrid
           product={product}
+          variants={variants}
           defaultGalleryImages={galleryImages}
           whatsappLink={whatsappLink}
           beforeActions={
@@ -100,7 +102,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <span className="text-xs sm:text-sm font-semibold tracking-widest text-primary uppercase">
                 {brandTitle}
               </span>
-              <h1 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
+              <h1 className="mt-2 font-serif text-2xl text-white leading-tight sm:text-3xl lg:text-4xl">
                 {product.title}
               </h1>
 

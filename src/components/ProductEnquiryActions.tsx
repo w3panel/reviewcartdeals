@@ -2,13 +2,14 @@
 
 import React, { useMemo } from 'react'
 import { MessageCircle } from 'lucide-react'
-import type { Product } from '@/payload-types'
+import type { Product, ProductVariant } from '@/payload-types'
 import { formatVariantEnquiryDetails, hasVariants } from '@/lib/productVariants'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { VariantSelector } from '@/components/VariantSelector'
 
 type ProductEnquiryActionsProps = {
   product: Product
+  variants: ProductVariant[]
   whatsappLink: string
   selectedVariantId: string | null
   onSelectVariant: (variantId: string | null) => void
@@ -16,15 +17,15 @@ type ProductEnquiryActionsProps = {
 
 export function ProductEnquiryActions({
   product,
+  variants,
   whatsappLink,
   selectedVariantId,
   onSelectVariant,
 }: ProductEnquiryActionsProps) {
-  const variants = product.variants ?? []
-  const productHasVariants = hasVariants(product)
+  const productHasVariants = hasVariants(product, variants)
 
   const selectedVariant = useMemo(
-    () => variants.find((variant) => variant.id === selectedVariantId) ?? null,
+    () => variants.find((variant) => String(variant.id) === selectedVariantId) ?? null,
     [variants, selectedVariantId],
   )
 
@@ -53,7 +54,7 @@ export function ProductEnquiryActions({
           href={enquiryWhatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex w-full items-center justify-center gap-2 sm:gap-3 rounded-xl bg-whatsapp px-6 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-white hover:opacity-90 transition-opacity ${
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
             productHasVariants && !selectedVariant ? 'pointer-events-none opacity-50' : ''
           }`}
           aria-disabled={productHasVariants && !selectedVariant}

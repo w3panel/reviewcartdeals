@@ -4,16 +4,9 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
-import {
-  Search,
-  MessageCircle,
-  ChevronLeft,
-  ChevronRight,
-  SlidersHorizontal,
-  BadgeCheck,
-} from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
-import type { Product, Category, Brand, Media } from '@/payload-types'
+import type { Product, Category, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 
 interface SearchCatalogProps {
@@ -61,19 +54,19 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
   const currentPage = Number(page) || 1
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-      <div className="lg:col-span-1">
-        <div className="rounded-xl border border-border bg-card p-6 sticky top-24">
-          <div className="flex items-center gap-2 border-b border-border pb-4 mb-6">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+      <div className="hidden lg:col-span-1 lg:block">
+        <div className="sticky top-28 rounded-xl border border-border bg-card p-6">
+          <div className="mb-6 flex items-center gap-2 border-b border-border pb-4">
             <SlidersHorizontal className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold tracking-widest text-foreground uppercase">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-white">
               Filters
             </h2>
           </div>
 
           <form method="GET" className="flex flex-col gap-6">
             <div>
-              <label className="block text-xs font-semibold tracking-wider text-gray-500 uppercase mb-2">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Search Text
               </label>
               <div className="relative">
@@ -82,20 +75,20 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
                   name="q"
                   defaultValue={q}
                   placeholder="Keyword..."
-                  className="w-full rounded-lg border border-border bg-background py-2.5 pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  className="w-full rounded-2xl border border-border bg-surface py-3 pl-9 pr-3 text-sm text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-600" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold tracking-wider text-gray-500 uppercase mb-2">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Category
               </label>
               <select
                 name="category"
                 defaultValue={category || 'ALL'}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
+                className="w-full rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
               >
                 <option value="ALL">All Categories</option>
                 {categories.map((cat) => (
@@ -107,13 +100,13 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold tracking-wider text-gray-500 uppercase mb-2">
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Brand
               </label>
               <select
                 name="brand"
                 defaultValue={brand || 'ALL'}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-xs text-foreground focus:border-primary focus:outline-none"
+                className="w-full rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
               >
                 <option value="ALL">All Brands</option>
                 {brands.map((b) => (
@@ -126,23 +119,68 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-primary py-3 text-xs font-semibold uppercase tracking-widest text-primary-foreground hover:bg-primary-hover transition-colors"
+              className="w-full rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary-hover"
             >
-              APPLY FILTERS
+              Apply Filters
             </button>
           </form>
         </div>
       </div>
 
       <div className="lg:col-span-3">
-        <div className="border-b border-border pb-4 mb-6 flex justify-between items-center">
-          <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+        <form method="GET" className="mb-6 flex flex-col gap-3 lg:hidden">
+          <div className="relative">
+            <input
+              type="text"
+              name="q"
+              defaultValue={q}
+              placeholder="Search products..."
+              className="w-full rounded-2xl border border-border bg-surface py-3 pl-10 pr-3 text-sm text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+            />
+            <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              name="category"
+              defaultValue={category || 'ALL'}
+              className="rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
+            >
+              <option value="ALL">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.slug}>
+                  {cat.title}
+                </option>
+              ))}
+            </select>
+            <select
+              name="brand"
+              defaultValue={brand || 'ALL'}
+              className="rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
+            >
+              <option value="ALL">All Brands</option>
+              {brands.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground"
+          >
+            Apply Filters
+          </button>
+        </form>
+
+        <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {loading ? 'Searching...' : `Found ${totalDocs} Products`}
           </span>
           {(q || category || brand) && (
             <Link
               href="/search"
-              className="text-xs font-semibold tracking-widest text-primary hover:text-foreground transition-colors uppercase"
+              className="text-xs font-semibold uppercase tracking-widest text-primary transition-colors hover:text-foreground"
             >
               Reset All
             </Link>
@@ -150,110 +188,53 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center text-gray-500">Loading catalog...</div>
+          <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
         ) : products.length === 0 ? (
-          <div className="py-20 text-center rounded-xl border border-border bg-card">
-            <p className="text-muted-foreground text-lg">
+          <div className="rounded-xl border border-border bg-card py-20 text-center">
+            <p className="text-lg text-muted-foreground">
               No products found matching your filters.
             </p>
             <Link
               href="/search"
-              className="mt-4 inline-block text-xs font-semibold tracking-widest text-primary uppercase border-b border-primary pb-0.5 hover:text-foreground transition-colors"
+              className="mt-4 inline-block border-b border-primary pb-0.5 text-xs font-semibold uppercase tracking-widest text-primary transition-colors hover:text-foreground"
             >
               View All Products
             </Link>
           </div>
         ) : (
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {products.map((prod: any) => {
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+              {products.map((prod: Product) => {
                 const imageUrl = getImageUrl(getProductMainImage(prod))
                 return (
                   <div
                     key={prod.id}
-                    className="flex flex-col p-4 sm:p-6 border border-border rounded-2xl bg-card hover:border-primary transition-all duration-300 relative group gap-4 sm:gap-6"
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary"
                   >
-                    <Link
-                      href={`/product/${prod.slug}`}
-                      className="flex flex-col flex-grow gap-4 sm:gap-6"
-                    >
-                      {/* Image Frame */}
-                      <div className="relative flex items-center justify-center w-full bg-background rounded-lg aspect-square overflow-hidden">
-                        {/* Badges */}
-                        {(() => {
-                          const isNew =
-                            new Date(prod.createdAt).getTime() >
-                            Date.now() - 30 * 24 * 60 * 60 * 1000
-                          return (
-                            <>
-                              {isNew && (
-                                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-primary text-primary-foreground px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
-                                  NEW
-                                </span>
-                              )}
-                              {prod.limitedEdition && (
-                                <span className="absolute top-3 right-3 sm:top-4 sm:right-4 border border-primary/40 text-primary px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
-                                  LIMITED EDITION
-                                </span>
-                              )}
-                            </>
-                          )
-                        })()}
+                    <Link href={`/product/${prod.slug}`} className="flex h-full flex-col">
+                      <div className="relative flex aspect-square w-full items-center justify-center bg-black p-3 sm:p-4">
                         <Image
                           src={imageUrl}
                           alt={prod.title}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-contain transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
 
-                      {/* Product Info Section */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-1 text-[12px] font-bold text-primary uppercase tracking-[0.15em]">
-                            {typeof prod.brand === 'object' && prod.brand !== null
-                              ? (prod.brand as Brand).title
-                              : String(prod.brand)}
-                            {typeof prod.brand === 'object' &&
-                              prod.brand !== null &&
-                              (prod.brand as Brand).verified && (
-                                <BadgeCheck className="w-3.5 h-3.5 text-primary" />
-                              )}
-                          </div>
-                        </div>
-
-                        <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight">
+                      <div className="flex flex-grow flex-col p-3 sm:p-4">
+                        <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                          {typeof prod.brand === 'object' && prod.brand !== null
+                            ? (prod.brand as Brand).title
+                            : String(prod.brand)}
+                        </span>
+                        <h3 className="mb-2 line-clamp-2 flex-grow text-sm font-medium leading-snug text-white">
                           {prod.title}
                         </h3>
-
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-3">
-                          {prod.description}
-                        </p>
-
-                        {/* Specifications Row */}
-                        {prod.specifications && prod.specifications.length > 0 && (
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border text-[10px] sm:text-[11px] text-muted-foreground font-medium">
-                            {prod.specifications
-                              .slice(0, 3)
-                              .map(
-                                (
-                                  spec: { key: string; value: string; id?: string | null },
-                                  idx: number,
-                                ) => (
-                                  <div key={spec.id ?? idx} className="flex items-center gap-1.5">
-                                    <span className="w-1 h-1 rounded-full bg-primary" />
-                                    {spec.value}
-                                  </div>
-                                ),
-                              )}
-                          </div>
-                        )}
                       </div>
                     </Link>
 
-                    {/* Actions */}
-                    <div className="mt-auto pt-2 flex gap-3">
-                      <AddToCartButton product={prod as Product} />
+                    <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+                      <AddToCartButton product={prod} />
                     </div>
                   </div>
                 )
@@ -265,29 +246,29 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
                 {currentPage > 1 ? (
                   <Link
                     href={`/search?q=${q}&category=${category}&brand=${brand}&page=${currentPage - 1}`}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </Link>
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground cursor-not-allowed">
+                  <div className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-border/50 text-muted-foreground">
                     <ChevronLeft className="h-5 w-5" />
                   </div>
                 )}
 
-                <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   PAGE {currentPage} OF {totalPages}
                 </span>
 
                 {currentPage < totalPages ? (
                   <Link
                     href={`/search?q=${q}&category=${category}&brand=${brand}&page=${currentPage + 1}`}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </Link>
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground cursor-not-allowed">
+                  <div className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-border/50 text-muted-foreground">
                     <ChevronRight className="h-5 w-5" />
                   </div>
                 )}

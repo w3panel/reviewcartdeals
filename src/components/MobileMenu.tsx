@@ -1,7 +1,5 @@
 'use client'
 // src/components/MobileMenu.tsx
-// Premium responsive mobile navigation menu for ReviewCartDeals
-// This component matches the dark‑gold aesthetic used throughout the site.
 
 import React, { useState } from 'react'
 import Link from 'next/link'
@@ -9,62 +7,61 @@ import { Menu, X } from 'lucide-react'
 import type { Category } from '@/payload-types'
 
 interface MobileMenuProps {
-  /** Array of categories fetched from the Payload CMS */
   categories: Category[]
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ categories }) => {
   const [open, setOpen] = useState(false)
 
-  const toggleMenu = () => setOpen(!open)
-
   return (
     <div className="relative md:hidden">
-      {/* Hamburger button */}
       <button
-        onClick={toggleMenu}
+        onClick={() => setOpen(!open)}
         aria-label={open ? 'Close menu' : 'Open menu'}
-        className="flex items-center gap-2 rounded p-2 text-primary hover:text-foreground transition-colors"
+        className="flex items-center rounded-full p-2 text-primary transition-colors hover:bg-surface"
       >
         {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        <span className="sr-only">Menu</span>
       </button>
 
-      {/* Slide‑over panel */}
       <div
-        className={`fixed inset-0 z-40 bg-background/98 backdrop-blur-xl transition-transform duration-300 border-r border-border ${
+        className={`fixed inset-0 z-40 bg-black/95 backdrop-blur-xl transition-transform duration-300 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-hidden={!open}
       >
         <div className="flex h-full flex-col p-6">
-          {/* Close button at top */}
-          <div className="flex justify-between items-center w-full mb-8">
-            <span className="font-sans text-xl font-bold tracking-tight text-foreground">Menu</span>
+          <div className="mb-8 flex w-full items-center justify-between">
+            <span className="font-serif text-2xl text-white">Menu</span>
             <button
-              onClick={toggleMenu}
+              onClick={() => setOpen(false)}
               aria-label="Close menu"
-              className="rounded p-2 text-primary hover:text-foreground transition-colors bg-card border border-border"
+              className="rounded-full border border-border bg-surface p-2 text-primary transition-colors hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Category list */}
-          <nav className="space-y-4 overflow-y-auto">
+          <nav className="space-y-3 overflow-y-auto">
+            <Link
+              href="/"
+              className="block rounded-2xl px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors gold-gradient"
+              onClick={() => setOpen(false)}
+            >
+              Home
+            </Link>
             <Link
               href="/search"
-              className="block rounded-xl px-5 py-3 text-sm font-semibold text-background bg-primary hover:bg-primary-hover transition-colors"
-              onClick={toggleMenu}
+              className="block rounded-2xl border border-border px-5 py-3 text-sm font-medium text-muted-foreground transition-all hover:border-primary hover:text-primary"
+              onClick={() => setOpen(false)}
             >
-              All Categories
+              Browse Catalog
             </Link>
             {categories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/category/${cat.slug}`}
-                className="block rounded-xl px-5 py-3 text-sm font-medium text-muted-foreground hover:bg-card hover:text-primary border border-transparent hover:border-border transition-all"
-                onClick={toggleMenu}
+                className="block rounded-2xl border border-transparent px-5 py-3 text-sm font-medium text-muted-foreground transition-all hover:border-border hover:bg-surface hover:text-primary"
+                onClick={() => setOpen(false)}
               >
                 {cat.title}
               </Link>

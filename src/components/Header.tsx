@@ -1,57 +1,78 @@
 import React from 'react'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { getCategories } from '@/services/categories'
-import type { Category } from '@/payload-types'
+import { Search } from 'lucide-react'
+import { filterNavShell, getNavigation } from '@/services/navigation'
+import { getNavVisibilityClasses } from '@/lib/navVisibility'
+import { getNavIcon } from '@/lib/navIcons'
 import { HeaderCartIcon } from './HeaderCartIcon'
+import { HeaderToolbar } from './HeaderToolbar'
+import { NavItemLink, getNavButtonClasses } from './NavItemLink'
+import { NavMegaMenu } from './NavMegaMenu'
 
-const MobileMenu = dynamic(() => import('./MobileMenu'))
+function renderHeaderItem(item: Awaited<ReturnType<typeof getNavigation>>[number]) {
+  const visibility = getNavVisibilityClasses(item, 'inline-flex')
+  const baseClass = `${visibility} items-center text-sm font-medium transition-colors`.trim()
 
-export async function Header() {
-  const categories = await getCategories()
+  if (item.itemType === 'megaMenu') {
+    return <NavMegaMenu key={item.id} item={item} className={baseClass} />
+  }
+
+  if (item.itemType === 'button') {
+    const Icon = getNavIcon(item.icon)
+    return (
+      <NavItemLink
+        key={item.id}
+        item={item}
+        icon={Icon}
+        className={`${baseClass} inline-flex gap-2 rounded-xl px-4 py-2.5 ${getNavButtonClasses(item.styleVariant)}`}
+      />
+    )
+  }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background border-b border-border">
-      <div className="mx-auto flex h-14 sm:h-16 md:h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 relative">
-        <div className="flex items-center flex-1 md:flex-none">
-          <MobileMenu categories={categories} />
+    <NavItemLink
+      key={item.id}
+      item={item}
+      className={`${baseClass} text-muted-foreground hover:text-primary`}
+    />
+  )
+}
 
-          <nav className="hidden md:flex ml-8 space-x-8 text-sm font-medium text-foreground">
-            <Link href="/" className="hover:text-primary transition-colors">
-              Home
-            </Link>
-            <div className="relative group flex items-center">
-              <span className="cursor-pointer hover:text-primary transition-colors">
-                Categories
-              </span>
-              <div className="absolute left-0 top-full mt-2 hidden w-56 rounded-xl border border-border bg-card p-2 shadow-xl group-hover:block z-50">
-                {categories.map((cat: Category) => (
-                  <Link
-                    key={cat.id}
-                    href={`/category/${cat.slug}`}
-                    className="block rounded-lg px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-primary transition-all"
-                  >
-                    {cat.title}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <Link href="/search" className="hover:text-primary transition-colors">
-              Browse
-            </Link>
+export async function Header({
+  navItems,
+}: {
+  navItems: Awaited<ReturnType<typeof getNavigation>>
+}) {
+  const headerItems = filterNavShell(navItems, 'header')
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-black/95 backdrop-blur-md">
+      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:h-16 md:h-20 md:px-6 lg:px-8">
+        {headerItems.length > 0 && (
+          <nav className="flex min-w-0 flex-1 flex-wrap items-center gap-4 md:gap-6">
+            {headerItems.map(renderHeaderItem)}
           </nav>
+        )}
+
+        <div
+          className={`hidden items-center gap-4 md:flex ${headerItems.length === 0 ? 'ml-auto' : ''}`}
+        >
+          <Link
+            href="/search"
+            className="flex min-w-[280px] items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5 transition-colors hover:border-primary/40"
+          >
+            <Search className="h-4 w-4 text-primary" />
+            <span className="text-sm text-muted-foreground">Search watches, wallets, bags...</span>
+          </Link>
+          <HeaderCartIcon />
         </div>
 
-        <Link href="/" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <span className="font-sans text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-foreground">
-            Review<span className="text-primary">Cart</span>
-          </span>
-        </Link>
-
-        <div className="flex items-center justify-end flex-1 md:flex-none">
+        <div className="md:hidden">
           <HeaderCartIcon />
         </div>
       </div>
+
+      <HeaderToolbar navItems={navItems} />
     </header>
   )
 }

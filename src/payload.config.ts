@@ -9,13 +9,17 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { createWranglerRemoteD1Binding } from './lib/wranglerRemoteD1'
 import { autoDraftPlugin } from './plugins/autoDraft'
+import { autoSlugPlugin } from './plugins/autoSlug'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
 import { Brands } from './collections/Brands'
 import { Tags } from './collections/Tags'
+import { ProductVariants } from './collections/ProductVariants'
 import { Products } from './collections/Products'
 import { Reviews } from './collections/Reviews'
+import { VariantTypes } from './collections/VariantTypes'
+import { NavItems } from './collections/NavItems'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -75,7 +79,18 @@ export default buildConfig({
   graphQL: {
     disable: true,
   },
-  collections: [Users, Media, Categories, Brands, Tags, Products, Reviews],
+  collections: [
+    Users,
+    Media,
+    Categories,
+    Brands,
+    Tags,
+    VariantTypes,
+    Products,
+    ProductVariants,
+    Reviews,
+    NavItems,
+  ],
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -83,7 +98,8 @@ export default buildConfig({
   db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
-    autoDraftPlugin(),
+    autoSlugPlugin(),
+    autoDraftPlugin({ exclude: ['nav-items'] }),
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },

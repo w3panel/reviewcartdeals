@@ -115,7 +115,7 @@ export async function findCatalogProducts(payload: BasePayload, options: Catalog
       gallery: true,
       featured: true,
       limitedEdition: true,
-      variants: true,
+      enableVariants: true,
       specifications: true,
       createdAt: true,
       updatedAt: true,

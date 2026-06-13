@@ -72,22 +72,32 @@ export interface Config {
     categories: Category;
     brands: Brand;
     tags: Tag;
+    'variant-types': VariantType;
     products: Product;
+    'product-variants': ProductVariant;
     reviews: Review;
+    'nav-items': NavItem;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    products: {
+      linkedVariants: 'product-variants';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    'variant-types': VariantTypesSelect<false> | VariantTypesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'nav-items': NavItemsSelect<false> | NavItemsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -176,6 +186,9 @@ export interface Media {
 export interface Category {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   image: number | Media;
   icon?: (number | null) | Media;
@@ -183,6 +196,7 @@ export interface Category {
   featured?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -191,12 +205,16 @@ export interface Category {
 export interface Brand {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   image?: (number | null) | Media;
   description?: string | null;
   verified?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -205,9 +223,40 @@ export interface Brand {
 export interface Tag {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variant-types".
+ */
+export interface VariantType {
+  id: number;
+  /**
+   * Display name shown in the admin and storefront, e.g. Color.
+   */
+  label: string;
+  /**
+   * Machine key auto-generated from the label. Edit to override.
+   */
+  name: string;
+  /**
+   * Allowed values for this variant type, e.g. Red, Blue, Black.
+   */
+  options?:
+    | {
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -216,6 +265,9 @@ export interface Tag {
 export interface Product {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   brand: number | Brand;
   /**
@@ -235,32 +287,21 @@ export interface Product {
   featured?: boolean | null;
   limitedEdition?: boolean | null;
   /**
-   * Optional product options. Shoppers pick a variant before adding to their enquiry.
+   * Turn on when this product has selectable options such as color or size.
    */
-  variants?:
-    | {
-        /**
-         * Add any attribute-value pairs for this variant, e.g. RAM → 8GB, Storage → 128GB.
-         */
-        attributes?:
-          | {
-              key: string;
-              value: string;
-              id?: string | null;
-            }[]
-          | null;
-        /**
-         * Optional images for this variant. When selected, these replace the main product gallery.
-         */
-        gallery?:
-          | {
-              image: number | Media;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
+  enableVariants?: boolean | null;
+  /**
+   * Select the option types for this product (e.g. Color, Size).
+   */
+  variantTypes?: (number | VariantType)[] | null;
+  /**
+   * Valid variant combinations for this product.
+   */
+  linkedVariants?: {
+    docs?: (number | ProductVariant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   /**
    * Add as many specification rows as needed. Each row is a name/value pair.
    */
@@ -278,6 +319,41 @@ export interface Product {
   tags?: (number | Tag)[] | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants".
+ */
+export interface ProductVariant {
+  id: number;
+  product: number | Product;
+  /**
+   * Auto-generated from the selected option values.
+   */
+  title?: string | null;
+  /**
+   * One row per variant type on the product, e.g. Color = Red, Size = XL.
+   */
+  options?:
+    | {
+        type: number | VariantType;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Images shown when this variant combination is selected on the storefront.
+   */
+  gallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -296,6 +372,53 @@ export interface Review {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Manage navigation links across header, mobile bottom bar, footer, and mobile toolbar. Control device visibility per item.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nav-items".
+ */
+export interface NavItem {
+  id: number;
+  label: string;
+  /**
+   * Internal path (e.g. /search) or full URL (e.g. https://wa.me/123).
+   */
+  href: string;
+  itemType?: ('link' | 'megaMenu' | 'button') | null;
+  styleVariant?: ('default' | 'primary' | 'whatsapp' | 'iconOnly') | null;
+  /**
+   * Choose every UI region where this item should appear.
+   */
+  placements: ('header' | 'bottom' | 'footer' | 'toolbar')[];
+  showOnDesktop?: boolean | null;
+  showOnTablet?: boolean | null;
+  showOnMobile?: boolean | null;
+  /**
+   * Links shown in the mega menu dropdown.
+   */
+  children?:
+    | {
+        label: string;
+        href: string;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  enabled?: boolean | null;
+  /**
+   * Lower numbers appear first within each placement.
+   */
+  sortOrder: number;
+  openInNewTab?: boolean | null;
+  /**
+   * Icon for bottom bar, toolbar, or button items.
+   */
+  icon?: ('none' | 'home' | 'grid' | 'star' | 'heart' | 'user' | 'message' | 'search' | 'menu' | 'phone') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -344,12 +467,24 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
+        relationTo: 'variant-types';
+        value: number | VariantType;
+      } | null)
+    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
     | ({
+        relationTo: 'product-variants';
+        value: number | ProductVariant;
+      } | null)
+    | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'nav-items';
+        value: number | NavItem;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -444,6 +579,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   featured?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -457,6 +593,7 @@ export interface BrandsSelect<T extends boolean = true> {
   verified?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -467,6 +604,24 @@ export interface TagsSelect<T extends boolean = true> {
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variant-types_select".
+ */
+export interface VariantTypesSelect<T extends boolean = true> {
+  label?: T;
+  name?: T;
+  options?:
+    | T
+    | {
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -486,24 +641,9 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   featured?: T;
   limitedEdition?: T;
-  variants?:
-    | T
-    | {
-        attributes?:
-          | T
-          | {
-              key?: T;
-              value?: T;
-              id?: T;
-            };
-        gallery?:
-          | T
-          | {
-              image?: T;
-              id?: T;
-            };
-        id?: T;
-      };
+  enableVariants?: T;
+  variantTypes?: T;
+  linkedVariants?: T;
   specifications?:
     | T
     | {
@@ -520,6 +660,31 @@ export interface ProductsSelect<T extends boolean = true> {
   tags?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants_select".
+ */
+export interface ProductVariantsSelect<T extends boolean = true> {
+  product?: T;
+  title?: T;
+  options?:
+    | T
+    | {
+        type?: T;
+        value?: T;
+        id?: T;
+      };
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -537,6 +702,35 @@ export interface ReviewsSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nav-items_select".
+ */
+export interface NavItemsSelect<T extends boolean = true> {
+  label?: T;
+  href?: T;
+  itemType?: T;
+  styleVariant?: T;
+  placements?: T;
+  showOnDesktop?: T;
+  showOnTablet?: T;
+  showOnMobile?: T;
+  children?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  enabled?: T;
+  sortOrder?: T;
+  openInNewTab?: T;
+  icon?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
-import { formatSlug } from '@/lib/formatSlug'
 import { findCatalogProducts } from '@/lib/productFilters'
 import { getProductReviewStatsBatch } from '@/services/reviews'
 
@@ -61,12 +60,6 @@ export const Products: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      admin: {
-        position: 'sidebar',
-      },
-      hooks: {
-        beforeValidate: [formatSlug('title')],
-      },
     },
     {
       name: 'brand',
@@ -124,67 +117,36 @@ export const Products: CollectionConfig = {
       defaultValue: false,
     },
     {
-      name: 'variants',
-      type: 'array',
-      labels: {
-        singular: 'Variant',
-        plural: 'Variants',
-      },
+      name: 'enableVariants',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Enable Variants',
       admin: {
-        description:
-          'Optional product options. Shoppers pick a variant before adding to their enquiry.',
-        initCollapsed: true,
+        description: 'Turn on when this product has selectable options such as color or size.',
       },
-      fields: [
-        {
-          name: 'attributes',
-          type: 'array',
-          labels: {
-            singular: 'Attribute',
-            plural: 'Product Attributes',
-          },
-          admin: {
-            description:
-              'Add any attribute-value pairs for this variant, e.g. RAM → 8GB, Storage → 128GB.',
-          },
-          fields: [
-            {
-              name: 'key',
-              label: 'Attribute',
-              type: 'text',
-              required: true,
-            },
-            {
-              name: 'value',
-              label: 'Value',
-              type: 'text',
-              required: true,
-            },
-          ],
-        },
-        {
-          name: 'gallery',
-          type: 'array',
-          labels: {
-            singular: 'Image',
-            plural: 'Gallery',
-          },
-          admin: {
-            description:
-              'Optional images for this variant. When selected, these replace the main product gallery.',
-            initCollapsed: true,
-          },
-          fields: [
-            {
-              name: 'image',
-              label: 'Image',
-              type: 'relationship',
-              relationTo: 'media',
-              required: true,
-            },
-          ],
-        },
-      ],
+    },
+    {
+      name: 'variantTypes',
+      type: 'relationship',
+      relationTo: 'variant-types',
+      hasMany: true,
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        allowCreate: true,
+        description: 'Select the option types for this product (e.g. Color, Size).',
+      },
+    },
+    {
+      name: 'linkedVariants',
+      type: 'join',
+      collection: 'product-variants',
+      on: 'product',
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        allowCreate: true,
+        defaultColumns: ['title', '_status'],
+        description: 'Valid variant combinations for this product.',
+      },
     },
     {
       name: 'specifications',

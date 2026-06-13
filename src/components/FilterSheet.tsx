@@ -1,154 +1,140 @@
 'use client'
 
 import React from 'react'
-import { X, Search, ChevronDown } from 'lucide-react'
-import Image from 'next/image'
-import { getImageUrl } from '@/lib/utils'
+import Link from 'next/link'
+import { ArrowLeft, ChevronDown, MessageCircle } from 'lucide-react'
 import type { Category } from '@/payload-types'
+import { useFilterSheet } from '@/context/FilterSheetContext'
 
 interface FilterSheetProps {
-  isOpen: boolean
-  onClose: () => void
   categories: Category[]
   brands: string[]
   selectedCategory: string | null
   setSelectedCategory: (cat: string | null) => void
   selectedBrands: string[]
+  setSelectedBrands: (brands: string[]) => void
   toggleBrand: (brand: string) => void
   handleClearAll: () => void
   totalDocs: number
 }
 
 export function FilterSheet({
-  isOpen,
-  onClose,
   categories,
   brands,
   selectedCategory,
   setSelectedCategory,
   selectedBrands,
+  setSelectedBrands,
   toggleBrand,
   handleClearAll,
   totalDocs,
 }: FilterSheetProps) {
+  const { isOpen, closeFilter } = useFilterSheet()
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col justify-end">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-
-      <div className="relative bg-background w-full rounded-t-3xl shadow-xl flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <button type="button" onClick={onClose} className="p-1" aria-label="Close filters">
-              <X className="w-6 h-6 text-foreground" />
-            </button>
-            <h2 className="text-xl font-bold text-foreground">Filters</h2>
-          </div>
+    <div className="fixed inset-0 z-[100] flex flex-col bg-black">
+      <div className="flex items-center justify-between border-b border-border px-4 py-4">
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleClearAll}
-            className="text-sm font-medium text-primary"
+            onClick={closeFilter}
+            className="rounded-full p-2 text-white transition-colors hover:bg-surface"
+            aria-label="Close filters"
           >
-            Reset
+            <ArrowLeft className="h-5 w-5" />
           </button>
+          <h2 className="font-serif text-2xl text-white">Filters</h2>
         </div>
+        <button type="button" onClick={handleClearAll} className="text-sm font-medium text-primary">
+          Clear All
+        </button>
+      </div>
 
-        <div className="flex-1 overflow-y-auto p-5 pb-24 space-y-8 no-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar">
+        <div className="mx-auto max-w-2xl space-y-8">
           <div>
-            <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase mb-4">
-              Categories
-            </h3>
-            <div className="flex items-start gap-4 overflow-x-auto no-scrollbar pb-2">
-              {categories.map((cat) => (
+            <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Category
+            </label>
+            <div className="relative">
+              <select
+                value={selectedCategory ?? ''}
+                onChange={(event) => setSelectedCategory(event.target.value || null)}
+                className="w-full appearance-none rounded-2xl border border-border bg-surface px-4 py-4 text-sm text-white outline-none focus:border-primary"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.slug ?? ''}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Brand
+            </label>
+            <div className="relative">
+              <select
+                value={selectedBrands[0] ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value
+                  setSelectedBrands(value ? [value] : [])
+                }}
+                className="w-full appearance-none rounded-2xl border border-border bg-surface px-4 py-4 text-sm text-white outline-none focus:border-primary"
+              >
+                <option value="">All Brands</option>
+                {brands.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </div>
+
+          {selectedBrands.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedBrands.map((brand) => (
                 <button
-                  key={cat.id}
+                  key={brand}
                   type="button"
-                  onClick={() =>
-                    setSelectedCategory(selectedCategory === cat.slug ? null : cat.slug!)
-                  }
-                  className="flex flex-col items-center gap-2 flex-shrink-0"
+                  onClick={() => toggleBrand(brand)}
+                  className="rounded-full border border-primary px-3 py-1.5 text-xs font-medium text-primary"
                 >
-                  <div
-                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors overflow-hidden ${
-                      selectedCategory === cat.slug
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-foreground'
-                    }`}
-                  >
-                    {cat.image ? (
-                      <div className="w-full h-full relative">
-                        <Image
-                          src={getImageUrl(cat.image)}
-                          alt={cat.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <span className="text-xl font-bold">{cat.title.charAt(0)}</span>
-                    )}
-                  </div>
-                  <span className="text-xs font-medium text-foreground">{cat.title}</span>
+                  {brand} ×
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                Brand
-              </h3>
-              <Search className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <div className="space-y-4">
-              {brands.map((brand) => {
-                const isSelected = selectedBrands.includes(brand)
-                return (
-                  <button
-                    key={brand}
-                    type="button"
-                    onClick={() => toggleBrand(brand)}
-                    className="flex items-center gap-3 w-full"
-                  >
-                    <div
-                      className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${
-                        isSelected ? 'bg-primary border-primary' : 'border-border bg-transparent'
-                      }`}
-                    >
-                      {isSelected && (
-                        <svg
-                          className="w-3.5 h-3.5 text-primary-foreground"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{brand}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+          )}
         </div>
+      </div>
 
-        <div className="absolute bottom-0 left-0 w-full p-4 bg-background border-t border-border pb-safe">
+      <div className="border-t border-border p-4 pb-safe">
+        <div className="mx-auto flex max-w-2xl overflow-hidden rounded-2xl bg-primary">
           <button
             type="button"
-            onClick={onClose}
-            className="w-full py-4 rounded-xl bg-primary text-primary-foreground text-base font-bold"
+            onClick={closeFilter}
+            className="flex-1 px-4 py-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
           >
-            Show {totalDocs.toLocaleString()} Results
+            Apply Filters ({totalDocs.toLocaleString()})
           </button>
+          <Link
+            href={`https://wa.me/${whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-16 items-center justify-center border-l border-primary-foreground/15 bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
+            aria-label="Contact on WhatsApp"
+          >
+            <MessageCircle className="h-5 w-5" />
+          </Link>
         </div>
       </div>
     </div>

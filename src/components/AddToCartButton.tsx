@@ -2,10 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ShoppingCart } from 'lucide-react'
+import { ClipboardList } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
-import { hasVariants, type ProductVariant } from '@/lib/productVariants'
-import type { Product } from '@/payload-types'
+import type { Product, ProductVariant } from '@/payload-types'
 
 type AddToCartButtonProps = {
   product: Product
@@ -19,7 +18,7 @@ export function AddToCartButton({
   disabled = false,
 }: AddToCartButtonProps) {
   const { addItem } = useCart()
-  const productHasVariants = hasVariants(product)
+  const productHasVariants = Boolean(product.enableVariants)
 
   if (productHasVariants && !variant) {
     return (
@@ -44,7 +43,7 @@ export function AddToCartButton({
       disabled={disabled}
       className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3 text-xs font-bold text-primary-foreground uppercase tracking-widest bg-primary transition-colors duration-300 rounded-lg hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <ShoppingCart className="w-4 h-4" />
+      <ClipboardList className="w-4 h-4" />
       Add to Enquiry
     </button>
   )

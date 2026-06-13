@@ -1,0 +1,93 @@
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { getImageUrl } from '@/lib/utils'
+import type { Category } from '@/payload-types'
+
+type CategoryScrollerProps = {
+  categories: Category[]
+  selectedCategory?: string | null
+  onSelectCategory?: (slug: string | null) => void
+  showViewAll?: boolean
+}
+
+export function CategoryScroller({
+  categories,
+  selectedCategory = null,
+  onSelectCategory,
+  showViewAll = true,
+}: CategoryScrollerProps) {
+  return (
+    <section className="px-4 pt-8 md:pt-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-xl sm:text-2xl text-white">Categories</h2>
+          {showViewAll && (
+            <Link href="/search" className="text-sm text-primary underline underline-offset-4">
+              View all
+            </Link>
+          )}
+        </div>
+
+        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar sm:gap-4">
+          {categories.map((category) => {
+            const isSelected = selectedCategory === category.slug
+            const content = (
+              <>
+                <div
+                  className={`relative h-24 w-28 flex-shrink-0 overflow-hidden rounded-2xl border bg-surface sm:h-28 sm:w-32 ${
+                    isSelected ? 'border-primary ring-1 ring-primary' : 'border-border'
+                  }`}
+                >
+                  {category.image ? (
+                    <Image
+                      src={getImageUrl(category.image)}
+                      alt={category.title}
+                      fill
+                      className="object-cover opacity-90"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center bg-muted text-2xl font-serif text-primary">
+                      {category.title.charAt(0)}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                </div>
+                <span className="mt-2 block max-w-28 truncate text-center text-xs font-medium text-white sm:max-w-32">
+                  {category.title}
+                </span>
+              </>
+            )
+
+            if (onSelectCategory) {
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() =>
+                    onSelectCategory(selectedCategory === category.slug ? null : category.slug!)
+                  }
+                  className="flex flex-shrink-0 flex-col items-center"
+                >
+                  {content}
+                </button>
+              )
+            }
+
+            return (
+              <Link
+                key={category.id}
+                href={`/category/${category.slug}`}
+                className="flex flex-shrink-0 flex-col items-center"
+              >
+                {content}
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}

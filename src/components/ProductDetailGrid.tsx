@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import type { Media, Product } from '@/payload-types'
+import type { Media, Product, ProductVariant } from '@/payload-types'
 import { buildVariantGalleryImages, hasVariants } from '@/lib/productVariants'
 import { ProductGallery } from '@/components/ProductGallery'
 import { ProductEnquiryActions } from '@/components/ProductEnquiryActions'
 
 type ProductDetailGridProps = {
   product: Product
+  variants: ProductVariant[]
   defaultGalleryImages: Media[]
   whatsappLink: string
   beforeActions: React.ReactNode
@@ -16,19 +17,19 @@ type ProductDetailGridProps = {
 
 export function ProductDetailGrid({
   product,
+  variants,
   defaultGalleryImages,
   whatsappLink,
   beforeActions,
   afterActions,
 }: ProductDetailGridProps) {
-  const variants = product.variants ?? []
-  const productHasVariants = hasVariants(product)
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    () => variants[0]?.id ?? null,
+  const productHasVariants = hasVariants(product, variants)
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(() =>
+    variants[0]?.id != null ? String(variants[0].id) : null,
   )
 
   const selectedVariant = useMemo(
-    () => variants.find((variant) => variant.id === selectedVariantId) ?? null,
+    () => variants.find((variant) => String(variant.id) === selectedVariantId) ?? null,
     [variants, selectedVariantId],
   )
 
@@ -39,7 +40,7 @@ export function ProductDetailGrid({
   }, [productHasVariants, selectedVariant, defaultGalleryImages])
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:gap-12 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
       <ProductGallery
         key={selectedVariantId ?? 'default'}
         images={galleryImages}
@@ -51,6 +52,7 @@ export function ProductDetailGrid({
 
         <ProductEnquiryActions
           product={product}
+          variants={variants}
           whatsappLink={whatsappLink}
           selectedVariantId={selectedVariantId}
           onSelectVariant={setSelectedVariantId}

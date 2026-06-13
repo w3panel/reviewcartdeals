@@ -36,6 +36,24 @@ export async function getProductBySlug(slug: string) {
   return response.docs[0] || null
 }
 
+export async function getProductVariants(productId: string | number) {
+  const payload = await getPayloadClient()
+
+  const response = await payload.find({
+    collection: 'product-variants',
+    where: withPublishedOnly({
+      product: {
+        equals: productId,
+      },
+    }),
+    depth: 2,
+    limit: 500,
+    pagination: false,
+  })
+
+  return response.docs
+}
+
 export async function getRelatedProducts(
   productId: string | number,
   categoryId: string | number,
@@ -67,7 +85,7 @@ export async function getRelatedProducts(
       brand: true,
       gallery: true,
       description: true,
-      variants: true,
+      enableVariants: true,
       category: true,
       updatedAt: true,
       createdAt: true,

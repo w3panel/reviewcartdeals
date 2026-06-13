@@ -26,7 +26,7 @@ export function VariantSelector({
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {variants.map((variant, index) => {
-          const isSelected = variant.id === selectedVariantId
+          const isSelected = String(variant.id) === selectedVariantId
           const thumbnail = getVariantThumbnail(variant, product)
           const label = formatVariantLabel(variant, index)
 
@@ -34,7 +34,7 @@ export function VariantSelector({
             <button
               key={variant.id}
               type="button"
-              onClick={() => onSelectVariant(variant.id ?? null)}
+              onClick={() => onSelectVariant(variant.id != null ? String(variant.id) : null)}
               className={`flex flex-col overflow-hidden rounded-2xl border bg-card text-left transition-all ${
                 isSelected
                   ? 'border-primary ring-1 ring-primary'
