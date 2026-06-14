@@ -5,15 +5,22 @@ import { getProducts, getAllBrands } from '@/services/products'
 import { emptyProductReviewStats, getProductReviewStatsBatch } from '@/services/reviews'
 import { HomeHero } from '@/components/HomeHero'
 import { CategoryScroller } from '@/components/CategoryScroller'
+import { FeaturedReviews } from '@/components/FeaturedReviews'
 import { ValuePropositions } from '@/components/ValuePropositions'
 
 const FrontPageCatalog = dynamic(
   () => import('./FrontPageCatalog').then((mod) => ({ default: mod.FrontPageCatalog })),
   {
     loading: () => (
-      <div className="px-4 py-12 text-center text-sm text-muted-foreground">Loading catalog...</div>
+      <div className="hidden px-4 py-12 text-center text-sm text-muted-foreground md:block">
+        Loading catalog...
+      </div>
     ),
   },
+)
+
+const HomeFilterHost = dynamic(() =>
+  import('@/components/HomeFilterHost').then((mod) => ({ default: mod.HomeFilterHost })),
 )
 
 export const revalidate = 60
@@ -46,13 +53,17 @@ export default async function HomePage() {
     <div className="min-h-screen w-full bg-background text-foreground">
       <HomeHero />
       <CategoryScroller categories={categories} />
-      <FrontPageCatalog
-        categories={categories}
-        brands={brands}
-        initialProducts={productsWithStats}
-        initialTotalDocs={totalDocs}
-      />
+      <FeaturedReviews products={productsWithStats} />
+      <div className="hidden md:block">
+        <FrontPageCatalog
+          categories={categories}
+          brands={brands}
+          initialProducts={productsWithStats}
+          initialTotalDocs={totalDocs}
+        />
+      </div>
       <ValuePropositions />
+      <HomeFilterHost categories={categories} brands={brands} initialTotalDocs={totalDocs} />
     </div>
   )
 }

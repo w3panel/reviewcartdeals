@@ -99,7 +99,8 @@ export const NavItems: CollectionConfig = {
       required: true,
       options: placementOptions,
       admin: {
-        description: 'Choose every UI region where this item should appear.',
+        description:
+          'Choose every UI region where this item should appear. Use Link type for the mobile bottom bar (mega menus are header-only).',
       },
     },
     {

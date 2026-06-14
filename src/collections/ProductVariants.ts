@@ -1,31 +1,32 @@
-import type { CollectionConfig, FilterOptionsProps } from 'payload'
+import type { CollectionConfig } from 'payload'
 
-import { autoTitleProductVariant, validateProductVariant } from '@/lib/productVariantHooks'
+import {
+  autoTitleProductVariant,
+  getProductVariantTypeIds,
+  validateProductVariant,
+} from '@/lib/productVariantHooks'
 
-async function getProductVariantTypeIds(
-  product: unknown,
-  req: FilterOptionsProps['req'],
-): Promise<number[]> {
-  const productId =
-    typeof product === 'number'
-      ? product
-      : typeof product === 'object' && product !== null && 'id' in product
-        ? (product as { id: number }).id
-        : null
+function getRelationshipId(value: unknown): number | null {
+  if (value == null) return null
+  if (typeof value === 'number') return value
+  if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value)
+  if (typeof value === 'object' && 'id' in value && typeof value.id === 'number') {
+    return value.id
+  }
+  if (
+    typeof value === 'object' &&
+    'id' in value &&
+    typeof value.id === 'string' &&
+    /^\d+$/.test(value.id)
+  ) {
+    return Number(value.id)
+  }
+  return null
+}
 
-  if (!productId) return []
-
-  const doc = await req.payload.findByID({
-    collection: 'products',
-    id: productId,
-    depth: 0,
-    overrideAccess: true,
-  })
-
-  const variantTypes = doc.variantTypes ?? []
-  return variantTypes
-    .map((entry) => (typeof entry === 'number' ? entry : entry?.id))
-    .filter((id): id is number => typeof id === 'number')
+function emptyRelationshipFilter() {
+  // Payload treats `false` as "no filter" (all options). An empty `in` list shows none.
+  return { id: { in: [] as number[] } }
 }
 
 export const ProductVariants: CollectionConfig = {
@@ -70,7 +71,8 @@ export const ProductVariants: CollectionConfig = {
       },
       minRows: 1,
       admin: {
-        description: 'One row per variant type on the product, e.g. Color = Red, Size = XL.',
+        description:
+          'Add one row per variant type assigned to the product. Example: if the product has Size and Color, add two rows — not two rows for the same type.',
         initCollapsed: false,
       },
       fields: [
@@ -80,12 +82,28 @@ export const ProductVariants: CollectionConfig = {
           type: 'relationship',
           relationTo: 'variant-types',
           required: true,
-          filterOptions: async ({ data, req }) => {
+          filterOptions: async ({ data, req, siblingData }) => {
             const allowedIds = await getProductVariantTypeIds(data?.product, req)
-            if (allowedIds.length === 0) return false
+            if (allowedIds.length === 0) return emptyRelationshipFilter()
+
+            const currentTypeId = getRelationshipId(
+              (siblingData as { type?: unknown } | undefined)?.type,
+            )
+            const usedInOtherRows = new Set<number>()
+
+            for (const row of (data?.options ?? []) as Array<{ type?: unknown }>) {
+              const rowTypeId = getRelationshipId(row?.type)
+              if (typeof rowTypeId === 'number' && rowTypeId !== currentTypeId) {
+                usedInOtherRows.add(rowTypeId)
+              }
+            }
+
+            const availableIds = allowedIds.filter((id) => !usedInOtherRows.has(id))
+            if (availableIds.length === 0) return emptyRelationshipFilter()
+
             return {
               id: {
-                in: allowedIds,
+                in: availableIds,
               },
             }
           },
@@ -94,6 +112,10 @@ export const ProductVariants: CollectionConfig = {
           name: 'value',
           type: 'text',
           required: true,
+          admin: {
+            description:
+              'Must match an option defined on the selected variant type (Catalog → Variant Types).',
+          },
         },
       ],
     },

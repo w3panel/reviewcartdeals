@@ -24,7 +24,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className="min-h-screen flex flex-col bg-background text-foreground pb-16 lg:pb-0"
+        className="min-h-screen flex flex-col bg-background text-foreground pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         suppressHydrationWarning
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>

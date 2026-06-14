@@ -32,12 +32,12 @@ export function CategoryScroller({
         </div>
 
         <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar sm:gap-4">
-          {categories.map((category) => {
+          {categories.slice(0, 5).map((category) => {
             const isSelected = selectedCategory === category.slug
             const content = (
               <>
                 <div
-                  className={`relative h-24 w-28 flex-shrink-0 overflow-hidden rounded-2xl border bg-surface sm:h-28 sm:w-32 ${
+                  className={`relative h-[88px] w-[88px] flex-shrink-0 overflow-hidden rounded-2xl border bg-surface sm:h-24 sm:w-24 ${
                     isSelected ? 'border-primary ring-1 ring-primary' : 'border-border'
                   }`}
                 >
@@ -55,7 +55,7 @@ export function CategoryScroller({
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 </div>
-                <span className="mt-2 block max-w-28 truncate text-center text-xs font-medium text-white sm:max-w-32">
+                <span className="mt-2 block max-w-[88px] truncate text-center text-xs font-medium text-white sm:max-w-24">
                   {category.title}
                 </span>
               </>

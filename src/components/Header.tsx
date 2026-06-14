@@ -47,16 +47,14 @@ export async function Header({
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-black/95 backdrop-blur-md">
-      <div className="relative mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:h-16 md:h-20 md:px-6 lg:px-8">
+      <div className="relative mx-auto hidden h-16 max-w-7xl items-center justify-between gap-4 px-6 lg:flex lg:h-20 lg:px-8">
         {headerItems.length > 0 && (
-          <nav className="flex min-w-0 flex-1 flex-wrap items-center gap-4 md:gap-6">
+          <nav className="flex min-w-0 flex-1 flex-wrap items-center gap-6">
             {headerItems.map(renderHeaderItem)}
           </nav>
         )}
 
-        <div
-          className={`hidden items-center gap-4 md:flex ${headerItems.length === 0 ? 'ml-auto' : ''}`}
-        >
+        <div className={`flex items-center gap-4 ${headerItems.length === 0 ? 'ml-auto' : ''}`}>
           <Link
             href="/search"
             className="flex min-w-[280px] items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5 transition-colors hover:border-primary/40"
@@ -64,10 +62,6 @@ export async function Header({
             <Search className="h-4 w-4 text-primary" />
             <span className="text-sm text-muted-foreground">Search watches, wallets, bags...</span>
           </Link>
-          <HeaderCartIcon />
-        </div>
-
-        <div className="md:hidden">
           <HeaderCartIcon />
         </div>
       </div>

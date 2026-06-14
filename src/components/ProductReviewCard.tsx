@@ -17,9 +17,14 @@ export type ProductWithStats = Product & {
 type ProductReviewCardProps = {
   product: ProductWithStats
   className?: string
+  variant?: 'default' | 'featured'
 }
 
-export function ProductReviewCard({ product, className = '' }: ProductReviewCardProps) {
+export function ProductReviewCard({
+  product,
+  className = '',
+  variant = 'default',
+}: ProductReviewCardProps) {
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
   const brandTitle =
     typeof product.brand === 'object' && product.brand !== null
@@ -29,17 +34,22 @@ export function ProductReviewCard({ product, className = '' }: ProductReviewCard
   const reviewCount = product.stats?.totalReviews ?? 0
   const whatsappMessage = `Hello, I am interested in ${product.title}. Can you share more details?`
 
+  const isFeatured = variant === 'featured'
+
   return (
     <article
       className={`flex flex-col overflow-hidden rounded-2xl border border-border bg-card ${className}`}
     >
-      <Link href={`/product/${product.slug}`} className="relative aspect-[4/3] bg-black">
+      <Link
+        href={`/product/${product.slug}`}
+        className={`relative bg-black ${isFeatured ? 'aspect-[3/4]' : 'aspect-[4/3]'}`}
+      >
         <Image
           src={getImageUrl(getProductMainImage(product))}
           alt={product.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
-          className="object-contain p-4"
+          className={isFeatured ? 'object-cover' : 'object-contain p-4'}
         />
       </Link>
 
@@ -82,7 +92,7 @@ export function ProductReviewCard({ product, className = '' }: ProductReviewCard
             href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-primary text-primary transition-colors hover:bg-primary/10"
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
             aria-label={`WhatsApp enquiry for ${product.title}`}
           >
             <MessageCircle className="h-4 w-4" />

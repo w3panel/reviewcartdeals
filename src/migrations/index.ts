@@ -19,6 +19,8 @@ import * as migration_20260613_fix_draft_child_fks from './20260613_fix_draft_ch
 import * as migration_20260614_add_nav_items from './20260614_add_nav_items'
 import * as migration_20260615_nav_device_visibility from './20260615_nav_device_visibility'
 import * as migration_20260616_reseed_nav_items from './20260616_reseed_nav_items'
+import * as migration_20260617_add_variant_collections from './20260617_add_variant_collections'
+import * as migration_20260618_add_nav_items_locked_docs from './20260618_add_nav_items_locked_docs'
 
 export const migrations = [
   {
@@ -125,5 +127,15 @@ export const migrations = [
     up: migration_20260616_reseed_nav_items.up,
     down: migration_20260616_reseed_nav_items.down,
     name: '20260616_reseed_nav_items',
+  },
+  {
+    up: migration_20260617_add_variant_collections.up,
+    down: migration_20260617_add_variant_collections.down,
+    name: '20260617_add_variant_collections',
+  },
+  {
+    up: migration_20260618_add_nav_items_locked_docs.up,
+    down: migration_20260618_add_nav_items_locked_docs.down,
+    name: '20260618_add_nav_items_locked_docs',
   },
 ]

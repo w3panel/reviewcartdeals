@@ -291,7 +291,7 @@ export interface Product {
    */
   enableVariants?: boolean | null;
   /**
-   * Select the option types for this product (e.g. Color, Size).
+   * Select existing types from Catalog → Variant Types (e.g. Color, Size). Save the product after changing this list.
    */
   variantTypes?: (number | VariantType)[] | null;
   /**
@@ -333,11 +333,14 @@ export interface ProductVariant {
    */
   title?: string | null;
   /**
-   * One row per variant type on the product, e.g. Color = Red, Size = XL.
+   * Add one row per variant type assigned to the product. Example: if the product has Size and Color, add two rows — not two rows for the same type.
    */
   options?:
     | {
         type: number | VariantType;
+        /**
+         * Must match an option defined on the selected variant type (Catalog → Variant Types).
+         */
         value: string;
         id?: string | null;
       }[]
@@ -392,7 +395,7 @@ export interface NavItem {
   itemType?: ('link' | 'megaMenu' | 'button') | null;
   styleVariant?: ('default' | 'primary' | 'whatsapp' | 'iconOnly') | null;
   /**
-   * Choose every UI region where this item should appear.
+   * Choose every UI region where this item should appear. Use Link type for the mobile bottom bar (mega menus are header-only).
    */
   placements: ('header' | 'bottom' | 'footer' | 'toolbar')[];
   showOnDesktop?: boolean | null;

@@ -132,8 +132,9 @@ export const Products: CollectionConfig = {
       hasMany: true,
       admin: {
         condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        allowCreate: true,
-        description: 'Select the option types for this product (e.g. Color, Size).',
+        allowCreate: false,
+        description:
+          'Select existing types from Catalog → Variant Types (e.g. Color, Size). Save the product after changing this list.',
       },
     },
     {
