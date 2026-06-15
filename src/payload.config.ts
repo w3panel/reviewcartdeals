@@ -2,11 +2,9 @@ import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
-import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
-import { GetPlatformProxyOptions } from 'wrangler'
-import { r2Storage } from '@payloadcms/storage-r2'
 
 import { autoDraftPlugin } from './plugins/autoDraft'
 import { autoSlugPlugin } from './plugins/autoSlug'
@@ -29,8 +27,6 @@ const isCLI = process.argv.some((value) =>
   realpath(value)?.endsWith(path.join('payload', 'bin.js')),
 )
 const isProduction = process.env.NODE_ENV === 'production'
-const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
-const isLocalWrangler = isCLI || !isProduction || isBuild
 
 const databaseUri = process.env.DATABASE_URI ?? process.env.DATABASE_URL
 if (!databaseUri && (isCLI || isProduction)) {
@@ -38,6 +34,13 @@ if (!databaseUri && (isCLI || isProduction)) {
     'DATABASE_URI (or DATABASE_URL) is required. Example: postgresql://user:password@localhost:5432/reviewcartdeals',
   )
 }
+
+const r2Bucket = process.env.R2_BUCKET
+const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID
+const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY
+const r2Endpoint = process.env.R2_ENDPOINT
+
+const r2StorageEnabled = Boolean(r2Bucket && r2AccessKeyId && r2SecretAccessKey && r2Endpoint)
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -48,7 +51,7 @@ const createLog =
     }
   }
 
-const cloudflareLogger = {
+const productionLogger = {
   level: process.env.PAYLOAD_LOG_LEVEL || 'info',
   trace: createLog('trace', console.debug),
   debug: createLog('debug', console.debug),
@@ -59,11 +62,6 @@ const cloudflareLogger = {
   silent: () => {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any // Use PayloadLogger type when it's exported
-
-// Cloudflare context is only required for R2 media storage.
-const cloudflare = isLocalWrangler
-  ? await getCloudflareContextFromWrangler()
-  : await getCloudflareContext({ async: true })
 
 export default buildConfig({
   admin: {
@@ -97,23 +95,23 @@ export default buildConfig({
     },
     push: false,
   }),
-  logger: isProduction ? cloudflareLogger : undefined,
+  logger: isProduction ? productionLogger : undefined,
   plugins: [
     autoSlugPlugin(),
     autoDraftPlugin({ exclude: ['nav-items'] }),
-    r2Storage({
-      bucket: cloudflare.env.R2,
+    s3Storage({
+      enabled: r2StorageEnabled,
+      bucket: r2Bucket ?? '',
       collections: { media: true },
+      config: {
+        credentials: {
+          accessKeyId: r2AccessKeyId ?? '',
+          secretAccessKey: r2SecretAccessKey ?? '',
+        },
+        region: 'auto',
+        endpoint: r2Endpoint ?? '',
+        forcePathStyle: true,
+      },
     }),
   ],
 })
-
-function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
-  return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
-    ({ getPlatformProxy }) =>
-      getPlatformProxy({
-        environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: false,
-      } satisfies GetPlatformProxyOptions),
-  )
-}
