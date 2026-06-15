@@ -94,7 +94,7 @@ async function main() {
   const migrationDir = path.join(process.cwd(), 'src', 'migrations')
   const migrationPath = path.join(migrationDir, `${migrationName}.ts`)
 
-  const migrationSource = `import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
+  const migrationSource = `import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
 ${upSQL

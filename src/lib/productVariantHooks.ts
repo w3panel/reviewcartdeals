@@ -26,6 +26,79 @@ function getRelationshipId(value: unknown): number | null {
   return null
 }
 
+async function getPublishedProduct(
+  productId: number,
+  req: Parameters<CollectionBeforeValidateHook>[0]['req'],
+  depth = 0,
+): Promise<Product> {
+  return (await req.payload.findByID({
+    collection: 'products',
+    id: productId,
+    depth,
+    overrideAccess: true,
+    draft: false,
+  })) as Product
+}
+
+async function getEffectiveProduct(
+  productId: number,
+  req: Parameters<CollectionBeforeValidateHook>[0]['req'],
+  depth = 0,
+): Promise<Product> {
+  try {
+    const draftProduct = (await req.payload.findByID({
+      collection: 'products',
+      id: productId,
+      depth,
+      overrideAccess: true,
+      draft: true,
+    })) as Product
+
+    if (draftProduct._status === 'draft') {
+      return draftProduct
+    }
+  } catch {
+    // No draft version — use the published product below.
+  }
+
+  return getPublishedProduct(productId, req, depth)
+}
+
+async function resolveVariantTypes(
+  variantTypeEntries: Product['variantTypes'],
+  req: Parameters<CollectionBeforeValidateHook>[0]['req'],
+): Promise<VariantType[]> {
+  const resolved = await Promise.all(
+    (variantTypeEntries ?? []).map(async (entry) => {
+      if (typeof entry === 'object' && entry !== null) {
+        return entry
+      }
+
+      if (typeof entry === 'number') {
+        return req.payload.findByID({
+          collection: 'variant-types',
+          id: entry,
+          depth: 0,
+          overrideAccess: true,
+          draft: false,
+        }) as Promise<VariantType | null>
+      }
+
+      return null
+    }),
+  )
+
+  return resolved.filter((entry): entry is VariantType => entry !== null)
+}
+
+function isSharedVariantType(type: VariantType): boolean {
+  return Boolean(type.sharedAcrossVariants)
+}
+
+function getVariantLevelTypes(types: VariantType[]): VariantType[] {
+  return types.filter((type) => !isSharedVariantType(type))
+}
+
 export async function getProductVariantTypeIds(
   product: unknown,
   req: Parameters<CollectionBeforeValidateHook>[0]['req'],
@@ -33,22 +106,8 @@ export async function getProductVariantTypeIds(
   const productId = getRelationshipId(product)
   if (!productId) return []
 
-  async function fetchIds(draft: boolean): Promise<number[]> {
-    const doc = (await req.payload.findByID({
-      collection: 'products',
-      id: productId,
-      depth: 0,
-      overrideAccess: true,
-      draft,
-    })) as Product
-
-    return (doc.variantTypes ?? [])
-      .map((entry) => getRelationshipId(entry))
-      .filter((id): id is number => typeof id === 'number')
-  }
-
-  const [publishedIds, draftIds] = await Promise.all([fetchIds(false), fetchIds(true)])
-  return [...new Set([...publishedIds, ...draftIds])]
+  const productVariantTypes = await loadProductVariantTypes(productId, req)
+  return getVariantLevelTypes(productVariantTypes).map((type) => type.id)
 }
 
 function getVariantTypeOptionValues(variantType: VariantType): string[] {
@@ -60,58 +119,71 @@ function getVariantTypeOptionValues(variantType: VariantType): string[] {
 async function loadProductVariantTypes(
   productId: number,
   req: Parameters<CollectionBeforeValidateHook>[0]['req'],
+  options: { publishedOnly?: boolean } = {},
 ): Promise<VariantType[]> {
-  async function fetchTypes(draft: boolean): Promise<VariantType[]> {
-    const product = (await req.payload.findByID({
-      collection: 'products',
-      id: productId,
-      depth: 1,
-      overrideAccess: true,
-      draft,
-    })) as Product
+  const product = options.publishedOnly
+    ? await getPublishedProduct(productId, req, 1)
+    : await getEffectiveProduct(productId, req, 1)
+  return resolveVariantTypes(product.variantTypes, req)
+}
 
-    const variantTypes = product.variantTypes ?? []
-    const resolved = await Promise.all(
-      variantTypes.map(async (entry) => {
-        if (typeof entry === 'object' && entry !== null) {
-          return entry
-        }
+function mergeOptionRows(
+  incoming: VariantOptionRow[],
+  existing: VariantOptionRow[] | undefined,
+): VariantOptionRow[] {
+  if (!existing?.length) return incoming
 
-        if (typeof entry === 'number') {
-          const publishedType = (await req.payload.findByID({
-            collection: 'variant-types',
-            id: entry,
-            depth: 0,
-            overrideAccess: true,
-            draft: false,
-          })) as VariantType | null
-
-          if (publishedType) return publishedType
-
-          return req.payload.findByID({
-            collection: 'variant-types',
-            id: entry,
-            depth: 0,
-            overrideAccess: true,
-            draft: true,
-          }) as Promise<VariantType>
-        }
-
-        return null
-      }),
-    )
-
-    return resolved.filter((entry): entry is VariantType => entry !== null)
+  const existingByType = new Map<number, VariantOptionRow>()
+  for (const row of existing) {
+    const typeId = getRelationshipId(row.type)
+    if (typeId !== null) {
+      existingByType.set(typeId, row)
+    }
   }
 
-  const [publishedTypes, draftTypes] = await Promise.all([fetchTypes(false), fetchTypes(true)])
-  const typesById = new Map<number, VariantType>()
+  const mergedIncoming = incoming.map((row) => {
+    const typeId = getRelationshipId(row.type)
+    const value = row.value?.trim()
+    if (value || typeId === null) return row
 
-  for (const type of [...publishedTypes, ...draftTypes]) {
-    typesById.set(type.id, type)
-  }
+    const previous = existingByType.get(typeId)
+    if (previous?.value?.trim()) {
+      return { ...row, value: previous.value }
+    }
 
-  return [...typesById.values()]
+    return row
+  })
+
+  const seenTypeIds = new Set(
+    mergedIncoming
+      .map((row) => getRelationshipId(row.type))
+      .filter((id): id is number => id !== null),
+  )
+
+  const preservedRows = existing.filter((row) => {
+    const typeId = getRelationshipId(row.type)
+    return typeId !== null && !seenTypeIds.has(typeId) && row.value?.trim()
+  })
+
+  return [...mergedIncoming, ...preservedRows]
+}
+
+function ensureOptionRowsForProductTypes(
+  options: VariantOptionRow[],
+  productVariantTypes: VariantType[],
+): VariantOptionRow[] {
+  const seenTypeIds = new Set(
+    options
+      .map((option) => getRelationshipId(option.type))
+      .filter((id): id is number => id !== null),
+  )
+
+  const missingRows = getVariantLevelTypes(productVariantTypes)
+    .filter((type) => !seenTypeIds.has(type.id))
+    .map((type) => ({ type: type.id, value: '' }))
+
+  if (missingRows.length === 0) return options
+  return [...options, ...missingRows]
 }
 
 async function resolveVariantTypeLabel(
@@ -150,6 +222,8 @@ async function syncMissingProductVariantTypes(
   options: VariantOptionRow[],
   req: Parameters<CollectionBeforeValidateHook>[0]['req'],
 ): Promise<void> {
+  if (req.context.syncingProductVariantTypes) return
+
   const optionTypeIds = [
     ...new Set(
       options
@@ -159,30 +233,14 @@ async function syncMissingProductVariantTypes(
   ]
   if (optionTypeIds.length === 0) return
 
-  const currentIds = await getProductVariantTypeIds(productId, req)
+  const publishedProduct = await getPublishedProduct(productId, req)
+  const currentIds = (publishedProduct.variantTypes ?? [])
+    .map((entry) => getRelationshipId(entry))
+    .filter((id): id is number => typeof id === 'number')
   const missing = optionTypeIds.filter((id) => !currentIds.includes(id))
   if (missing.length === 0) return
 
-  const [publishedProduct, draftProduct] = await Promise.all([
-    req.payload.findByID({
-      collection: 'products',
-      id: productId,
-      depth: 0,
-      overrideAccess: true,
-      draft: false,
-    }),
-    req.payload.findByID({
-      collection: 'products',
-      id: productId,
-      depth: 0,
-      overrideAccess: true,
-      draft: true,
-    }),
-  ])
-
-  const enableVariants =
-    (draftProduct as Product).enableVariants || (publishedProduct as Product).enableVariants
-  if (!enableVariants) return
+  if (!publishedProduct.enableVariants) return
 
   for (const id of missing) {
     try {
@@ -198,16 +256,36 @@ async function syncMissingProductVariantTypes(
     }
   }
 
+  let saveAsDraft = false
+  try {
+    const draftProduct = (await req.payload.findByID({
+      collection: 'products',
+      id: productId,
+      depth: 0,
+      overrideAccess: true,
+      draft: true,
+    })) as Product
+    saveAsDraft = draftProduct._status === 'draft'
+  } catch {
+    // Product has no draft version — update the published record.
+  }
+
   const merged = [...new Set([...currentIds, ...missing])]
-  await req.payload.update({
-    collection: 'products',
-    id: productId,
-    data: {
-      enableVariants: true,
-      variantTypes: merged,
-    },
-    draft: (draftProduct as Product)._status === 'draft',
-  })
+  req.context.syncingProductVariantTypes = true
+  try {
+    await req.payload.update({
+      collection: 'products',
+      id: productId,
+      data: {
+        enableVariants: true,
+        variantTypes: merged,
+      },
+      draft: saveAsDraft,
+      overrideAccess: true,
+    })
+  } finally {
+    req.context.syncingProductVariantTypes = false
+  }
 }
 
 function getCompleteOptions(options: VariantOptionRow[]): VariantOptionRow[] {
@@ -237,17 +315,28 @@ export const validateProductVariant: CollectionBeforeValidateHook = async ({
     return data
   }
 
-  const options = (data.options ?? []) as VariantOptionRow[]
-  if (options.length === 0) {
-    if (isPublished) {
-      throw new Error('At least one variant option is required.')
-    }
-    return data
+  const options = (
+    data.options !== undefined
+      ? data.options
+      : operation === 'update'
+        ? originalDoc?.options
+        : undefined
+  ) as VariantOptionRow[] | undefined
+  let resolvedOptions = (options ?? []) as VariantOptionRow[]
+  if (operation === 'update' && originalDoc?.options?.length) {
+    resolvedOptions = mergeOptionRows(resolvedOptions, originalDoc.options as VariantOptionRow[])
   }
 
   if (!isPublished) {
+    const productVariantTypes = await loadProductVariantTypes(productId, req)
+    const variantLevelTypes = getVariantLevelTypes(productVariantTypes)
+    if (variantLevelTypes.length > 0) {
+      resolvedOptions = ensureOptionRowsForProductTypes(resolvedOptions, productVariantTypes)
+      data.options = resolvedOptions
+    }
+
     if (operation === 'create' || operation === 'update') {
-      const title = options
+      const title = resolvedOptions
         .map((option) => option.value?.trim())
         .filter((value): value is string => Boolean(value))
         .join(' / ')
@@ -256,7 +345,14 @@ export const validateProductVariant: CollectionBeforeValidateHook = async ({
     return data
   }
 
-  const completeOptions = getCompleteOptions(options)
+  if (resolvedOptions.length === 0) {
+    throw new Error('At least one variant option is required.')
+  }
+
+  const productVariantTypesForPublish = await loadProductVariantTypes(productId, req)
+  resolvedOptions = ensureOptionRowsForProductTypes(resolvedOptions, productVariantTypesForPublish)
+
+  const completeOptions = getCompleteOptions(resolvedOptions)
   if (completeOptions.length === 0) {
     throw new Error('At least one variant option is required.')
   }
@@ -266,8 +362,9 @@ export const validateProductVariant: CollectionBeforeValidateHook = async ({
 
   await syncMissingProductVariantTypes(productId, completeOptions, req)
 
-  const productVariantTypes = await loadProductVariantTypes(productId, req)
-  if (productVariantTypes.length === 0) {
+  const productVariantTypes = productVariantTypesForPublish
+  const requiredVariantTypes = getVariantLevelTypes(productVariantTypes)
+  if (requiredVariantTypes.length === 0 && productVariantTypes.length === 0) {
     throw new Error('The selected product has no variant types configured.')
   }
 
@@ -310,8 +407,17 @@ export const validateProductVariant: CollectionBeforeValidateHook = async ({
     }
   }
 
-  if (seenTypeIds.size !== productVariantTypes.length) {
-    throw new Error('Product variants must include a value for every variant type on the product.')
+  if (requiredVariantTypes.length > 0 && seenTypeIds.size !== requiredVariantTypes.length) {
+    const missingLabels = requiredVariantTypes
+      .filter((type) => !seenTypeIds.has(type.id))
+      .map((type) => type.label)
+      .filter((label): label is string => Boolean(label))
+
+    throw new Error(
+      missingLabels.length > 0
+        ? `Product variants must include a value for every differentiating variant type. Missing: ${missingLabels.join(', ')}.`
+        : 'Product variants must include a value for every differentiating variant type.',
+    )
   }
 
   if (operation === 'create' || operation === 'update') {

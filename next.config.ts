@@ -14,7 +14,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // D1/SQLite cannot handle concurrent workerd instances during `next build`
+    // Postgres is external; limit build parallelism for stable static generation.
     cpus: 1,
     staticGenerationMaxConcurrency: 1,
     // Tree-shake barrel imports — https://payloadcms.com/docs/performance/overview

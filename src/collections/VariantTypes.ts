@@ -56,6 +56,17 @@ export const VariantTypes: CollectionConfig = {
       },
     },
     {
+      name: 'sharedAcrossVariants',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Shared across variants',
+      admin: {
+        position: 'sidebar',
+        description:
+          'Enable for types that are the same on every variant (e.g. Size). Variants only need rows for non-shared types such as Color.',
+      },
+    },
+    {
       name: 'options',
       type: 'array',
       labels: {

@@ -72,7 +72,7 @@ export const ProductVariants: CollectionConfig = {
       minRows: 1,
       admin: {
         description:
-          'Add one row per variant type assigned to the product. Example: if the product has Size and Color, add two rows — not two rows for the same type.',
+          'Add one row per differentiating variant type (e.g. Color). Shared types such as Size apply to the whole product and do not need a row here.',
         initCollapsed: false,
       },
       fields: [

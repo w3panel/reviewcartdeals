@@ -1,13 +1,13 @@
+import 'dotenv/config'
 import fs from 'fs'
 import path from 'path'
-import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
 
-import { createWranglerRemoteD1Binding } from './lib/wranglerRemoteD1'
 import { autoDraftPlugin } from './plugins/autoDraft'
 import { autoSlugPlugin } from './plugins/autoSlug'
 import { Users } from './collections/Users'
@@ -31,13 +31,13 @@ const isCLI = process.argv.some((value) =>
 const isProduction = process.env.NODE_ENV === 'production'
 const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
 const isLocalWrangler = isCLI || !isProduction || isBuild
-// Remote D1 via `wrangler d1 execute --remote` is for Cloudflare CI only.
-// Local prebuild uses the local D1 binding from getPlatformProxy (avoids Windows
-// wrangler exec crashes and does not require remote credentials).
-const useRemoteD1ViaExec =
-  isProduction &&
-  isLocalWrangler &&
-  (process.env.CF_PAGES === '1' || process.env.USE_REMOTE_D1 === '1')
+
+const databaseUri = process.env.DATABASE_URI ?? process.env.DATABASE_URL
+if (!databaseUri && (isCLI || isProduction)) {
+  throw new Error(
+    'DATABASE_URI (or DATABASE_URL) is required. Example: postgresql://user:password@localhost:5432/reviewcartdeals',
+  )
+}
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -60,14 +60,10 @@ const cloudflareLogger = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any // Use PayloadLogger type when it's exported
 
-// Use wrangler during dev, CLI, and `next build`. getCloudflareContext only works
-// at runtime on Cloudflare Workers — using it during static generation causes
-// SQLITE_BUSY from competing workerd instances.
-const cloudflare = useRemoteD1ViaExec
-  ? await getCloudflareContextWithRemoteD1Exec()
-  : isLocalWrangler
-    ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
+// Cloudflare context is only required for R2 media storage.
+const cloudflare = isLocalWrangler
+  ? await getCloudflareContextFromWrangler()
+  : await getCloudflareContext({ async: true })
 
 export default buildConfig({
   admin: {
@@ -95,7 +91,12 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1, push: false }),
+  db: postgresAdapter({
+    pool: {
+      connectionString: databaseUri,
+    },
+    push: false,
+  }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
     autoSlugPlugin(),
@@ -107,31 +108,12 @@ export default buildConfig({
   ],
 })
 
-// Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
 function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
-  return getCloudflareContextFromWranglerWithRemoteBindings(false)
-}
-
-async function getCloudflareContextWithRemoteD1Exec(): Promise<CloudflareContext> {
-  const local = await getCloudflareContextFromWranglerWithRemoteBindings(false)
-
-  return {
-    ...local,
-    env: {
-      ...local.env,
-      D1: createWranglerRemoteD1Binding(process.env.CLOUDFLARE_ENV),
-    },
-  }
-}
-
-function getCloudflareContextFromWranglerWithRemoteBindings(
-  remoteBindings: boolean,
-): Promise<CloudflareContext> {
   return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings,
+        remoteBindings: false,
       } satisfies GetPlatformProxyOptions),
   )
 }

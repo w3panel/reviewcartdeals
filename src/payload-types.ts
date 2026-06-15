@@ -246,6 +246,10 @@ export interface VariantType {
    */
   name: string;
   /**
+   * Enable for types that are the same on every variant (e.g. Size). Variants only need rows for non-shared types such as Color.
+   */
+  sharedAcrossVariants?: boolean | null;
+  /**
    * Allowed values for this variant type, e.g. Red, Blue, Black.
    */
   options?:
@@ -291,7 +295,7 @@ export interface Product {
    */
   enableVariants?: boolean | null;
   /**
-   * Select existing types from Catalog → Variant Types (e.g. Color, Size). Save the product after changing this list.
+   * Select types from Catalog → Variant Types. Use shared types (e.g. Size) for values common to all variants; variants only need rows for differentiating types (e.g. Color).
    */
   variantTypes?: (number | VariantType)[] | null;
   /**
@@ -333,7 +337,7 @@ export interface ProductVariant {
    */
   title?: string | null;
   /**
-   * Add one row per variant type assigned to the product. Example: if the product has Size and Color, add two rows — not two rows for the same type.
+   * Add one row per differentiating variant type (e.g. Color). Shared types such as Size apply to the whole product and do not need a row here.
    */
   options?:
     | {
@@ -616,6 +620,7 @@ export interface TagsSelect<T extends boolean = true> {
 export interface VariantTypesSelect<T extends boolean = true> {
   label?: T;
   name?: T;
+  sharedAcrossVariants?: T;
   options?:
     | T
     | {

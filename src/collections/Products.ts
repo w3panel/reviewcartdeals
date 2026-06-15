@@ -134,7 +134,7 @@ export const Products: CollectionConfig = {
         condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
         allowCreate: false,
         description:
-          'Select existing types from Catalog → Variant Types (e.g. Color, Size). Save the product after changing this list.',
+          'Select types from Catalog → Variant Types. Use shared types (e.g. Size) for values common to all variants; variants only need rows for differentiating types (e.g. Color).',
       },
     },
     {

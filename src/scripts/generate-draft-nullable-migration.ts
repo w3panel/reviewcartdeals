@@ -89,7 +89,7 @@ async function main() {
   const migrationName = '20260613_draft_nullable_fields'
   const migrationPath = path.join(migrationDir, `${migrationName}.ts`)
 
-  const migrationSource = `import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-d1-sqlite'
+  const migrationSource = `import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
 ${upSQL

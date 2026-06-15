@@ -37,11 +37,13 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "test:unit": "bun run test:int",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/seed.ts",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
     "prepare": "husky"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.11.0",
-    "@payloadcms/db-d1-sqlite": "3.82.1",
+    "@payloadcms/db-postgres": "3.82.1",
     "@payloadcms/next": "3.82.1",
     "@payloadcms/storage-r2": "3.82.1",
     "@tailwindcss/postcss": "^4.3.0",
