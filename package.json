@@ -9,18 +9,16 @@
     "prebuild": "bun run migrate:production && NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts",
     "analyze": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts && cross-env ANALYZE=true NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation next build --webpack && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
     "build": "NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
-    "cf:build": "bun run prebuild && bunx opennextjs-cloudflare build",
-    "cf:deploy": "bun run deploy:database && bunx opennextjs-cloudflare deploy",
     "deploy": "bun run deploy:database && bun run deploy:app",
-    "deploy:app": "bun run prebuild && bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy",
+    "deploy:app": "vercel deploy --prod",
     "deploy:database": "bun run migrate:production",
+    "deploy:preview": "vercel deploy",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "predev": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --no-server-fast-refresh",
-    "devsafe": "rm -rf .next && rm -rf .open-next && cross-env NODE_OPTIONS=--no-deprecation next dev --no-server-fast-refresh",
+    "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev --no-server-fast-refresh",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
-    "generate:types": "bun run generate:types:cloudflare && bun run generate:types:payload",
-    "generate:types:cloudflare": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "generate:types": "bun run generate:types:payload",
     "generate:types:payload": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "ii": "bun install --ignore-workspace",
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run test:unit",
@@ -30,7 +28,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
-    "preview": "bun run prebuild && opennextjs-cloudflare build && opennextjs-cloudflare preview --env=$CLOUDFLARE_ENV",
+    "preview": "bun run deploy:preview",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "bun run test:unit && bun run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
@@ -42,7 +40,6 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.11.0",
     "@payloadcms/db-postgres": "3.82.1",
     "@payloadcms/next": "3.82.1",
     "@payloadcms/storage-s3": "3.82.1",
@@ -74,9 +71,9 @@
     "oxlint": "^1.69.0",
     "tsx": "4.22.4",
     "typescript": "5.9.3",
+    "vercel": "^50.1.3",
     "vite-tsconfig-paths": "6.1.1",
-    "vitest": "4.1.8",
-    "wrangler": "~4.98.0"
+    "vitest": "4.1.8"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mts,cts,json,jsonc}": "oxfmt --write",
@@ -84,12 +81,5 @@
   },
   "engines": {
     "node": ">=22"
-  },
-  "cloudflare": {
-    "bindings": {
-      "PAYLOAD_SECRET": {
-        "description": "Generate a random string using `openssl rand -hex 32`"
-      }
-    }
   }
 }

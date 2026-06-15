@@ -8,12 +8,10 @@
   "ignorePatterns": [
     "**/node_modules/**",
     ".next/**",
-    ".open-next/**",
     "out/**",
     "build/**",
     "bundled/**",
     "next-env.d.ts",
-    "cloudflare-env.d.ts",
     "src/payload-types.ts",
     "src/payload-generated-schema.ts"
   ]

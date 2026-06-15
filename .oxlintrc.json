@@ -13,7 +13,6 @@
     "build/**",
     "next-env.d.ts",
     "**/node_modules/**",
-    ".open-next/**",
     "src/payload-types.ts",
     "src/payload-generated-schema.ts"
   ],
