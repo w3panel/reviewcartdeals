@@ -12,6 +12,9 @@
 # testing
 /coverage
 
+test.env
+*.env
+
 # next.js
 /.next/
 /.next-build/
