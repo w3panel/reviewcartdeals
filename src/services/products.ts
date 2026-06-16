@@ -46,7 +46,7 @@ export async function getProductVariants(productId: string | number) {
         equals: productId,
       },
     }),
-    depth: 2,
+    depth: 3,
     limit: 500,
     pagination: false,
   })

@@ -1,7 +1,18 @@
 import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
+import { generateProductVariants } from '@/lib/generateProductVariants'
+import { validateProductAttributes } from '@/lib/productAttributeHooks'
+import {
+  syncVariantOptionAvailability,
+  validateProductOptionAvailability,
+} from '@/lib/productOptionAvailabilityHooks'
 import { findCatalogProducts } from '@/lib/productFilters'
 import { getProductReviewStatsBatch } from '@/services/reviews'
+import { getRelationshipId } from '@/lib/variantOptionValues'
+
+function emptyRelationshipFilter() {
+  return { id: { in: [] as number[] } }
+}
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -11,6 +22,10 @@ export const Products: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    beforeValidate: [validateProductAttributes, validateProductOptionAvailability],
+    beforeChange: [syncVariantOptionAvailability],
   },
   endpoints: [
     {
@@ -46,6 +61,48 @@ export const Products: CollectionConfig = {
             req,
           }),
         })
+      },
+    },
+    {
+      path: '/:id/generate-variants',
+      method: 'post',
+      handler: async (req) => {
+        if (!req.user) {
+          return Response.json({ errors: [{ message: 'Unauthorized' }] }, { status: 401 })
+        }
+
+        const rawId = req.routeParams?.id
+        const productId = typeof rawId === 'string' ? Number(rawId) : Number(rawId ?? NaN)
+        if (!Number.isFinite(productId)) {
+          return Response.json({ errors: [{ message: 'Invalid product ID.' }] }, { status: 400 })
+        }
+
+        try {
+          const result = await generateProductVariants(req.payload, productId, req)
+          return Response.json(result, {
+            headers: headersWithCors({
+              headers: new Headers(),
+              req,
+            }),
+          })
+        } catch (error) {
+          return Response.json(
+            {
+              errors: [
+                {
+                  message: error instanceof Error ? error.message : 'Failed to generate variants.',
+                },
+              ],
+            },
+            {
+              status: 400,
+              headers: headersWithCors({
+                headers: new Headers(),
+                req,
+              }),
+            },
+          )
+        }
       },
     },
   ],
@@ -126,15 +183,71 @@ export const Products: CollectionConfig = {
       },
     },
     {
-      name: 'variantTypes',
+      name: 'variantOptionTypes',
       type: 'relationship',
       relationTo: 'variant-types',
       hasMany: true,
       admin: {
         condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        allowCreate: false,
         description:
-          'Select types from Catalog → Variant Types. Use shared types (e.g. Size) for values common to all variants; variants only need rows for differentiating types (e.g. Color).',
+          'Option dimensions that create separate variants (e.g. Color and Size). Each combination becomes one product variant.',
+      },
+    },
+    {
+      name: 'variantOptionAvailability',
+      type: 'array',
+      labels: {
+        singular: 'Available Values',
+        plural: 'Available Values by Type',
+      },
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        description:
+          'Choose which catalog values apply to this product. The generator only creates combinations from these selections — not the full catalog.',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'type',
+          label: 'Variant Type',
+          type: 'relationship',
+          relationTo: 'variant-types',
+          required: true,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'optionValues',
+          label: 'Available Values',
+          type: 'relationship',
+          relationTo: 'variant-option-values',
+          hasMany: true,
+          required: true,
+          filterOptions: ({ siblingData }) => {
+            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
+            if (typeId === null) return emptyRelationshipFilter()
+
+            return {
+              variantType: {
+                equals: typeId,
+              },
+            }
+          },
+          admin: {
+            description: 'Values offered for this product and type (e.g. Pink, Black).',
+          },
+        },
+      ],
+    },
+    {
+      name: 'generateVariants',
+      type: 'ui',
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        components: {
+          Field: '@/components/admin/GenerateVariantsField',
+        },
       },
     },
     {
@@ -146,8 +259,49 @@ export const Products: CollectionConfig = {
         condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
         allowCreate: true,
         defaultColumns: ['title', '_status'],
-        description: 'Valid variant combinations for this product.',
+        description:
+          'Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup.',
       },
+    },
+    {
+      name: 'productAttributes',
+      type: 'array',
+      labels: {
+        singular: 'Product Attribute',
+        plural: 'Product Attributes',
+      },
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        description:
+          'Shared details for every variant (e.g. Fit: Regular). These do not create separate combinations.',
+        initCollapsed: true,
+      },
+      fields: [
+        {
+          name: 'type',
+          label: 'Attribute Type',
+          type: 'relationship',
+          relationTo: 'variant-types',
+          required: true,
+        },
+        {
+          name: 'optionValue',
+          label: 'Value',
+          type: 'relationship',
+          relationTo: 'variant-option-values',
+          required: true,
+          filterOptions: ({ siblingData }) => {
+            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
+            if (typeId === null) return emptyRelationshipFilter()
+
+            return {
+              variantType: {
+                equals: typeId,
+              },
+            }
+          },
+        },
+      ],
     },
     {
       name: 'specifications',

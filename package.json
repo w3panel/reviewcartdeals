@@ -24,7 +24,7 @@
     "check": "bun run format:check && bun run lint && bun run typecheck && bun run test:unit",
     "lint": "oxlint src",
     "typecheck": "tsgo --noEmit",
-    "typecheck:tsc": "tsc6 --noEmit",
+    "typecheck:tsc": "tsc --noEmit",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",

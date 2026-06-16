@@ -8,6 +8,8 @@ export const VariantTypes: CollectionConfig = {
     useAsTitle: 'label',
     defaultColumns: ['label', 'name', '_status'],
     group: 'Catalog',
+    description:
+      'Catalog definitions for attributes and variant options (e.g. Color, Size). Assign values under Variant Option Values.',
   },
   access: {
     read: () => true,
@@ -42,7 +44,7 @@ export const VariantTypes: CollectionConfig = {
       type: 'text',
       required: true,
       admin: {
-        description: 'Display name shown in the admin and storefront, e.g. Color.',
+        description: 'Display name shown in the admin and storefront, e.g. Color or Size.',
       },
     },
     {
@@ -56,34 +58,27 @@ export const VariantTypes: CollectionConfig = {
       },
     },
     {
-      name: 'sharedAcrossVariants',
+      name: 'isPrimaryVisualType',
       type: 'checkbox',
       defaultValue: false,
-      label: 'Shared across variants',
+      label: 'Primary visual type',
       admin: {
         position: 'sidebar',
         description:
-          'Enable for types that are the same on every variant (e.g. Size). Variants only need rows for non-shared types such as Color.',
+          'When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each Variant Option Value.',
       },
     },
     {
-      name: 'options',
-      type: 'array',
-      labels: {
-        singular: 'Option',
-        plural: 'Options',
-      },
+      name: 'optionValues',
+      type: 'join',
+      collection: 'variant-option-values',
+      on: 'variantType',
       admin: {
-        description: 'Allowed values for this variant type, e.g. Red, Blue, Black.',
-        initCollapsed: false,
+        description:
+          'Allowed values for this type. Use + to add values here or under Catalog → Variant Option Values.',
+        allowCreate: true,
+        defaultColumns: ['value', '_status'],
       },
-      fields: [
-        {
-          name: 'value',
-          type: 'text',
-          required: true,
-        },
-      ],
     },
   ],
 }

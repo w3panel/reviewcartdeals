@@ -17,6 +17,7 @@ import { ProductVariants } from './collections/ProductVariants'
 import { Products } from './collections/Products'
 import { Reviews } from './collections/Reviews'
 import { VariantTypes } from './collections/VariantTypes'
+import { VariantOptionValues } from './collections/VariantOptionValues'
 import { NavItems } from './collections/NavItems'
 
 const filename = fileURLToPath(import.meta.url)
@@ -80,6 +81,7 @@ export default buildConfig({
     Brands,
     Tags,
     VariantTypes,
+    VariantOptionValues,
     Products,
     ProductVariants,
     Reviews,

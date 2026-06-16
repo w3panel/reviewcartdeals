@@ -3,7 +3,12 @@
 import React, { useMemo } from 'react'
 import { MessageCircle } from 'lucide-react'
 import type { Product, ProductVariant } from '@/payload-types'
-import { formatVariantEnquiryDetails, hasVariants } from '@/lib/productVariants'
+import { formatProductAttributesDetails } from '@/lib/productAttributes'
+import {
+  formatVariantEnquiryDetails,
+  hasVariants,
+  type SelectedVariantOptions,
+} from '@/lib/productVariants'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { VariantSelector } from '@/components/VariantSelector'
 
@@ -11,32 +16,34 @@ type ProductEnquiryActionsProps = {
   product: Product
   variants: ProductVariant[]
   whatsappLink: string
-  selectedVariantId: string | null
-  onSelectVariant: (variantId: string | null) => void
+  selectedOptions: SelectedVariantOptions
+  onSelectOptions: (selectedOptions: SelectedVariantOptions) => void
+  selectedVariant: ProductVariant | null
 }
 
 export function ProductEnquiryActions({
   product,
   variants,
   whatsappLink,
-  selectedVariantId,
-  onSelectVariant,
+  selectedOptions,
+  onSelectOptions,
+  selectedVariant,
 }: ProductEnquiryActionsProps) {
   const productHasVariants = hasVariants(product, variants)
 
-  const selectedVariant = useMemo(
-    () => variants.find((variant) => String(variant.id) === selectedVariantId) ?? null,
-    [variants, selectedVariantId],
-  )
-
   const enquiryWhatsappLink = useMemo(() => {
-    if (!selectedVariant) return whatsappLink
-
     const url = new URL(whatsappLink)
     const message = decodeURIComponent(url.searchParams.get('text') ?? '')
-    url.searchParams.set('text', `${message}\n${formatVariantEnquiryDetails(selectedVariant)}`)
+    const attributeDetails = formatProductAttributesDetails(product)
+    const variantDetails = selectedVariant ? formatVariantEnquiryDetails(selectedVariant) : ''
+    const extraDetails = [attributeDetails, variantDetails].filter(Boolean).join('\n')
+
+    if (extraDetails) {
+      url.searchParams.set('text', `${message}\n${extraDetails}`)
+    }
+
     return url.toString()
-  }, [whatsappLink, selectedVariant])
+  }, [whatsappLink, product, selectedVariant])
 
   return (
     <>
@@ -44,8 +51,8 @@ export function ProductEnquiryActions({
         <VariantSelector
           product={product}
           variants={variants}
-          selectedVariantId={selectedVariantId}
-          onSelectVariant={onSelectVariant}
+          selectedOptions={selectedOptions}
+          onSelectOptions={onSelectOptions}
         />
       )}
 

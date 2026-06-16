@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ArrowLeft, Trash2, Send } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import { formatProductAttributesDetails } from '@/lib/productAttributes'
 import {
   formatVariantEnquiryDetails,
   formatVariantLabel,
@@ -40,8 +41,15 @@ export default function CartPage() {
     // For now, we can format a WhatsApp message as an example, or just clear and show success
     const productList = cartItems
       .map((item) => {
-        if (!item.variant) return `- ${item.product.title} (Qty: ${item.quantity})`
-        return `- ${item.product.title} (Qty: ${item.quantity})\n  ${formatVariantEnquiryDetails(item.variant).replace(/\n/g, '\n  ')}`
+        const attributeDetails = formatProductAttributesDetails(item.product)
+        const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
+        if (attributeDetails) {
+          lines.push(`  ${attributeDetails.replace(/\n/g, '\n  ')}`)
+        }
+        if (item.variant) {
+          lines.push(`  ${formatVariantEnquiryDetails(item.variant).replace(/\n/g, '\n  ')}`)
+        }
+        return lines.join('\n')
       })
       .join('\n')
     const waText = encodeURIComponent(

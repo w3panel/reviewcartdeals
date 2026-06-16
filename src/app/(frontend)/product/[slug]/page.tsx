@@ -9,6 +9,7 @@ import { getBuildSlugs } from '@/lib/buildSlugs'
 import { MessageCircle, ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
 import { getImageUrl, getProductMainImage, buildProductGalleryImages } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
+import { formatProductAttributesSummary } from '@/lib/productAttributes'
 import type { Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { ProductDetailGrid } from '@/components/ProductDetailGrid'
@@ -111,6 +112,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                 {product.description}
               </p>
+
+              {formatProductAttributesSummary(product) && (
+                <p className="mt-4 text-sm text-foreground">
+                  {formatProductAttributesSummary(product)}
+                </p>
+              )}
             </>
           }
           afterActions={

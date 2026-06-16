@@ -5,27 +5,9 @@ import {
   getProductVariantTypeIds,
   validateProductVariant,
 } from '@/lib/productVariantHooks'
-
-function getRelationshipId(value: unknown): number | null {
-  if (value == null) return null
-  if (typeof value === 'number') return value
-  if (typeof value === 'string' && /^\d+$/.test(value)) return Number(value)
-  if (typeof value === 'object' && 'id' in value && typeof value.id === 'number') {
-    return value.id
-  }
-  if (
-    typeof value === 'object' &&
-    'id' in value &&
-    typeof value.id === 'string' &&
-    /^\d+$/.test(value.id)
-  ) {
-    return Number(value.id)
-  }
-  return null
-}
+import { getRelationshipId } from '@/lib/variantOptionValues'
 
 function emptyRelationshipFilter() {
-  // Payload treats `false` as "no filter" (all options). An empty `in` list shows none.
   return { id: { in: [] as number[] } }
 }
 
@@ -72,7 +54,7 @@ export const ProductVariants: CollectionConfig = {
       minRows: 1,
       admin: {
         description:
-          'Add one row per differentiating variant type (e.g. Color). Shared types such as Size apply to the whole product and do not need a row here.',
+          'Add one row per differentiating variant type (e.g. Color). Pick a catalog option value — free text is not allowed.',
         initCollapsed: false,
       },
       fields: [
@@ -109,33 +91,25 @@ export const ProductVariants: CollectionConfig = {
           },
         },
         {
-          name: 'value',
-          type: 'text',
+          name: 'optionValue',
+          label: 'Value',
+          type: 'relationship',
+          relationTo: 'variant-option-values',
           required: true,
+          filterOptions: ({ siblingData }) => {
+            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
+            if (typeId === null) return emptyRelationshipFilter()
+
+            return {
+              variantType: {
+                equals: typeId,
+              },
+            }
+          },
           admin: {
             description:
-              'Must match an option defined on the selected variant type (Catalog → Variant Types).',
+              'Select a value defined on the variant type. Add new values under Catalog → Variant Option Values.',
           },
-        },
-      ],
-    },
-    {
-      name: 'gallery',
-      type: 'array',
-      labels: {
-        singular: 'Image',
-        plural: 'Gallery',
-      },
-      admin: {
-        description: 'Images shown when this variant combination is selected on the storefront.',
-        initCollapsed: true,
-      },
-      fields: [
-        {
-          name: 'image',
-          type: 'relationship',
-          relationTo: 'media',
-          required: true,
         },
       ],
     },
