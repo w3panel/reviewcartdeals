@@ -55,7 +55,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           >
             <ChevronLeft className="h-4 w-4" /> Back to catalog
           </Link>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground tracking-wide">
+          <h1 className="font-serif text-3xl text-white tracking-wide sm:text-4xl md:text-5xl">
             {category.title}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-2xl leading-relaxed">

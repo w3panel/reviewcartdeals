@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: reviewcartdeals-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: reviewcartdeals
+      POSTGRES_USER: reviewcartdeals
+      POSTGRES_PASSWORD: reviewcartdeals
+    volumes:
+      - reviewcartdeals_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U reviewcartdeals -d reviewcartdeals']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  reviewcartdeals_pgdata:

@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getProducts, getAllBrands } from '@/services/products'
-import { Search, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
@@ -72,7 +72,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
 
       {products.length === 0 ? (
         <div className="py-20 text-center">
-          <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+          <p className="text-muted-foreground text-lg">No products found matching your criteria.</p>
           <Link
             href={`/category/${slug}`}
             className="mt-4 inline-block text-xs font-semibold tracking-widest text-primary uppercase border-b border-primary pb-1 hover:text-foreground transition-colors"
@@ -82,94 +82,36 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
         </div>
       ) : (
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {products.map((prod: any) => {
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-3">
+            {products.map((prod: Product) => {
               const imageUrl = getImageUrl(getProductMainImage(prod))
               return (
                 <div
                   key={prod.id}
-                  className="flex flex-col p-4 sm:p-6 border border-border rounded-2xl bg-card hover:border-primary transition-all duration-300 relative group gap-4 sm:gap-6"
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary"
                 >
-                  <Link
-                    href={`/product/${prod.slug}`}
-                    className="flex flex-col flex-grow gap-4 sm:gap-6"
-                  >
-                    {/* Image Frame */}
-                    <div className="relative flex items-center justify-center w-full bg-background rounded-lg aspect-square overflow-hidden">
-                      {/* Badges */}
-                      {(() => {
-                        const isNew =
-                          new Date(prod.createdAt).getTime() > Date.now() - 30 * 24 * 60 * 60 * 1000
-                        return (
-                          <>
-                            {isNew && (
-                              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-primary text-primary-foreground px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
-                                NEW
-                              </span>
-                            )}
-                            {prod.limitedEdition && (
-                              <span className="absolute top-3 right-3 sm:top-4 sm:right-4 border border-primary/40 text-primary px-2 py-1 sm:px-3 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest z-10">
-                                LIMITED EDITION
-                              </span>
-                            )}
-                          </>
-                        )
-                      })()}
+                  <Link href={`/product/${prod.slug}`} className="flex h-full flex-col">
+                    <div className="relative flex aspect-square w-full items-center justify-center bg-black p-3 sm:p-4">
                       <Image
                         src={imageUrl}
                         alt={prod.title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
-
-                    {/* Product Info Section */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-1 text-[12px] font-bold text-primary uppercase tracking-[0.15em]">
-                          {typeof prod.brand === 'object' && prod.brand !== null
-                            ? (prod.brand as Brand).title
-                            : String(prod.brand)}
-                          {typeof prod.brand === 'object' &&
-                            prod.brand !== null &&
-                            (prod.brand as Brand).verified && (
-                              <BadgeCheck className="w-3.5 h-3.5 text-primary" />
-                            )}
-                        </div>
-                      </div>
-
-                      <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight">
+                    <div className="flex flex-grow flex-col p-3 sm:p-4">
+                      <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                        {typeof prod.brand === 'object' && prod.brand !== null
+                          ? (prod.brand as Brand).title
+                          : String(prod.brand)}
+                      </span>
+                      <h3 className="line-clamp-2 text-sm font-medium leading-snug text-white">
                         {prod.title}
                       </h3>
-
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2 line-clamp-3">
-                        {prod.description}
-                      </p>
-
-                      {/* Specifications Row */}
-                      {prod.specifications && prod.specifications.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 text-[10px] sm:text-[11px] text-gray-400 font-medium">
-                          {prod.specifications
-                            .slice(0, 3)
-                            .map(
-                              (
-                                spec: { key: string; value: string; id?: string | null },
-                                idx: number,
-                              ) => (
-                                <div key={spec.id ?? idx} className="flex items-center gap-1.5">
-                                  <span className="w-1 h-1 rounded-full bg-primary" />
-                                  {spec.value}
-                                </div>
-                              ),
-                            )}
-                        </div>
-                      )}
                     </div>
                   </Link>
-
-                  {/* Actions */}
-                  <div className="mt-auto pt-2 flex gap-3">
-                    <AddToCartButton product={prod as Product} />
+                  <div className="px-3 pb-3 sm:px-4 sm:pb-4">
+                    <AddToCartButton product={prod} />
                   </div>
                 </div>
               )
@@ -191,7 +133,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                 </div>
               )}
 
-              <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 PAGE {currentPage} OF {totalPages}
               </span>
 

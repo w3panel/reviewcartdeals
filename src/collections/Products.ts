@@ -1,8 +1,18 @@
 import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
-import { formatSlug } from '@/lib/formatSlug'
+import { generateProductVariants } from '@/lib/generateProductVariants'
+import { validateProductAttributes } from '@/lib/productAttributeHooks'
+import {
+  syncVariantOptionAvailability,
+  validateProductOptionAvailability,
+} from '@/lib/productOptionAvailabilityHooks'
 import { findCatalogProducts } from '@/lib/productFilters'
 import { getProductReviewStatsBatch } from '@/services/reviews'
+import { getRelationshipId } from '@/lib/variantOptionValues'
+
+function emptyRelationshipFilter() {
+  return { id: { in: [] as number[] } }
+}
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -12,6 +22,10 @@ export const Products: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    beforeValidate: [validateProductAttributes, validateProductOptionAvailability],
+    beforeChange: [syncVariantOptionAvailability],
   },
   endpoints: [
     {
@@ -49,6 +63,48 @@ export const Products: CollectionConfig = {
         })
       },
     },
+    {
+      path: '/:id/generate-variants',
+      method: 'post',
+      handler: async (req) => {
+        if (!req.user) {
+          return Response.json({ errors: [{ message: 'Unauthorized' }] }, { status: 401 })
+        }
+
+        const rawId = req.routeParams?.id
+        const productId = typeof rawId === 'string' ? Number(rawId) : Number(rawId ?? NaN)
+        if (!Number.isFinite(productId)) {
+          return Response.json({ errors: [{ message: 'Invalid product ID.' }] }, { status: 400 })
+        }
+
+        try {
+          const result = await generateProductVariants(req.payload, productId, req)
+          return Response.json(result, {
+            headers: headersWithCors({
+              headers: new Headers(),
+              req,
+            }),
+          })
+        } catch (error) {
+          return Response.json(
+            {
+              errors: [
+                {
+                  message: error instanceof Error ? error.message : 'Failed to generate variants.',
+                },
+              ],
+            },
+            {
+              status: 400,
+              headers: headersWithCors({
+                headers: new Headers(),
+                req,
+              }),
+            },
+          )
+        }
+      },
+    },
   ],
   fields: [
     {
@@ -61,12 +117,6 @@ export const Products: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      admin: {
-        position: 'sidebar',
-      },
-      hooks: {
-        beforeValidate: [formatSlug('title')],
-      },
     },
     {
       name: 'brand',
@@ -124,65 +174,132 @@ export const Products: CollectionConfig = {
       defaultValue: false,
     },
     {
-      name: 'variants',
+      name: 'enableVariants',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Enable Variants',
+      admin: {
+        description: 'Turn on when this product has selectable options such as color or size.',
+      },
+    },
+    {
+      name: 'variantOptionTypes',
+      type: 'relationship',
+      relationTo: 'variant-types',
+      hasMany: true,
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        description:
+          'Option dimensions that create separate variants (e.g. Color and Size). Each combination becomes one product variant.',
+      },
+    },
+    {
+      name: 'variantOptionAvailability',
       type: 'array',
       labels: {
-        singular: 'Variant',
-        plural: 'Variants',
+        singular: 'Available Values',
+        plural: 'Available Values by Type',
       },
       admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
         description:
-          'Optional product options. Shoppers pick a variant before adding to their enquiry.',
+          'Choose which catalog values apply to this product. The generator only creates combinations from these selections — not the full catalog.',
+        initCollapsed: false,
+      },
+      fields: [
+        {
+          name: 'type',
+          label: 'Variant Type',
+          type: 'relationship',
+          relationTo: 'variant-types',
+          required: true,
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'optionValues',
+          label: 'Available Values',
+          type: 'relationship',
+          relationTo: 'variant-option-values',
+          hasMany: true,
+          required: true,
+          filterOptions: ({ siblingData }) => {
+            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
+            if (typeId === null) return emptyRelationshipFilter()
+
+            return {
+              variantType: {
+                equals: typeId,
+              },
+            }
+          },
+          admin: {
+            description: 'Values offered for this product and type (e.g. Pink, Black).',
+          },
+        },
+      ],
+    },
+    {
+      name: 'generateVariants',
+      type: 'ui',
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        components: {
+          Field: '@/components/admin/GenerateVariantsField',
+        },
+      },
+    },
+    {
+      name: 'linkedVariants',
+      type: 'join',
+      collection: 'product-variants',
+      on: 'product',
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        allowCreate: true,
+        defaultColumns: ['title', '_status'],
+        description:
+          'Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup.',
+      },
+    },
+    {
+      name: 'productAttributes',
+      type: 'array',
+      labels: {
+        singular: 'Product Attribute',
+        plural: 'Product Attributes',
+      },
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        description:
+          'Shared details for every variant (e.g. Fit: Regular). These do not create separate combinations.',
         initCollapsed: true,
       },
       fields: [
         {
-          name: 'attributes',
-          type: 'array',
-          labels: {
-            singular: 'Attribute',
-            plural: 'Product Attributes',
-          },
-          admin: {
-            description:
-              'Add any attribute-value pairs for this variant, e.g. RAM → 8GB, Storage → 128GB.',
-          },
-          fields: [
-            {
-              name: 'key',
-              label: 'Attribute',
-              type: 'text',
-              required: true,
-            },
-            {
-              name: 'value',
-              label: 'Value',
-              type: 'text',
-              required: true,
-            },
-          ],
+          name: 'type',
+          label: 'Attribute Type',
+          type: 'relationship',
+          relationTo: 'variant-types',
+          required: true,
         },
         {
-          name: 'gallery',
-          type: 'array',
-          labels: {
-            singular: 'Image',
-            plural: 'Gallery',
+          name: 'optionValue',
+          label: 'Value',
+          type: 'relationship',
+          relationTo: 'variant-option-values',
+          required: true,
+          filterOptions: ({ siblingData }) => {
+            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
+            if (typeId === null) return emptyRelationshipFilter()
+
+            return {
+              variantType: {
+                equals: typeId,
+              },
+            }
           },
-          admin: {
-            description:
-              'Optional images for this variant. When selected, these replace the main product gallery.',
-            initCollapsed: true,
-          },
-          fields: [
-            {
-              name: 'image',
-              label: 'Image',
-              type: 'relationship',
-              relationTo: 'media',
-              required: true,
-            },
-          ],
         },
       ],
     },

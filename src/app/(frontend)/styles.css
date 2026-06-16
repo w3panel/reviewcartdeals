@@ -2,15 +2,16 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-background: #0f0f0f;
+  --color-background: #000000;
   --color-foreground: #ffffff;
-  --color-card: #1a1a1a;
-  --color-border: #2a2a2a;
+  --color-card: #111111;
+  --color-surface: #141414;
+  --color-border: #1f1f1f;
   --color-primary: #d4af37;
   --color-primary-hover: #e6c76a;
-  --color-primary-foreground: #0f0f0f;
-  --color-muted: #1a1a1a;
-  --color-muted-foreground: #b8b8b8;
+  --color-primary-foreground: #000000;
+  --color-muted: #141414;
+  --color-muted-foreground: #a1a1aa;
   --color-whatsapp: #25d366;
 
   --font-serif: 'Playfair Display', Georgia, serif;
@@ -18,15 +19,16 @@
 }
 
 :root {
-  --background: #0f0f0f;
+  --background: #000000;
   --foreground: #ffffff;
-  --card: #1a1a1a;
-  --border: #2a2a2a;
+  --card: #111111;
+  --surface: #141414;
+  --border: #1f1f1f;
   --primary: #d4af37;
   --primary-hover: #e6c76a;
-  --primary-foreground: #0f0f0f;
-  --muted: #1a1a1a;
-  --muted-foreground: #b8b8b8;
+  --primary-foreground: #000000;
+  --muted: #141414;
+  --muted-foreground: #a1a1aa;
   --whatsapp: #25d366;
 }
 
@@ -34,10 +36,10 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f0f0f;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
+  background: #1f1f1f;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -52,6 +54,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.font-serif {
+  font-family: var(--font-serif);
+}
+
 .gold-gradient {
   background: linear-gradient(135deg, #d4af37 0%, #e6c76a 100%);
 }
@@ -61,6 +67,10 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.luxury-panel {
+  background: linear-gradient(180deg, rgba(20, 20, 20, 0.98) 0%, rgba(0, 0, 0, 1) 100%);
 }
 
 .no-scrollbar {

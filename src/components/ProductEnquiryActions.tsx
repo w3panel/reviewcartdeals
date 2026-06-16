@@ -2,40 +2,48 @@
 
 import React, { useMemo } from 'react'
 import { MessageCircle } from 'lucide-react'
-import type { Product } from '@/payload-types'
-import { formatVariantEnquiryDetails, hasVariants } from '@/lib/productVariants'
+import type { Product, ProductVariant } from '@/payload-types'
+import { formatProductAttributesDetails } from '@/lib/productAttributes'
+import {
+  formatVariantEnquiryDetails,
+  hasVariants,
+  type SelectedVariantOptions,
+} from '@/lib/productVariants'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { VariantSelector } from '@/components/VariantSelector'
 
 type ProductEnquiryActionsProps = {
   product: Product
+  variants: ProductVariant[]
   whatsappLink: string
-  selectedVariantId: string | null
-  onSelectVariant: (variantId: string | null) => void
+  selectedOptions: SelectedVariantOptions
+  onSelectOptions: (selectedOptions: SelectedVariantOptions) => void
+  selectedVariant: ProductVariant | null
 }
 
 export function ProductEnquiryActions({
   product,
+  variants,
   whatsappLink,
-  selectedVariantId,
-  onSelectVariant,
+  selectedOptions,
+  onSelectOptions,
+  selectedVariant,
 }: ProductEnquiryActionsProps) {
-  const variants = product.variants ?? []
-  const productHasVariants = hasVariants(product)
-
-  const selectedVariant = useMemo(
-    () => variants.find((variant) => variant.id === selectedVariantId) ?? null,
-    [variants, selectedVariantId],
-  )
+  const productHasVariants = hasVariants(product, variants)
 
   const enquiryWhatsappLink = useMemo(() => {
-    if (!selectedVariant) return whatsappLink
-
     const url = new URL(whatsappLink)
     const message = decodeURIComponent(url.searchParams.get('text') ?? '')
-    url.searchParams.set('text', `${message}\n${formatVariantEnquiryDetails(selectedVariant)}`)
+    const attributeDetails = formatProductAttributesDetails(product)
+    const variantDetails = selectedVariant ? formatVariantEnquiryDetails(selectedVariant) : ''
+    const extraDetails = [attributeDetails, variantDetails].filter(Boolean).join('\n')
+
+    if (extraDetails) {
+      url.searchParams.set('text', `${message}\n${extraDetails}`)
+    }
+
     return url.toString()
-  }, [whatsappLink, selectedVariant])
+  }, [whatsappLink, product, selectedVariant])
 
   return (
     <>
@@ -43,8 +51,8 @@ export function ProductEnquiryActions({
         <VariantSelector
           product={product}
           variants={variants}
-          selectedVariantId={selectedVariantId}
-          onSelectVariant={onSelectVariant}
+          selectedOptions={selectedOptions}
+          onSelectOptions={onSelectOptions}
         />
       )}
 
@@ -53,7 +61,7 @@ export function ProductEnquiryActions({
           href={enquiryWhatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex w-full items-center justify-center gap-2 sm:gap-3 rounded-xl bg-whatsapp px-6 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-white hover:opacity-90 transition-opacity ${
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
             productHasVariants && !selectedVariant ? 'pointer-events-none opacity-50' : ''
           }`}
           aria-disabled={productHasVariants && !selectedVariant}

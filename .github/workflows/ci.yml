@@ -27,6 +27,7 @@ jobs:
         run: bun run migrate
         env:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          DATABASE_URI: ${{ secrets.DATABASE_URI }}
 
       - name: Run checks
         run: bun run check

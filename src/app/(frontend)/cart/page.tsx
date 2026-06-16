@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ArrowLeft, Trash2, Send } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import { formatProductAttributesDetails } from '@/lib/productAttributes'
 import {
   formatVariantEnquiryDetails,
   formatVariantLabel,
@@ -40,8 +41,15 @@ export default function CartPage() {
     // For now, we can format a WhatsApp message as an example, or just clear and show success
     const productList = cartItems
       .map((item) => {
-        if (!item.variant) return `- ${item.product.title} (Qty: ${item.quantity})`
-        return `- ${item.product.title} (Qty: ${item.quantity})\n  ${formatVariantEnquiryDetails(item.variant).replace(/\n/g, '\n  ')}`
+        const attributeDetails = formatProductAttributesDetails(item.product)
+        const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
+        if (attributeDetails) {
+          lines.push(`  ${attributeDetails.replace(/\n/g, '\n  ')}`)
+        }
+        if (item.variant) {
+          lines.push(`  ${formatVariantEnquiryDetails(item.variant).replace(/\n/g, '\n  ')}`)
+        }
+        return lines.join('\n')
       })
       .join('\n')
     const waText = encodeURIComponent(
@@ -60,7 +68,7 @@ export default function CartPage() {
         <div className="w-16 h-16 bg-card border border-primary/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
           <Send className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="text-2xl font-sans font-bold text-primary mb-2">Your Enquiry is Empty</h1>
+        <h1 className="font-serif text-2xl text-primary mb-2 sm:text-3xl">Your Enquiry is Empty</h1>
         <p className="text-muted-foreground text-center mb-8 max-w-sm text-sm">
           Browse our exclusive collections and add items you&apos;re interested in to send us an
           enquiry.
@@ -82,7 +90,7 @@ export default function CartPage() {
         <Link href="/" className="p-2 -ml-2 text-primary hover:text-foreground transition-colors">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="text-lg font-sans font-bold text-primary ml-2">Your Enquiry</h1>
+        <h1 className="font-serif text-lg text-white ml-2 sm:text-xl">Your Enquiry</h1>
         <div className="ml-auto bg-primary text-background text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
           {cartItems.length} items
         </div>
@@ -130,7 +138,10 @@ export default function CartPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setItemToRemove({ product: item.product, variantId: item.variant?.id })
+                    setItemToRemove({
+                      product: item.product,
+                      variantId: item.variant?.id != null ? String(item.variant.id) : null,
+                    })
                   }
                   className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-500 bg-muted hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"
                   aria-label="Remove item"
@@ -152,7 +163,7 @@ export default function CartPage() {
             <div>
               <label
                 htmlFor="name"
-                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+                className="block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2"
               >
                 Full Name *
               </label>
@@ -171,7 +182,7 @@ export default function CartPage() {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+                className="block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2"
               >
                 Phone Number *
               </label>
@@ -190,7 +201,7 @@ export default function CartPage() {
             <div>
               <label
                 htmlFor="message"
-                className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2"
+                className="block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2"
               >
                 Additional Message
               </label>
@@ -213,7 +224,7 @@ export default function CartPage() {
                 <span>Send via WhatsApp</span>
                 <Send className="w-5 h-5" />
               </button>
-              <p className="text-center text-[11px] text-gray-500 mt-4 tracking-wide">
+              <p className="text-center text-[11px] text-muted-foreground mt-4 tracking-wide">
                 By submitting this enquiry, you agree to be contacted via WhatsApp by our concierge.
               </p>
             </div>

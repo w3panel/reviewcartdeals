@@ -14,7 +14,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    // D1/SQLite cannot handle concurrent workerd instances during `next build`
+    // Postgres is external; limit build parallelism for stable static generation.
     cpus: 1,
     staticGenerationMaxConcurrency: 1,
     // Tree-shake barrel imports — https://payloadcms.com/docs/performance/overview
@@ -34,9 +34,7 @@ const nextConfig = {
       },
     ],
   },
-  // Packages with Cloudflare Workers (workerd) specific code
-  // Read more: https://opennext.js.org/cloudflare/howtos/workerd
-  serverExternalPackages: ['jose', 'pg-cloudflare'],
+  serverExternalPackages: ['jose'],
 
   webpack: (webpackConfig: any) => {
     webpackConfig.resolve.alias = {

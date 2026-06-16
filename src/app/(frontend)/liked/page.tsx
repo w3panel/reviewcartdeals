@@ -18,7 +18,7 @@ export default function LikedPage() {
         <div className="w-16 h-16 bg-card border border-border rounded-full flex items-center justify-center mb-6">
           <Heart className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">No Saved Items</h1>
+        <h1 className="font-serif text-2xl text-white mb-2 sm:text-3xl">No Saved Items</h1>
         <p className="text-muted-foreground text-center mb-8 max-w-sm text-sm">
           Browse our collections and tap the heart icon to save pieces you love.
         </p>
@@ -38,7 +38,7 @@ export default function LikedPage() {
         <Link href="/" className="p-2 -ml-2 text-primary">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="text-lg font-bold ml-2">Saved Items</h1>
+        <h1 className="font-serif text-lg text-white ml-2 sm:text-xl">Saved Items</h1>
         <div className="ml-auto bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
           {likedItems.length}
         </div>

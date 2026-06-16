@@ -12,6 +12,9 @@
 # testing
 /coverage
 
+test.env
+*.env
+
 # next.js
 /.next/
 /.next-build/
@@ -53,3 +56,4 @@ node_modules/
 # OpenNext
 .open-next
 .wrangler
+.env*

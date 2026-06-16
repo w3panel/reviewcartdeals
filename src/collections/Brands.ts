@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { formatSlug } from '@/lib/formatSlug'
 
 export const Brands: CollectionConfig = {
   slug: 'brands',
@@ -22,12 +21,6 @@ export const Brands: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      admin: {
-        position: 'sidebar',
-      },
-      hooks: {
-        beforeValidate: [formatSlug('title')],
-      },
     },
     {
       name: 'image',

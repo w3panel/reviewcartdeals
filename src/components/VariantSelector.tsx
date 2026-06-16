@@ -1,64 +1,93 @@
 'use client'
 
-import React from 'react'
-import Image from 'next/image'
-import type { Product } from '@/payload-types'
-import { formatVariantLabel, getVariantThumbnail, type ProductVariant } from '@/lib/productVariants'
-import { getImageUrl } from '@/lib/utils'
+import React, { useCallback } from 'react'
+import type { Product, ProductVariant } from '@/payload-types'
+import {
+  getSelectableOptionChoices,
+  getVariantOptionTypes,
+  isOptionValueSelectable,
+  pruneSelectedOptions,
+  type SelectedVariantOptions,
+} from '@/lib/productVariants'
 
 type VariantSelectorProps = {
   product: Product
   variants: ProductVariant[]
-  selectedVariantId: string | null
-  onSelectVariant: (variantId: string | null) => void
+  selectedOptions: SelectedVariantOptions
+  onSelectOptions: (selectedOptions: SelectedVariantOptions) => void
 }
 
 export function VariantSelector({
   product,
   variants,
-  selectedVariantId,
-  onSelectVariant,
+  selectedOptions,
+  onSelectOptions,
 }: VariantSelectorProps) {
-  return (
-    <div className="mt-6 sm:mt-8">
-      <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-4">
-        Select Variant
-      </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {variants.map((variant, index) => {
-          const isSelected = variant.id === selectedVariantId
-          const thumbnail = getVariantThumbnail(variant, product)
-          const label = formatVariantLabel(variant, index)
+  const variantOptionTypes = getVariantOptionTypes(product, variants)
 
-          return (
-            <button
-              key={variant.id}
-              type="button"
-              onClick={() => onSelectVariant(variant.id ?? null)}
-              className={`flex flex-col overflow-hidden rounded-2xl border bg-card text-left transition-all ${
-                isSelected
-                  ? 'border-primary ring-1 ring-primary'
-                  : 'border-border hover:border-primary/50'
-              }`}
-            >
-              <div className="relative aspect-square w-full bg-muted border-b border-border">
-                <Image
-                  src={getImageUrl(thumbnail)}
-                  alt={label}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 160px"
-                  className="object-contain p-3"
-                />
-              </div>
-              <div className="flex flex-col gap-1 p-3">
-                <span className="text-[10px] sm:text-xs font-semibold text-foreground leading-snug line-clamp-4">
-                  {label}
-                </span>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+  const handleSelect = useCallback(
+    (typeId: number, optionValueId: string) => {
+      const typeKey = String(typeId)
+      const nextSelection = pruneSelectedOptions(
+        variants,
+        {
+          ...selectedOptions,
+          [typeKey]: optionValueId,
+        },
+        variantOptionTypes,
+      )
+      onSelectOptions(nextSelection)
+    },
+    [variants, selectedOptions, variantOptionTypes, onSelectOptions],
+  )
+
+  if (variantOptionTypes.length === 0) return null
+
+  return (
+    <div className="mt-6 space-y-5 sm:mt-8">
+      {variantOptionTypes.map((variantType) => {
+        const typeKey = String(variantType.id)
+        const choices = getSelectableOptionChoices(variants, variantType.id, selectedOptions)
+        const selectedValue = selectedOptions[typeKey]
+
+        return (
+          <div key={variantType.id}>
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-primary">
+              {variantType.label}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {choices.map((choice) => {
+                const isSelected = selectedValue === choice.id
+                const isSelectable = isOptionValueSelectable(
+                  variants,
+                  variantType.id,
+                  choice.id,
+                  selectedOptions,
+                )
+
+                return (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    disabled={!isSelectable}
+                    onClick={() => handleSelect(variantType.id, choice.id)}
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                      isSelected
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : isSelectable
+                          ? 'border-border bg-card text-foreground hover:border-primary/50'
+                          : 'cursor-not-allowed border-border/60 bg-muted/40 text-muted-foreground opacity-50'
+                    }`}
+                    aria-pressed={isSelected}
+                  >
+                    {choice.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

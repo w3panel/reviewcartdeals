@@ -1,93 +1,51 @@
-import * as migration_20250929_111647 from './20250929_111647'
-import * as migration_20260605_040917 from './20260605_040917'
-import * as migration_20260605_050544_reviews_collection from './20260605_050544_reviews_collection'
-import * as migration_20260605_054001_brands_verified from './20260605_054001_brands_verified'
-import * as migration_20260606_120000_convert_full_description_to_text from './20260606_120000_convert_full_description_to_text'
-import * as migration_20260608_052058 from './20260608_052058'
-import * as migration_20260608_120000_remove_variants from './20260608_120000_remove_variants'
-import * as migration_20260608_140000_merge_product_description from './20260608_140000_merge_product_description'
-import * as migration_20260608_150000_remove_extra_gallery from './20260608_150000_remove_extra_gallery'
-import * as migration_20260608_160000_unify_gallery_array from './20260608_160000_unify_gallery_array'
-import * as migration_20260610_000000_add_product_variants from './20260610_000000_add_product_variants'
-import * as migration_20260610_010000_variant_gallery from './20260610_010000_variant_gallery'
-import * as migration_20260610_020000_variant_original_price from './20260610_020000_variant_original_price'
-import * as migration_20260610_030000_variant_attributes from './20260610_030000_variant_attributes'
-import * as migration_20260610_040000_remove_variant_title from './20260610_040000_remove_variant_title'
+import * as migration_20260615_051642_initial from './20260615_051642_initial'
+import * as migration_20260616_variant_option_values from './20260616_variant_option_values'
+import * as migration_20260617_product_attributes_phase2 from './20260617_product_attributes_phase2'
+import * as migration_20260617_fix_product_attributes_table_names from './20260617_fix_product_attributes_table_names'
+import * as migration_20260618_option_value_gallery from './20260618_option_value_gallery'
+import * as migration_20260619_product_option_availability from './20260619_product_option_availability'
+import * as migration_20260620_fix_orphan_option_value_versions from './20260620_fix_orphan_option_value_versions'
+import * as migration_20260621_fix_products_rels_option_values from './20260621_fix_products_rels_option_values'
 
 export const migrations = [
   {
-    up: migration_20250929_111647.up,
-    down: migration_20250929_111647.down,
-    name: '20250929_111647',
+    up: migration_20260615_051642_initial.up,
+    down: migration_20260615_051642_initial.down,
+    name: '20260615_051642_initial',
   },
   {
-    up: migration_20260605_040917.up,
-    down: migration_20260605_040917.down,
-    name: '20260605_040917',
+    up: migration_20260616_variant_option_values.up,
+    down: migration_20260616_variant_option_values.down,
+    name: '20260616_variant_option_values',
   },
   {
-    up: migration_20260605_050544_reviews_collection.up,
-    down: migration_20260605_050544_reviews_collection.down,
-    name: '20260605_050544_reviews_collection',
+    up: migration_20260617_product_attributes_phase2.up,
+    down: migration_20260617_product_attributes_phase2.down,
+    name: '20260617_product_attributes_phase2',
   },
   {
-    up: migration_20260605_054001_brands_verified.up,
-    down: migration_20260605_054001_brands_verified.down,
-    name: '20260605_054001_brands_verified',
+    up: migration_20260617_fix_product_attributes_table_names.up,
+    down: migration_20260617_fix_product_attributes_table_names.down,
+    name: '20260617_fix_product_attributes_table_names',
   },
   {
-    up: migration_20260606_120000_convert_full_description_to_text.up,
-    down: migration_20260606_120000_convert_full_description_to_text.down,
-    name: '20260606_120000_convert_full_description_to_text',
+    up: migration_20260618_option_value_gallery.up,
+    down: migration_20260618_option_value_gallery.down,
+    name: '20260618_option_value_gallery',
   },
   {
-    up: migration_20260608_052058.up,
-    down: migration_20260608_052058.down,
-    name: '20260608_052058',
+    up: migration_20260619_product_option_availability.up,
+    down: migration_20260619_product_option_availability.down,
+    name: '20260619_product_option_availability',
   },
   {
-    up: migration_20260608_120000_remove_variants.up,
-    down: migration_20260608_120000_remove_variants.down,
-    name: '20260608_120000_remove_variants',
+    up: migration_20260620_fix_orphan_option_value_versions.up,
+    down: migration_20260620_fix_orphan_option_value_versions.down,
+    name: '20260620_fix_orphan_option_value_versions',
   },
   {
-    up: migration_20260608_140000_merge_product_description.up,
-    down: migration_20260608_140000_merge_product_description.down,
-    name: '20260608_140000_merge_product_description',
-  },
-  {
-    up: migration_20260608_150000_remove_extra_gallery.up,
-    down: migration_20260608_150000_remove_extra_gallery.down,
-    name: '20260608_150000_remove_extra_gallery',
-  },
-  {
-    up: migration_20260608_160000_unify_gallery_array.up,
-    down: migration_20260608_160000_unify_gallery_array.down,
-    name: '20260608_160000_unify_gallery_array',
-  },
-  {
-    up: migration_20260610_000000_add_product_variants.up,
-    down: migration_20260610_000000_add_product_variants.down,
-    name: '20260610_000000_add_product_variants',
-  },
-  {
-    up: migration_20260610_010000_variant_gallery.up,
-    down: migration_20260610_010000_variant_gallery.down,
-    name: '20260610_010000_variant_gallery',
-  },
-  {
-    up: migration_20260610_020000_variant_original_price.up,
-    down: migration_20260610_020000_variant_original_price.down,
-    name: '20260610_020000_variant_original_price',
-  },
-  {
-    up: migration_20260610_030000_variant_attributes.up,
-    down: migration_20260610_030000_variant_attributes.down,
-    name: '20260610_030000_variant_attributes',
-  },
-  {
-    up: migration_20260610_040000_remove_variant_title.up,
-    down: migration_20260610_040000_remove_variant_title.down,
-    name: '20260610_040000_remove_variant_title',
+    up: migration_20260621_fix_products_rels_option_values.up,
+    down: migration_20260621_fix_products_rels_option_values.down,
+    name: '20260621_fix_products_rels_option_values',
   },
 ]

@@ -1,10 +1,12 @@
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 
 export async function getCategories() {
   const payload = await getPayloadClient()
 
   const response = await payload.find({
     collection: 'categories',
+    where: withPublishedOnly(),
     sort: '-featured',
     limit: 100,
     depth: 1,
@@ -27,11 +29,11 @@ export async function getCategoryBySlug(slug: string) {
 
   const response = await payload.find({
     collection: 'categories',
-    where: {
+    where: withPublishedOnly({
       slug: {
         equals: slug,
       },
-    },
+    }),
     limit: 1,
     depth: 1,
     select: {
@@ -50,6 +52,7 @@ export async function getAllCategorySlugs() {
 
   const response = await payload.find({
     collection: 'categories',
+    where: withPublishedOnly(),
     limit: 500,
     depth: 0,
     pagination: false,

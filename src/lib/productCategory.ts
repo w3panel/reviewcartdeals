@@ -1,4 +1,5 @@
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 import type { Category, Product } from '@/payload-types'
 
 export async function resolveProductCategory(category: Product['category']): Promise<Category> {
@@ -8,11 +9,16 @@ export async function resolveProductCategory(category: Product['category']): Pro
 
   if (typeof category === 'number') {
     const payload = await getPayloadClient()
-    const doc = await payload.findByID({
+    const response = await payload.find({
       collection: 'categories',
-      id: category,
+      where: withPublishedOnly({ id: { equals: category } }),
+      limit: 1,
       depth: 0,
     })
+    const doc = response.docs[0]
+    if (!doc) {
+      throw new Error('Product category is not published or does not exist')
+    }
     return doc as Category
   }
 

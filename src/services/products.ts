@@ -1,4 +1,5 @@
 import { getPayloadClient } from '@/lib/payload'
+import { withPublishedOnly } from '@/lib/publishedOnly'
 import { findCatalogProducts, type CatalogQueryOptions } from '@/lib/productFilters'
 
 export type GetProductsOptions = CatalogQueryOptions
@@ -23,16 +24,34 @@ export async function getProductBySlug(slug: string) {
 
   const response = await payload.find({
     collection: 'products',
-    where: {
+    where: withPublishedOnly({
       slug: {
         equals: slug,
       },
-    },
+    }),
     limit: 1,
     depth: 2,
   })
 
   return response.docs[0] || null
+}
+
+export async function getProductVariants(productId: string | number) {
+  const payload = await getPayloadClient()
+
+  const response = await payload.find({
+    collection: 'product-variants',
+    where: withPublishedOnly({
+      product: {
+        equals: productId,
+      },
+    }),
+    depth: 3,
+    limit: 500,
+    pagination: false,
+  })
+
+  return response.docs
 }
 
 export async function getRelatedProducts(
@@ -44,7 +63,7 @@ export async function getRelatedProducts(
 
   const response = await payload.find({
     collection: 'products',
-    where: {
+    where: withPublishedOnly({
       and: [
         {
           category: {
@@ -57,7 +76,7 @@ export async function getRelatedProducts(
           },
         },
       ],
-    },
+    }),
     limit,
     depth: 1,
     select: {
@@ -66,7 +85,7 @@ export async function getRelatedProducts(
       brand: true,
       gallery: true,
       description: true,
-      variants: true,
+      enableVariants: true,
       category: true,
       updatedAt: true,
       createdAt: true,
@@ -81,6 +100,7 @@ export async function getAllBrands() {
 
   const response = await payload.find({
     collection: 'brands',
+    where: withPublishedOnly(),
     limit: 300,
     depth: 0,
     sort: 'title',
@@ -98,6 +118,7 @@ export async function getAllProductSlugs() {
 
   const response = await payload.find({
     collection: 'products',
+    where: withPublishedOnly(),
     limit: 1000,
     depth: 0,
     pagination: false,

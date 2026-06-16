@@ -72,22 +72,37 @@ export interface Config {
     categories: Category;
     brands: Brand;
     tags: Tag;
+    'variant-types': VariantType;
+    'variant-option-values': VariantOptionValue;
     products: Product;
+    'product-variants': ProductVariant;
     reviews: Review;
+    'nav-items': NavItem;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    'variant-types': {
+      optionValues: 'variant-option-values';
+    };
+    products: {
+      linkedVariants: 'product-variants';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    'variant-types': VariantTypesSelect<false> | VariantTypesSelect<true>;
+    'variant-option-values': VariantOptionValuesSelect<false> | VariantOptionValuesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'nav-items': NavItemsSelect<false> | NavItemsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -176,6 +191,9 @@ export interface Media {
 export interface Category {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   image: number | Media;
   icon?: (number | null) | Media;
@@ -183,6 +201,7 @@ export interface Category {
   featured?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -191,12 +210,16 @@ export interface Category {
 export interface Brand {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   image?: (number | null) | Media;
   description?: string | null;
   verified?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -205,9 +228,72 @@ export interface Brand {
 export interface Tag {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Catalog definitions for attributes and variant options (e.g. Color, Size). Assign values under Variant Option Values.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variant-types".
+ */
+export interface VariantType {
+  id: number;
+  /**
+   * Display name shown in the admin and storefront, e.g. Color or Size.
+   */
+  label: string;
+  /**
+   * Machine key auto-generated from the label. Edit to override.
+   */
+  name: string;
+  /**
+   * When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each Variant Option Value.
+   */
+  isPrimaryVisualType?: boolean | null;
+  /**
+   * Allowed values for this type. Use + to add values here or under Catalog → Variant Option Values.
+   */
+  optionValues?: {
+    docs?: (number | VariantOptionValue)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variant-option-values".
+ */
+export interface VariantOptionValue {
+  id: number;
+  /**
+   * The variant type this value belongs to (e.g. Color).
+   */
+  variantType: number | VariantType;
+  /**
+   * Display value shown in admin and on the storefront, e.g. Red or Black.
+   */
+  value: string;
+  /**
+   * Images shown when this option value is selected on the storefront. Only needed for types marked as Primary visual type (e.g. Color).
+   */
+  gallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -216,6 +302,9 @@ export interface Tag {
 export interface Product {
   id: number;
   title: string;
+  /**
+   * Auto-generated from title when empty. Edit to override.
+   */
   slug: string;
   brand: number | Brand;
   /**
@@ -235,29 +324,41 @@ export interface Product {
   featured?: boolean | null;
   limitedEdition?: boolean | null;
   /**
-   * Optional product options. Shoppers pick a variant before adding to their enquiry.
+   * Turn on when this product has selectable options such as color or size.
    */
-  variants?:
+  enableVariants?: boolean | null;
+  /**
+   * Option dimensions that create separate variants (e.g. Color and Size). Each combination becomes one product variant.
+   */
+  variantOptionTypes?: (number | VariantType)[] | null;
+  /**
+   * Choose which catalog values apply to this product. The generator only creates combinations from these selections — not the full catalog.
+   */
+  variantOptionAvailability?:
     | {
+        type: number | VariantType;
         /**
-         * Add any attribute-value pairs for this variant, e.g. RAM → 8GB, Storage → 128GB.
+         * Values offered for this product and type (e.g. Pink, Black).
          */
-        attributes?:
-          | {
-              key: string;
-              value: string;
-              id?: string | null;
-            }[]
-          | null;
-        /**
-         * Optional images for this variant. When selected, these replace the main product gallery.
-         */
-        gallery?:
-          | {
-              image: number | Media;
-              id?: string | null;
-            }[]
-          | null;
+        optionValues: (number | VariantOptionValue)[];
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup.
+   */
+  linkedVariants?: {
+    docs?: (number | ProductVariant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Shared details for every variant (e.g. Fit: Regular). These do not create separate combinations.
+   */
+  productAttributes?:
+    | {
+        type: number | VariantType;
+        optionValue: number | VariantOptionValue;
         id?: string | null;
       }[]
     | null;
@@ -278,6 +379,35 @@ export interface Product {
   tags?: (number | Tag)[] | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants".
+ */
+export interface ProductVariant {
+  id: number;
+  product: number | Product;
+  /**
+   * Auto-generated from the selected option values.
+   */
+  title?: string | null;
+  /**
+   * Add one row per differentiating variant type (e.g. Color). Pick a catalog option value — free text is not allowed.
+   */
+  options?:
+    | {
+        type: number | VariantType;
+        /**
+         * Select a value defined on the variant type. Add new values under Catalog → Variant Option Values.
+         */
+        optionValue: number | VariantOptionValue;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -296,6 +426,53 @@ export interface Review {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Manage navigation links across header, mobile bottom bar, footer, and mobile toolbar. Control device visibility per item.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nav-items".
+ */
+export interface NavItem {
+  id: number;
+  label: string;
+  /**
+   * Internal path (e.g. /search) or full URL (e.g. https://wa.me/123).
+   */
+  href: string;
+  itemType?: ('link' | 'megaMenu' | 'button') | null;
+  styleVariant?: ('default' | 'primary' | 'whatsapp' | 'iconOnly') | null;
+  /**
+   * Choose every UI region where this item should appear. Use Link type for the mobile bottom bar (mega menus are header-only).
+   */
+  placements: ('header' | 'bottom' | 'footer' | 'toolbar')[];
+  showOnDesktop?: boolean | null;
+  showOnTablet?: boolean | null;
+  showOnMobile?: boolean | null;
+  /**
+   * Links shown in the mega menu dropdown.
+   */
+  children?:
+    | {
+        label: string;
+        href: string;
+        openInNewTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  enabled?: boolean | null;
+  /**
+   * Lower numbers appear first within each placement.
+   */
+  sortOrder: number;
+  openInNewTab?: boolean | null;
+  /**
+   * Icon for bottom bar, toolbar, or button items.
+   */
+  icon?: ('none' | 'home' | 'grid' | 'star' | 'heart' | 'user' | 'message' | 'search' | 'menu' | 'phone') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -344,12 +521,28 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
+        relationTo: 'variant-types';
+        value: number | VariantType;
+      } | null)
+    | ({
+        relationTo: 'variant-option-values';
+        value: number | VariantOptionValue;
+      } | null)
+    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
     | ({
+        relationTo: 'product-variants';
+        value: number | ProductVariant;
+      } | null)
+    | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'nav-items';
+        value: number | NavItem;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -444,6 +637,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   featured?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -457,6 +651,7 @@ export interface BrandsSelect<T extends boolean = true> {
   verified?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -467,6 +662,37 @@ export interface TagsSelect<T extends boolean = true> {
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variant-types_select".
+ */
+export interface VariantTypesSelect<T extends boolean = true> {
+  label?: T;
+  name?: T;
+  isPrimaryVisualType?: T;
+  optionValues?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variant-option-values_select".
+ */
+export interface VariantOptionValuesSelect<T extends boolean = true> {
+  variantType?: T;
+  value?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -486,22 +712,21 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   featured?: T;
   limitedEdition?: T;
-  variants?:
+  enableVariants?: T;
+  variantOptionTypes?: T;
+  variantOptionAvailability?:
     | T
     | {
-        attributes?:
-          | T
-          | {
-              key?: T;
-              value?: T;
-              id?: T;
-            };
-        gallery?:
-          | T
-          | {
-              image?: T;
-              id?: T;
-            };
+        type?: T;
+        optionValues?: T;
+        id?: T;
+      };
+  linkedVariants?: T;
+  productAttributes?:
+    | T
+    | {
+        type?: T;
+        optionValue?: T;
         id?: T;
       };
   specifications?:
@@ -520,6 +745,25 @@ export interface ProductsSelect<T extends boolean = true> {
   tags?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants_select".
+ */
+export interface ProductVariantsSelect<T extends boolean = true> {
+  product?: T;
+  title?: T;
+  options?:
+    | T
+    | {
+        type?: T;
+        optionValue?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -537,6 +781,35 @@ export interface ReviewsSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nav-items_select".
+ */
+export interface NavItemsSelect<T extends boolean = true> {
+  label?: T;
+  href?: T;
+  itemType?: T;
+  styleVariant?: T;
+  placements?: T;
+  showOnDesktop?: T;
+  showOnTablet?: T;
+  showOnMobile?: T;
+  children?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        openInNewTab?: T;
+        id?: T;
+      };
+  enabled?: T;
+  sortOrder?: T;
+  openInNewTab?: T;
+  icon?: T;
   updatedAt?: T;
   createdAt?: T;
 }
