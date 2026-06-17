@@ -1,6 +1,58 @@
 import { getPayloadClient } from '@/lib/payload'
 import { withPublishedOnly } from '@/lib/publishedOnly'
 import { findCatalogProducts, type CatalogQueryOptions } from '@/lib/productFilters'
+import type { ProductVariant, VariantOptionValue } from '@/payload-types'
+import { getRelationshipId } from '@/lib/variantOptionValues'
+
+function collectOptionValueIds(variants: ProductVariant[]): number[] {
+  const ids = new Set<number>()
+
+  for (const variant of variants) {
+    for (const option of variant.options ?? []) {
+      const id = getRelationshipId(option.optionValue)
+      if (id !== null) ids.add(id)
+    }
+  }
+
+  return Array.from(ids)
+}
+
+async function hydrateVariantsWithOptionValues(
+  variants: ProductVariant[],
+): Promise<ProductVariant[]> {
+  const optionValueIds = collectOptionValueIds(variants)
+  if (optionValueIds.length === 0) return variants
+
+  const payload = await getPayloadClient()
+  const { docs } = await payload.find({
+    collection: 'variant-option-values',
+    where: withPublishedOnly({
+      id: {
+        in: optionValueIds,
+      },
+    }),
+    depth: 2,
+    limit: optionValueIds.length,
+    pagination: false,
+  })
+
+  const optionValueById = new Map<number, VariantOptionValue>(
+    docs.map((doc) => [Number(doc.id), doc as VariantOptionValue]),
+  )
+
+  return variants.map((variant) => ({
+    ...variant,
+    options: variant.options?.map((option) => {
+      const optionValueId = getRelationshipId(option.optionValue)
+      if (optionValueId === null) return option
+
+      return {
+        ...option,
+        optionValue: optionValueById.get(optionValueId) ?? option.optionValue,
+      }
+    }),
+  }))
+}
 
 export type GetProductsOptions = CatalogQueryOptions
 
@@ -46,12 +98,12 @@ export async function getProductVariants(productId: string | number) {
         equals: productId,
       },
     }),
-    depth: 3,
+    depth: 2,
     limit: 500,
     pagination: false,
   })
 
-  return response.docs
+  return hydrateVariantsWithOptionValues(response.docs as ProductVariant[])
 }
 
 export async function getRelatedProducts(

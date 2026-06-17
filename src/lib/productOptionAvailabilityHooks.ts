@@ -1,8 +1,14 @@
-import type { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payload'
+import type { CollectionBeforeValidateHook } from 'payload'
 
 import type { Product, VariantType } from '@/payload-types'
+import { publishedStatusWhere } from '@/lib/publishedOnly'
 import { getRelationshipId } from '@/lib/variantOptionValues'
-import { type AvailabilityRow, getAvailabilityRows } from '@/lib/productOptionAvailability'
+import {
+  type AvailabilityRow,
+  buildSyncedAvailabilityRows,
+  getAvailabilityRows,
+  populateDefaultOptionValues,
+} from '@/lib/productOptionAvailability'
 
 function getVariantOptionTypeIds(data: Pick<Product, 'variantOptionTypes'>): number[] {
   return (data.variantOptionTypes ?? [])
@@ -18,9 +24,14 @@ function getAttributeTypeIds(data: Pick<Product, 'productAttributes'>): Set<numb
   )
 }
 
-export const syncVariantOptionAvailability: CollectionBeforeChangeHook = ({
+function requiresCompleteAvailability(data: Pick<Product, '_status'>): boolean {
+  return data._status === 'published'
+}
+
+export const syncVariantOptionAvailability: CollectionBeforeValidateHook = async ({
   data,
   originalDoc,
+  req,
 }) => {
   if (!data?.enableVariants) return data
 
@@ -36,20 +47,24 @@ export const syncVariantOptionAvailability: CollectionBeforeChangeHook = ({
       : originalDoc?.variantOptionAvailability
   ) as AvailabilityRow[] | undefined
 
-  const existingByType = new Map<number, AvailabilityRow>()
-  for (const row of existingRows ?? []) {
-    const typeId = getRelationshipId(row.type)
-    if (typeId !== null) existingByType.set(typeId, row)
-  }
+  let rows = buildSyncedAvailabilityRows(typeIds, existingRows ?? [])
 
-  data.variantOptionAvailability = typeIds.map((typeId) => {
-    const previous = existingByType.get(typeId)
-    return {
-      id: previous?.id,
-      type: typeId,
-      optionValues: previous?.optionValues ?? [],
-    }
-  }) as Product['variantOptionAvailability']
+  rows = await populateDefaultOptionValues(rows, async (typeId) => {
+    const result = await req.payload.find({
+      collection: 'variant-option-values',
+      where: {
+        and: [{ variantType: { equals: typeId } }, publishedStatusWhere],
+      },
+      depth: 0,
+      limit: 250,
+      pagination: false,
+      overrideAccess: true,
+    })
+
+    return result.docs.map((doc) => Number(doc.id))
+  })
+
+  data.variantOptionAvailability = rows as Product['variantOptionAvailability']
 
   return data
 }
@@ -94,17 +109,19 @@ export const validateProductOptionAvailability: CollectionBeforeValidateHook = a
     }
   }
 
-  for (const typeId of typeIds) {
-    if (!seenAvailabilityTypes.has(typeId)) {
-      const variantType = await req.payload.findByID({
-        collection: 'variant-types',
-        id: typeId,
-        depth: 0,
-        overrideAccess: true,
-      })
-      throw new Error(
-        `Add available values for "${(variantType as VariantType).label}" before generating variants.`,
-      )
+  if (requiresCompleteAvailability(data)) {
+    for (const typeId of typeIds) {
+      if (!seenAvailabilityTypes.has(typeId)) {
+        const variantType = await req.payload.findByID({
+          collection: 'variant-types',
+          id: typeId,
+          depth: 0,
+          overrideAccess: true,
+        })
+        throw new Error(
+          `Add available values for "${(variantType as VariantType).label}" before publishing.`,
+        )
+      }
     }
   }
 
@@ -119,15 +136,18 @@ export const validateProductOptionAvailability: CollectionBeforeValidateHook = a
       .filter((id): id is number => id !== null)
 
     if (valueIds.length === 0) {
-      const variantType = await req.payload.findByID({
-        collection: 'variant-types',
-        id: typeId,
-        depth: 0,
-        overrideAccess: true,
-      })
-      throw new Error(
-        `Select at least one available value for "${(variantType as VariantType).label}".`,
-      )
+      if (requiresCompleteAvailability(data)) {
+        const variantType = await req.payload.findByID({
+          collection: 'variant-types',
+          id: typeId,
+          depth: 0,
+          overrideAccess: true,
+        })
+        throw new Error(
+          `Select at least one available value for "${(variantType as VariantType).label}" before publishing.`,
+        )
+      }
+      continue
     }
 
     const seenValues = new Set<number>()
