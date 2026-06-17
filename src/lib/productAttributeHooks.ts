@@ -7,8 +7,16 @@ type ProductAttributeRow = {
   optionValue?: unknown
 }
 
-export const validateProductAttributes: CollectionBeforeValidateHook = async ({ data, req }) => {
+export const validateProductAttributes: CollectionBeforeValidateHook = async ({
+  data,
+  originalDoc,
+  req,
+}) => {
   if (!data) return data
+
+  if (data.productAttributes === undefined && originalDoc?.productAttributes) {
+    return data
+  }
 
   const attributes = (data.productAttributes ?? []) as ProductAttributeRow[]
   const variantOptionTypeIds = new Set<number>(

@@ -45,13 +45,15 @@ export default function GenerateVariantsField() {
 
   useEffect(() => {
     let cancelled = false
-
-    void fetchVariantTypeLabels(typeIds).then((labels) => {
-      if (!cancelled) setTypeLabelById(labels)
-    })
+    const timer = window.setTimeout(() => {
+      void fetchVariantTypeLabels(typeIds).then((labels) => {
+        if (!cancelled) setTypeLabelById(labels)
+      })
+    }, 150)
 
     return () => {
       cancelled = true
+      window.clearTimeout(timer)
     }
   }, [typeIds.join(',')])
 
@@ -73,22 +75,24 @@ export default function GenerateVariantsField() {
 
   useEffect(() => {
     let cancelled = false
+    const timer = window.setTimeout(() => {
+      async function loadOptionValueLabels() {
+        const labelsFromTypes =
+          typeIds.length > 0 ? await fetchPublishedOptionValueLabelsForTypes(typeIds) : {}
+        const labelsFromIds =
+          optionValueIds.length > 0 ? await fetchVariantOptionValueLabels(optionValueIds) : {}
 
-    async function loadOptionValueLabels() {
-      const labelsFromTypes =
-        typeIds.length > 0 ? await fetchPublishedOptionValueLabelsForTypes(typeIds) : {}
-      const labelsFromIds =
-        optionValueIds.length > 0 ? await fetchVariantOptionValueLabels(optionValueIds) : {}
-
-      if (!cancelled) {
-        setOptionValueLabelById({ ...labelsFromTypes, ...labelsFromIds })
+        if (!cancelled) {
+          setOptionValueLabelById({ ...labelsFromTypes, ...labelsFromIds })
+        }
       }
-    }
 
-    void loadOptionValueLabels()
+      void loadOptionValueLabels()
+    }, 150)
 
     return () => {
       cancelled = true
+      window.clearTimeout(timer)
     }
   }, [optionValueIds.join(','), typeIds.join(',')])
 

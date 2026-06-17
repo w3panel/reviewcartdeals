@@ -7,6 +7,7 @@ import {
   validateProductOptionAvailability,
 } from '@/lib/productOptionAvailabilityHooks'
 import { findCatalogProducts } from '@/lib/productFilters'
+import { revalidateAfterProductChange, revalidateAfterProductDelete } from '@/lib/revalidateContent'
 import { getProductReviewStatsBatch } from '@/services/reviews'
 import { getRelationshipId } from '@/lib/variantOptionValues'
 
@@ -29,6 +30,8 @@ export const Products: CollectionConfig = {
       validateProductAttributes,
       validateProductOptionAvailability,
     ],
+    afterChange: [revalidateAfterProductChange],
+    afterDelete: [revalidateAfterProductDelete],
   },
   endpoints: [
     {
@@ -60,7 +63,9 @@ export const Products: CollectionConfig = {
 
         return Response.json(result, {
           headers: headersWithCors({
-            headers: new Headers(),
+            headers: new Headers({
+              'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+            }),
             req,
           }),
         })

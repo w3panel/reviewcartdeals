@@ -204,13 +204,11 @@ If you're migrating from a different styling approach, here's how to adapt commo
 
 ```tsx title="Before - CSS Modules"
 import styles from './Button.module.css'
-
 ;<button className={`${styles.button} ${styles[variant]} ${className}`} />
 ```
 
 ```tsx title="After - cn + Tailwind"
 import { cn } from '@/lib/utils'
-
 ;<button
   className={cn(
     'px-4 py-2 rounded-lg',

@@ -1,7 +1,14 @@
+import { cache } from 'react'
+import { unstable_cache } from 'next/cache'
+
+import { CACHE_TAGS } from '@/lib/cacheTags'
 import { getPayloadClient } from '@/lib/payload'
 import { withPublishedOnly } from '@/lib/publishedOnly'
+import { withQueryTiming } from '@/lib/observability'
 
-export async function getCategories() {
+const DATA_REVALIDATE_SECONDS = 300
+
+async function fetchCategories() {
   const payload = await getPayloadClient()
 
   const response = await payload.find({
@@ -24,7 +31,7 @@ export async function getCategories() {
   return response.docs
 }
 
-export async function getCategoryBySlug(slug: string) {
+async function fetchCategoryBySlug(slug: string) {
   const payload = await getPayloadClient()
 
   const response = await payload.find({
@@ -46,6 +53,22 @@ export async function getCategoryBySlug(slug: string) {
 
   return response.docs[0] || null
 }
+
+export async function getCategories() {
+  return unstable_cache(
+    async () => withQueryTiming('getCategories', fetchCategories),
+    ['categories-list'],
+    { tags: [CACHE_TAGS.categories], revalidate: DATA_REVALIDATE_SECONDS },
+  )()
+}
+
+export const getCategoryBySlug = cache(async (slug: string) => {
+  return unstable_cache(
+    async () => withQueryTiming(`getCategoryBySlug:${slug}`, () => fetchCategoryBySlug(slug)),
+    ['category-by-slug', slug],
+    { tags: [CACHE_TAGS.categories, `category:${slug}`], revalidate: DATA_REVALIDATE_SECONDS },
+  )()
+})
 
 export async function getAllCategorySlugs() {
   const payload = await getPayloadClient()

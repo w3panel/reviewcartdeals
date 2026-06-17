@@ -30,7 +30,9 @@ interface ProductPageProps {
   params: Promise<{ slug: string }>
 }
 
-export const revalidate = 60
+export const revalidate = 120
+
+export const dynamicParams = true
 
 export async function generateStaticParams() {
   const { productSlugs } = await getBuildSlugs()
@@ -177,9 +179,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-3">
                     <div className="relative aspect-square bg-card rounded-xl overflow-hidden">
                       <Image
-                        src={getImageUrl(getProductMainImage(prod))}
+                        src={getImageUrl(getProductMainImage(prod), 'card')}
                         alt={prod.title}
                         fill
+                        sizes="(max-width: 1024px) 50vw, 25vw"
                         className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
@@ -212,7 +215,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="flex items-center gap-3 min-w-0">
             <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-card border border-border">
               <Image
-                src={getImageUrl(getProductMainImage(product))}
+                src={getImageUrl(getProductMainImage(product), 'thumbnail')}
                 alt={product.title}
                 width={44}
                 height={44}

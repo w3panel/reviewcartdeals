@@ -2,6 +2,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import type { Product } from '@/payload-types'
+import {
+  LIKED_STORAGE_KEY,
+  migrateLegacyLiked,
+  toDisplayProduct,
+  toStoredProductSummary,
+  type StoredProductSummary,
+} from '@/lib/clientStorage'
 
 type LikedContextType = {
   likedItems: Product[]
@@ -13,26 +20,46 @@ type LikedContextType = {
 }
 
 const LikedContext = createContext<LikedContextType | undefined>(undefined)
+const LEGACY_LIKED_STORAGE_KEY = 'reviewcartdeals_liked'
+
+function hydrateLikedItems(stored: StoredProductSummary[]): Product[] {
+  return stored.map((item) => toDisplayProduct(item))
+}
+
+function loadStoredLiked(): StoredProductSummary[] {
+  try {
+    const saved = localStorage.getItem(LIKED_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved) as unknown
+      if (Array.isArray(parsed)) {
+        return parsed as StoredProductSummary[]
+      }
+    }
+
+    const legacy = localStorage.getItem(LEGACY_LIKED_STORAGE_KEY)
+    if (legacy) {
+      const migrated = migrateLegacyLiked(JSON.parse(legacy))
+      localStorage.removeItem(LEGACY_LIKED_STORAGE_KEY)
+      return migrated
+    }
+  } catch (e) {
+    console.error('Failed to load liked items', e)
+  }
+
+  return []
+}
 
 export function LikedProvider({ children }: { children: React.ReactNode }) {
   const [likedItems, setLikedItems] = useState<Product[]>([])
 
-  // Load from localStorage on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('reviewcartdeals_liked')
-      if (saved) {
-        setLikedItems(JSON.parse(saved))
-      }
-    } catch (e) {
-      console.error('Failed to load liked items', e)
-    }
+    setLikedItems(hydrateLikedItems(loadStoredLiked()))
   }, [])
 
-  // Save to localStorage on change
   useEffect(() => {
     try {
-      localStorage.setItem('reviewcartdeals_liked', JSON.stringify(likedItems))
+      const stored = likedItems.map((product) => toStoredProductSummary(product))
+      localStorage.setItem(LIKED_STORAGE_KEY, JSON.stringify(stored))
     } catch (e) {
       console.error('Failed to save liked items', e)
     }

@@ -3,6 +3,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import type { Product } from '@/payload-types'
 import { getCartItemKey, type ProductVariant } from '@/lib/productVariants'
+import {
+  CART_STORAGE_KEY,
+  migrateLegacyCart,
+  toDisplayProduct,
+  toDisplayVariant,
+  toStoredProductSummary,
+  toStoredVariantSummary,
+  type StoredCartItem,
+} from '@/lib/clientStorage'
 
 type CartItem = {
   product: Product
@@ -20,24 +29,57 @@ type CartContextType = {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
+const LEGACY_CART_STORAGE_KEY = 'reviewcartdeals_cart'
+
+function hydrateCartItems(stored: StoredCartItem[]): CartItem[] {
+  return stored.map((item) => ({
+    product: toDisplayProduct(item.product),
+    variant: toDisplayVariant(item.variant),
+    quantity: item.quantity,
+  }))
+}
+
+function serializeCartItems(items: CartItem[]): StoredCartItem[] {
+  return items.map((item) => ({
+    product: toStoredProductSummary(item.product),
+    variant: toStoredVariantSummary(item.variant),
+    quantity: item.quantity,
+  }))
+}
+
+function loadStoredCart(): StoredCartItem[] {
+  try {
+    const saved = localStorage.getItem(CART_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved) as unknown
+      if (Array.isArray(parsed)) {
+        return parsed as StoredCartItem[]
+      }
+    }
+
+    const legacy = localStorage.getItem(LEGACY_CART_STORAGE_KEY)
+    if (legacy) {
+      const migrated = migrateLegacyCart(JSON.parse(legacy))
+      localStorage.removeItem(LEGACY_CART_STORAGE_KEY)
+      return migrated
+    }
+  } catch (e) {
+    console.error('Failed to load cart', e)
+  }
+
+  return []
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('reviewcartdeals_cart')
-      if (saved) {
-        setItems(JSON.parse(saved))
-      }
-    } catch (e) {
-      console.error('Failed to load cart', e)
-    }
+    setItems(hydrateCartItems(loadStoredCart()))
   }, [])
 
   useEffect(() => {
     try {
-      localStorage.setItem('reviewcartdeals_cart', JSON.stringify(items))
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(serializeCartItems(items)))
     } catch (e) {
       console.error('Failed to save cart', e)
     }

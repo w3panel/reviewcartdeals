@@ -11,17 +11,31 @@ const withBundleAnalyzer = bundleAnalyzer({
   openAnalyzer: process.env.CI !== 'true',
 })
 
+const remotePatterns = [
+  { protocol: 'https', hostname: '**' },
+  { protocol: 'http', hostname: 'localhost' },
+] as const
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
     // Postgres is external; limit build parallelism for stable static generation.
-    cpus: 1,
-    staticGenerationMaxConcurrency: 1,
+    cpus: Number(process.env.BUILD_CPUS ?? 1),
+    staticGenerationMaxConcurrency: Number(process.env.BUILD_STATIC_CONCURRENCY ?? 1),
     // Tree-shake barrel imports — https://payloadcms.com/docs/performance/overview
     optimizePackageImports: ['lucide-react'],
   },
   images: {
-    unoptimized: true,
+    ...(process.env.NEXT_PUBLIC_IMAGE_CDN_HOST
+      ? {
+          loader: 'custom' as const,
+          loaderFile: './src/lib/imageLoader.ts',
+        }
+      : {}),
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [48, 96, 128, 256, 384],
+    remotePatterns: [...remotePatterns],
     localPatterns: [
       {
         pathname: '/api/media/file/**',
@@ -53,4 +67,6 @@ const nextConfig = {
   },
 }
 
-export default withPayload(withBundleAnalyzer(nextConfig), { devBundleServerPackages: false })
+export default withPayload(withBundleAnalyzer(nextConfig as import('next').NextConfig), {
+  devBundleServerPackages: false,
+})

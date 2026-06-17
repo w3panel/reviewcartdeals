@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { revalidateAfterBrandChange, revalidateAfterBrandDelete } from '@/lib/revalidateContent'
+
 export const Brands: CollectionConfig = {
   slug: 'brands',
   admin: {
@@ -8,6 +10,10 @@ export const Brands: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [revalidateAfterBrandChange],
+    afterDelete: [revalidateAfterBrandDelete],
   },
   fields: [
     {

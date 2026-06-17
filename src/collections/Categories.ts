@@ -1,5 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
+import {
+  revalidateAfterCategoryChange,
+  revalidateAfterCategoryDelete,
+} from '@/lib/revalidateContent'
+
 export const Categories: CollectionConfig = {
   slug: 'categories',
   admin: {
@@ -8,6 +13,10 @@ export const Categories: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [revalidateAfterCategoryChange],
+    afterDelete: [revalidateAfterCategoryDelete],
   },
   fields: [
     {

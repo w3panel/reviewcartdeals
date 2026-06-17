@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { revalidateAfterNavChange, revalidateAfterNavDelete } from '@/lib/revalidateContent'
+
 const placementOptions = [
   { label: 'Header', value: 'header' },
   { label: 'Mobile bottom bar', value: 'bottom' },
@@ -43,6 +45,10 @@ export const NavItems: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [revalidateAfterNavChange],
+    afterDelete: [revalidateAfterNavDelete],
   },
   fields: [
     {

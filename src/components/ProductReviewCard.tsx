@@ -46,7 +46,7 @@ export function ProductReviewCard({
         className={`relative bg-black ${isFeatured ? 'aspect-[3/4]' : 'aspect-[4/3]'}`}
       >
         <Image
-          src={getImageUrl(getProductMainImage(product))}
+          src={getImageUrl(getProductMainImage(product), 'card')}
           alt={product.title}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"

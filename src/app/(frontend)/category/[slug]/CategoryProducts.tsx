@@ -84,7 +84,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
         <div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-3">
             {products.map((prod: Product) => {
-              const imageUrl = getImageUrl(getProductMainImage(prod))
+              const imageUrl = getImageUrl(getProductMainImage(prod), 'card')
               return (
                 <div
                   key={prod.id}
@@ -96,6 +96,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                         src={imageUrl}
                         alt={prod.title}
                         fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
                         className="object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>

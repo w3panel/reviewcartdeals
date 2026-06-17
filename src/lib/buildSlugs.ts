@@ -9,6 +9,12 @@ export type BuildSlugs = {
 }
 
 const SLUGS_FILE = path.join(process.cwd(), '.next-build', 'slugs.json')
+const STATIC_PRODUCT_LIMIT = Number(process.env.BUILD_STATIC_PRODUCT_LIMIT ?? 200)
+const STATIC_CATEGORY_LIMIT = Number(process.env.BUILD_STATIC_CATEGORY_LIMIT ?? 200)
+
+function limitSlugs<T extends { slug: string }>(docs: T[], limit: number): string[] {
+  return docs.slice(0, limit).map((doc) => doc.slug)
+}
 
 function readCachedSlugs(): BuildSlugs | null {
   if (!fs.existsSync(SLUGS_FILE)) {
@@ -24,24 +30,26 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
   const categories = await payload.find({
     collection: 'categories',
     where: withPublishedOnly(),
-    limit: 500,
+    limit: STATIC_CATEGORY_LIMIT,
     depth: 0,
     pagination: false,
     select: { slug: true },
+    sort: '-featured',
   })
 
   const products = await payload.find({
     collection: 'products',
     where: withPublishedOnly(),
-    limit: 1000,
+    limit: STATIC_PRODUCT_LIMIT,
     depth: 0,
     pagination: false,
     select: { slug: true },
+    sort: '-featured',
   })
 
   return {
-    categorySlugs: categories.docs.map((doc) => doc.slug),
-    productSlugs: products.docs.map((doc) => doc.slug),
+    categorySlugs: limitSlugs(categories.docs, STATIC_CATEGORY_LIMIT),
+    productSlugs: limitSlugs(products.docs, STATIC_PRODUCT_LIMIT),
   }
 }
 

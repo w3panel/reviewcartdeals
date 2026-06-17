@@ -16,6 +16,12 @@ function getVariantOptionTypeIds(data: Pick<Product, 'variantOptionTypes'>): num
     .filter((id): id is number => id !== null)
 }
 
+function sameIdSets(a: number[], b: number[]): boolean {
+  if (a.length !== b.length) return false
+  const setB = new Set(b)
+  return a.every((id) => setB.has(id))
+}
+
 function getAttributeTypeIds(data: Pick<Product, 'productAttributes'>): Set<number> {
   return new Set(
     (data.productAttributes ?? [])
@@ -33,9 +39,25 @@ export const syncVariantOptionAvailability: CollectionBeforeValidateHook = async
   originalDoc,
   req,
 }) => {
-  if (!data?.enableVariants) return data
+  if (!data?.enableVariants) {
+    if (data) {
+      data.variantOptionAvailability = []
+    }
+    return data
+  }
 
   const typeIds = getVariantOptionTypeIds(data)
+  const originalTypeIds = originalDoc ? getVariantOptionTypeIds(originalDoc) : []
+
+  if (
+    typeIds.length > 0 &&
+    sameIdSets(typeIds, originalTypeIds) &&
+    data.variantOptionAvailability === undefined &&
+    originalDoc?.variantOptionAvailability
+  ) {
+    return data
+  }
+
   if (typeIds.length === 0) {
     data.variantOptionAvailability = []
     return data
@@ -71,9 +93,18 @@ export const syncVariantOptionAvailability: CollectionBeforeValidateHook = async
 
 export const validateProductOptionAvailability: CollectionBeforeValidateHook = async ({
   data,
+  originalDoc,
   req,
 }) => {
   if (!data?.enableVariants) return data
+
+  if (
+    data.variantOptionAvailability === undefined &&
+    originalDoc?.variantOptionAvailability &&
+    data._status !== 'published'
+  ) {
+    return data
+  }
 
   const typeIds = getVariantOptionTypeIds(data)
   const attributeTypeIds = getAttributeTypeIds(data)

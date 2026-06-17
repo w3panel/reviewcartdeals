@@ -13,7 +13,28 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // These are not supported on Workers yet due to lack of sharp
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
+    formatOptions: {
+      format: 'webp',
+      options: {
+        quality: 75,
+      },
+    },
+    imageSizes: [
+      {
+        name: 'thumbnail',
+        width: 320,
+        height: 320,
+        position: 'centre',
+      },
+      {
+        name: 'card',
+        width: 768,
+        height: 768,
+        position: 'centre',
+      },
+    ],
+    adminThumbnail: 'thumbnail',
     crop: false,
     focalPoint: false,
   },
