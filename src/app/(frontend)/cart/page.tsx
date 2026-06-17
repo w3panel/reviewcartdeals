@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Trash2, Send } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import { formatProductAttributesDetails } from '@/lib/productAttributes'
@@ -222,7 +223,7 @@ export default function CartPage() {
                 className="w-full bg-whatsapp text-white rounded-xl py-4 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
               >
                 <span>Send via WhatsApp</span>
-                <Send className="w-5 h-5" />
+                <WhatsAppIcon className="w-5 h-5" />
               </button>
               <p className="text-center text-[11px] text-muted-foreground mt-4 tracking-wide">
                 By submitting this enquiry, you agree to be contacted via WhatsApp by our concierge.

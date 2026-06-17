@@ -2,7 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ChevronDown, MessageCircle } from 'lucide-react'
+import { ArrowLeft, ChevronDown } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import type { Category } from '@/payload-types'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
@@ -133,7 +134,7 @@ export function FilterSheet({
             className="flex w-16 items-center justify-center border-l border-primary-foreground/15 bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
             aria-label="Contact on WhatsApp"
           >
-            <MessageCircle className="h-5 w-5" />
+            <WhatsAppIcon className="h-5 w-5" />
           </Link>
         </div>
       </div>

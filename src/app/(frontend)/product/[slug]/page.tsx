@@ -6,7 +6,8 @@ import { notFound } from 'next/navigation'
 import { getProductBySlug, getProductVariants, getRelatedProducts } from '@/services/products'
 import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
-import { MessageCircle, ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
+import { ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { getImageUrl, getProductMainImage, buildProductGalleryImages } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
 import { formatProductAttributesSummary } from '@/lib/productAttributes'
@@ -229,7 +230,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded-lg bg-whatsapp px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white flex-shrink-0"
           >
-            <MessageCircle className="h-4 w-4" />
+            <WhatsAppIcon className="h-4 w-4" />
             Enquire
           </a>
         </div>

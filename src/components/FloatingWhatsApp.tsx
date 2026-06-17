@@ -1,5 +1,5 @@
 import React from 'react'
-import { MessageCircle } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 export function FloatingWhatsApp() {
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
@@ -14,7 +14,7 @@ export function FloatingWhatsApp() {
       className="fixed bottom-20 right-4 z-40 hidden h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-2xl transition-all duration-300 hover:scale-110 md:flex md:bottom-8 md:right-8"
       aria-label="Contact via WhatsApp"
     >
-      <MessageCircle className="h-7 w-7" />
+      <WhatsAppIcon className="h-7 w-7" />
     </a>
   )
 }
