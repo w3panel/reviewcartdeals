@@ -8,8 +8,8 @@ import {
   ThumbsUp,
   Activity,
   BadgeCheck,
-  MessageCircle,
 } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { getImageUrl } from '@/lib/utils'
 import type { Review, Media } from '@/payload-types'
 import type { ProductReviewStats } from '@/services/reviews'
@@ -171,7 +171,7 @@ export function ProductReviews({ reviews, stats }: ProductReviewsProps) {
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground py-3.5 rounded-xl border border-primary text-xs font-bold tracking-widest uppercase transition-all"
             >
-              Get Best Deals <MessageCircle className="w-4 h-4" />
+              Get Best Deals <WhatsAppIcon className="w-4 h-4" />
             </a>
           </div>
         </div>

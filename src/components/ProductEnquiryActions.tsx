@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import { MessageCircle } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import type { Product, ProductVariant } from '@/payload-types'
 import { formatProductAttributesDetails } from '@/lib/productAttributes'
 import {
@@ -67,7 +67,7 @@ export function ProductEnquiryActions({
           aria-disabled={productHasVariants && !selectedVariant}
           tabIndex={productHasVariants && !selectedVariant ? -1 : undefined}
         >
-          <MessageCircle className="h-5 w-5" />
+          <WhatsAppIcon className="h-5 w-5" />
           Enquire via WhatsApp
         </a>
         <AddToCartButton

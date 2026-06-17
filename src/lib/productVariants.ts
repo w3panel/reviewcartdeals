@@ -52,8 +52,8 @@ export function getVariantOptionTypes(
   variants: ProductVariant[] = [],
 ): VariantType[] {
   const fromProduct = (product.variantOptionTypes ?? []).flatMap((entry) => {
-    if (typeof entry === 'object' && entry !== null && 'label' in entry) {
-      return [entry]
+    if (typeof entry === 'object' && entry !== null && 'id' in entry) {
+      return [entry as VariantType]
     }
     return []
   })
@@ -120,12 +120,19 @@ export function resolveGalleryImages(
   variantOptionTypes: VariantType[],
   defaultGalleryImages: Media[],
 ): Media[] {
-  const galleryType = getPrimaryVisualType(variantOptionTypes)
-  if (!galleryType) return defaultGalleryImages
+  const primaryType = getPrimaryVisualType(variantOptionTypes)
+  const typesToTry = [
+    primaryType,
+    ...variantOptionTypes.filter((type) => type.id !== primaryType?.id),
+  ].filter((type): type is VariantType => Boolean(type))
 
-  const optionValue = resolveSelectedOptionValue(variants, selectedOptions, galleryType.id)
-  const images = buildOptionValueGalleryImages(optionValue)
-  return images.length > 0 ? images : defaultGalleryImages
+  for (const type of typesToTry) {
+    const optionValue = resolveSelectedOptionValue(variants, selectedOptions, type.id)
+    const images = buildOptionValueGalleryImages(optionValue)
+    if (images.length > 0) return images
+  }
+
+  return defaultGalleryImages
 }
 
 export function hasVariants(product: Product, variants: ProductVariant[] = []): boolean {

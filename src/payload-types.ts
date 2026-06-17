@@ -332,7 +332,7 @@ export interface Product {
    */
   variantOptionTypes?: (number | VariantType)[] | null;
   /**
-   * Choose which catalog values apply to this product. The generator only creates combinations from these selections — not the full catalog.
+   * Choose which catalog values apply to this product. Empty rows auto-fill with all published values for that type when you save.
    */
   variantOptionAvailability?:
     | {
@@ -340,7 +340,7 @@ export interface Product {
         /**
          * Values offered for this product and type (e.g. Pink, Black).
          */
-        optionValues: (number | VariantOptionValue)[];
+        optionValues?: (number | VariantOptionValue)[] | null;
         id?: string | null;
       }[]
     | null;

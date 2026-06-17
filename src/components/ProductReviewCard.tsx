@@ -3,7 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MessageCircle, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Brand, Product } from '@/payload-types'
 
@@ -95,7 +96,7 @@ export function ProductReviewCard({
             className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
             aria-label={`WhatsApp enquiry for ${product.title}`}
           >
-            <MessageCircle className="h-4 w-4" />
+            <WhatsAppIcon className="h-4 w-4" />
           </a>
         </div>
       </div>

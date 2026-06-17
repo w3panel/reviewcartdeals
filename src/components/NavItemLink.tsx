@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import type { LucideIcon } from 'lucide-react'
 import type { NavItem } from '@/payload-types'
+import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 
 type NavItemLinkProps = {
   item: Pick<NavItem, 'label' | 'href' | 'openInNewTab' | 'styleVariant'>
@@ -33,7 +34,11 @@ export function getNavButtonClasses(
 export function NavItemLink({ item, className = '', children, icon: Icon }: NavItemLinkProps) {
   const content = children ?? (
     <>
-      {Icon ? <Icon className="h-4 w-4 flex-shrink-0" /> : null}
+      {item.styleVariant === 'whatsapp' ? (
+        <WhatsAppIcon className="h-4 w-4 flex-shrink-0" />
+      ) : Icon ? (
+        <Icon className="h-4 w-4 flex-shrink-0" />
+      ) : null}
       {item.styleVariant !== 'iconOnly' ? <span>{item.label}</span> : null}
     </>
   )

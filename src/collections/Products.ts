@@ -24,8 +24,11 @@ export const Products: CollectionConfig = {
     read: () => true,
   },
   hooks: {
-    beforeValidate: [validateProductAttributes, validateProductOptionAvailability],
-    beforeChange: [syncVariantOptionAvailability],
+    beforeValidate: [
+      syncVariantOptionAvailability,
+      validateProductAttributes,
+      validateProductOptionAvailability,
+    ],
   },
   endpoints: [
     {
@@ -203,8 +206,11 @@ export const Products: CollectionConfig = {
       admin: {
         condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
         description:
-          'Choose which catalog values apply to this product. The generator only creates combinations from these selections — not the full catalog.',
+          'Choose which catalog values apply to this product. Empty rows auto-fill with all published values for that type when you save.',
         initCollapsed: false,
+        components: {
+          Field: '@/components/admin/VariantOptionAvailabilityField',
+        },
       },
       fields: [
         {
@@ -223,7 +229,6 @@ export const Products: CollectionConfig = {
           type: 'relationship',
           relationTo: 'variant-option-values',
           hasMany: true,
-          required: true,
           filterOptions: ({ siblingData }) => {
             const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
             if (typeId === null) return emptyRelationshipFilter()
