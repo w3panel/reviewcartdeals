@@ -23,7 +23,7 @@ const HomeFilterHost = dynamic(() =>
   import('@/components/HomeFilterHost').then((mod) => ({ default: mod.HomeFilterHost })),
 )
 
-export const revalidate = 60
+export const revalidate = 120
 
 export default async function HomePage() {
   const [categories, { products: allProducts, totalDocs }, brands] = await Promise.all([

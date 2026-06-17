@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { revalidateAfterReviewChange, revalidateAfterReviewDelete } from '@/lib/revalidateContent'
+
 export const Reviews: CollectionConfig = {
   slug: 'reviews',
   admin: {
@@ -8,6 +10,10 @@ export const Reviews: CollectionConfig = {
   },
   access: {
     read: () => true,
+  },
+  hooks: {
+    afterChange: [revalidateAfterReviewChange],
+    afterDelete: [revalidateAfterReviewDelete],
   },
   fields: [
     {

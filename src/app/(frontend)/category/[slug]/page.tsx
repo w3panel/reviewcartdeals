@@ -19,7 +19,9 @@ interface CategoryPageProps {
   }>
 }
 
-export const revalidate = 60
+export const revalidate = 120
+
+export const dynamicParams = true
 
 export async function generateStaticParams() {
   const { categorySlugs } = await getBuildSlugs()
@@ -34,7 +36,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     notFound()
   }
 
-  const bannerImageUrl = getImageUrl(category.image)
+  const bannerImageUrl = getImageUrl(category.image, 'card')
 
   return (
     <div className="w-full min-h-screen bg-background pb-20 md:pb-12">

@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "migrate:production": "NODE_ENV=production PAYLOAD_SECRET=${PAYLOAD_SECRET:-ignore} payload migrate",
-    "prebuild": "bun run migrate:production && NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts",
+    "prebuild": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts",
+    "prebuild:with-migrate": "bun run migrate:production && bun run prebuild",
     "analyze": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts && cross-env ANALYZE=true NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation next build --webpack && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
-    "build": "NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
+    "build": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=\"--no-deprecation --max-old-space-size=4000\" next build --webpack && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",
     "deploy": "bun run deploy:database && bun run deploy:app",
     "deploy:app": "vercel deploy --prod",
     "deploy:database": "bun run migrate:production",
@@ -53,6 +54,7 @@
     "postcss": "^8.5.15",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
@@ -71,7 +73,6 @@
     "oxlint": "^1.69.0",
     "tsx": "4.22.4",
     "typescript": "5.9.3",
-    "vercel": "^50.1.3",
     "vite-tsconfig-paths": "6.1.1",
     "vitest": "4.1.8"
   },

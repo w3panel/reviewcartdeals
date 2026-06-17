@@ -10,6 +10,7 @@ import { FilterSheetProvider } from '@/context/FilterSheetContext'
 import { NavigationProvider } from '@/context/NavigationContext'
 import { BottomNav } from '@/components/BottomNav'
 import { getNavigation } from '@/services/navigation'
+import { outfit, playfairDisplay } from '@/lib/fonts'
 
 export const metadata = {
   title: 'Premium Luxury Showcase & Concierge',
@@ -22,7 +23,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   const navItems = await getNavigation()
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${outfit.variable} ${playfairDisplay.variable}`}
+      suppressHydrationWarning
+    >
       <body
         className="min-h-screen flex flex-col bg-background text-foreground pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         suppressHydrationWarning

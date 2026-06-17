@@ -110,7 +110,7 @@ export default function CartPage() {
                 <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
                   {getProductMainImage(item.product) ? (
                     <Image
-                      src={getImageUrl(getProductMainImage(item.product))}
+                      src={getImageUrl(getProductMainImage(item.product), 'thumbnail')}
                       alt={item.product.title}
                       fill
                       className="object-contain p-2"

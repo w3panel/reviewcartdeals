@@ -39,6 +39,10 @@ export function FrontPageCatalog({
   const [isSortOpen, setIsSortOpen] = useState(false)
 
   useEffect(() => {
+    if (!selectedCategory && selectedBrands.length === 0) {
+      return
+    }
+
     const fetchFilteredProducts = async () => {
       setIsLoading(true)
       const params = new URLSearchParams()

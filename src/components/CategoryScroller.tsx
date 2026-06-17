@@ -43,7 +43,7 @@ export function CategoryScroller({
                 >
                   {category.image ? (
                     <Image
-                      src={getImageUrl(category.image)}
+                      src={getImageUrl(category.image, 'thumbnail')}
                       alt={category.title}
                       fill
                       className="object-cover opacity-90"

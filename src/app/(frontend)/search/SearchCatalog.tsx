@@ -205,7 +205,7 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
           <div>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
               {products.map((prod: Product) => {
-                const imageUrl = getImageUrl(getProductMainImage(prod))
+                const imageUrl = getImageUrl(getProductMainImage(prod), 'card')
                 return (
                   <div
                     key={prod.id}

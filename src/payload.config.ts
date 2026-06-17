@@ -4,6 +4,7 @@ import path from 'path'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { s3Storage } from '@payloadcms/storage-s3'
 import { buildConfig } from 'payload'
+import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { autoDraftPlugin } from './plugins/autoDraft'
@@ -24,12 +25,20 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(value) : undefined)
 
-const isCLI = process.argv.some((value) =>
-  realpath(value)?.endsWith(path.join('payload', 'bin.js')),
-)
+const isCLI = process.argv.some((value) => {
+  const resolved = realpath(value)
+  return (
+    resolved?.endsWith(path.join('payload', 'bin.js')) ||
+    resolved?.includes(`${path.sep}src${path.sep}scripts${path.sep}`)
+  )
+})
 const isProduction = process.env.NODE_ENV === 'production'
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
 const databaseUri = process.env.DATABASE_URI ?? process.env.DATABASE_URL
+const migrationDatabaseUri = process.env.DATABASE_URL_DIRECT ?? databaseUri
+const databasePoolMax = Number(process.env.DATABASE_POOL_MAX ?? (isCLI || isBuildPhase ? 10 : 1))
+
 if (!databaseUri && (isCLI || isProduction)) {
   throw new Error(
     'DATABASE_URI (or DATABASE_URL) is required. Example: postgresql://user:password@localhost:5432/reviewcartdeals',
@@ -65,6 +74,7 @@ const productionLogger = {
 } as any // Use PayloadLogger type when it's exported
 
 export default buildConfig({
+  sharp,
   admin: {
     user: Users.slug,
     importMap: {
@@ -93,7 +103,10 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: databaseUri,
+      connectionString: isCLI ? migrationDatabaseUri : databaseUri,
+      max: databasePoolMax,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
     },
     push: false,
   }),

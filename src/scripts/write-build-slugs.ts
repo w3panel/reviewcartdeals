@@ -5,6 +5,8 @@ import { getPayloadClient } from '@/lib/payload'
 import { withPublishedOnly } from '@/lib/publishedOnly'
 
 const SLUGS_FILE = path.join(process.cwd(), '.next-build', 'slugs.json')
+const STATIC_PRODUCT_LIMIT = Number(process.env.BUILD_STATIC_PRODUCT_LIMIT ?? 200)
+const STATIC_CATEGORY_LIMIT = Number(process.env.BUILD_STATIC_CATEGORY_LIMIT ?? 200)
 
 async function main() {
   const payload = await getPayloadClient()
@@ -13,18 +15,20 @@ async function main() {
     payload.find({
       collection: 'categories',
       where: withPublishedOnly(),
-      limit: 500,
+      limit: STATIC_CATEGORY_LIMIT,
       depth: 0,
       pagination: false,
       select: { slug: true },
+      sort: '-featured',
     }),
     payload.find({
       collection: 'products',
       where: withPublishedOnly(),
-      limit: 1000,
+      limit: STATIC_PRODUCT_LIMIT,
       depth: 0,
       pagination: false,
       select: { slug: true },
+      sort: '-featured',
     }),
   ])
 

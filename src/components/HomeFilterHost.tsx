@@ -25,6 +25,11 @@ export function HomeFilterHost({ categories, brands, initialTotalDocs }: HomeFil
   const [totalDocs, setTotalDocs] = useState(initialTotalDocs)
 
   useEffect(() => {
+    if (!selectedCategory && selectedBrands.length === 0) {
+      setTotalDocs(initialTotalDocs)
+      return
+    }
+
     const fetchCount = async () => {
       const params = new URLSearchParams()
       if (selectedCategory) params.set('category', selectedCategory)
@@ -42,7 +47,7 @@ export function HomeFilterHost({ categories, brands, initialTotalDocs }: HomeFil
     }
 
     fetchCount()
-  }, [selectedCategory, selectedBrands])
+  }, [selectedCategory, selectedBrands, initialTotalDocs])
 
   const toggleBrand = (brandTitle: string) => {
     setSelectedBrands((prev) =>

@@ -62,9 +62,10 @@ export default function LikedPage() {
               <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
                 <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-background">
                   <Image
-                    src={getImageUrl(getProductMainImage(prod))}
+                    src={getImageUrl(getProductMainImage(prod), 'card')}
                     alt={prod.title}
                     fill
+                    sizes="(max-width: 640px) 50vw, 320px"
                     className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>

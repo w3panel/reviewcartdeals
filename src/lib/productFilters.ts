@@ -1,4 +1,6 @@
 import type { BasePayload, Where } from 'payload'
+
+import { getBrandIdsByTitlesCached, getCategoryIdsBySlugCached } from '@/lib/cachedLookups'
 import { withPublishedOnly } from '@/lib/publishedOnly'
 
 export interface CatalogQueryOptions {
@@ -10,35 +12,19 @@ export interface CatalogQueryOptions {
   limit?: number
 }
 
-async function getCategoryIdsBySlug(slug: string, payload: BasePayload): Promise<string[]> {
-  const cats = await payload.find({
-    collection: 'categories',
-    where: withPublishedOnly({
-      slug: {
-        equals: slug,
-      },
-    }),
-    limit: 1,
-    depth: 0,
-    pagination: false,
-  })
-  return cats.docs.map((c) => String(c.id))
-}
-
-async function getBrandIdsByTitles(titles: string[], payload: BasePayload): Promise<string[]> {
-  const brands = await payload.find({
-    collection: 'brands',
-    where: withPublishedOnly({
-      title: {
-        in: titles,
-      },
-    }),
-    limit: titles.length,
-    depth: 0,
-    pagination: false,
-  })
-  return brands.docs.map((b) => String(b.id))
-}
+const CATALOG_CARD_SELECT = {
+  title: true,
+  slug: true,
+  description: true,
+  brand: true,
+  category: true,
+  gallery: true,
+  featured: true,
+  limitedEdition: true,
+  enableVariants: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
 
 export async function buildProductsWhere(
   options: Pick<CatalogQueryOptions, 'categorySlug' | 'featured' | 'search' | 'brand'>,
@@ -62,7 +48,7 @@ export async function buildProductsWhere(
       .filter(Boolean)
     andFilters.push({
       brand: {
-        in: await getBrandIdsByTitles(titles, payload),
+        in: await getBrandIdsByTitlesCached(titles, payload),
       },
     })
   }
@@ -70,29 +56,55 @@ export async function buildProductsWhere(
   if (categorySlug) {
     andFilters.push({
       category: {
-        in: await getCategoryIdsBySlug(categorySlug, payload),
+        in: await getCategoryIdsBySlugCached(categorySlug, payload),
       },
     })
   }
 
   if (search) {
-    andFilters.push({
-      or: [
-        {
-          title: {
-            like: search,
-          },
-        },
-        {
-          description: {
-            like: search,
-          },
-        },
-      ],
-    })
+    const ftsProductIds = await findProductIdsByFullTextSearch(payload, search)
+    if (ftsProductIds.length === 0) {
+      andFilters.push({ id: { equals: -1 } })
+    } else {
+      andFilters.push({ id: { in: ftsProductIds } })
+    }
   }
 
   return andFilters.length > 0 ? { and: andFilters } : undefined
+}
+
+async function findProductIdsByFullTextSearch(
+  payload: BasePayload,
+  search: string,
+): Promise<number[]> {
+  const trimmed = search.trim()
+  if (!trimmed) return []
+
+  try {
+    const { rows } = await payload.db.pool.query<{ id: number }>(
+      `SELECT id
+       FROM products
+       WHERE _status = 'published'
+         AND search_vector @@ plainto_tsquery('english', $1)
+       ORDER BY ts_rank(search_vector, plainto_tsquery('english', $1)) DESC
+       LIMIT 200`,
+      [trimmed],
+    )
+
+    return rows.map((row) => Number(row.id)).filter((id) => Number.isFinite(id))
+  } catch {
+    const response = await payload.find({
+      collection: 'products',
+      where: withPublishedOnly({
+        or: [{ title: { like: trimmed } }, { description: { like: trimmed } }],
+      }),
+      depth: 0,
+      limit: 200,
+      pagination: false,
+    })
+
+    return response.docs.map((doc) => Number(doc.id)).filter((id) => Number.isFinite(id))
+  }
 }
 
 export async function findCatalogProducts(payload: BasePayload, options: CatalogQueryOptions = {}) {
@@ -104,21 +116,8 @@ export async function findCatalogProducts(payload: BasePayload, options: Catalog
     where: withPublishedOnly(where),
     page,
     limit,
-    depth: 2,
+    depth: 1,
     sort: '-createdAt',
-    select: {
-      title: true,
-      slug: true,
-      description: true,
-      brand: true,
-      category: true,
-      gallery: true,
-      featured: true,
-      limitedEdition: true,
-      enableVariants: true,
-      specifications: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+    select: CATALOG_CARD_SELECT,
   })
 }
