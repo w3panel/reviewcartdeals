@@ -9,9 +9,10 @@ Use these in production (Vercel) and local `.env` as needed.
 | `DATABASE_URI`        | **Runtime** pooled Postgres URL for app traffic (e.g. Neon pooler) |
 | `DATABASE_URL`        | Fallback if `DATABASE_URI` is unset                                |
 | `DATABASE_URL_DIRECT` | **Migrations** non-pooled URL (used by Payload CLI)                |
-| `DATABASE_POOL_MAX`   | Max pool connections per serverless instance (default: `1`)        |
+| `DATABASE_POOL_MAX`          | Max pool connections per serverless instance (default: `1`)        |
+| `DATABASE_CONNECT_TIMEOUT_MS` | TCP connect timeout in ms (default: `30000` on Vercel, `10000` locally) |
 
-Keep Postgres in the same region as your Vercel deployment.
+Keep Postgres in the same region as your Vercel deployment. Use Neon’s **pooled** URL (`-pooler` host) for `DATABASE_URI` and the **direct** URL for `DATABASE_URL_DIRECT`. Do not add `channel_binding=require` — it breaks node-pg on serverless.
 
 ## Images
 

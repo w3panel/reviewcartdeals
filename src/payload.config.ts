@@ -7,6 +7,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { normalizePostgresUri } from './lib/database'
 import { autoDraftPlugin } from './plugins/autoDraft'
 import { autoSlugPlugin } from './plugins/autoSlug'
 import { Users } from './collections/Users'
@@ -35,11 +36,17 @@ const isCLI = process.argv.some((value) => {
 const isProduction = process.env.NODE_ENV === 'production'
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
-const databaseUri = process.env.DATABASE_URI ?? process.env.DATABASE_URL
-const migrationDatabaseUri = process.env.DATABASE_URL_DIRECT ?? databaseUri
+const databaseUri = normalizePostgresUri(process.env.DATABASE_URI ?? process.env.DATABASE_URL ?? '')
+const migrationDatabaseUri = normalizePostgresUri(
+  process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URI ?? process.env.DATABASE_URL ?? '',
+)
+const isServerlessRuntime = isProduction && !isCLI && !isBuildPhase
 const databasePoolMax = Number(process.env.DATABASE_POOL_MAX ?? (isCLI || isBuildPhase ? 10 : 1))
+const databaseConnectTimeoutMs = Number(
+  process.env.DATABASE_CONNECT_TIMEOUT_MS ?? (isServerlessRuntime ? 30_000 : 10_000),
+)
 
-if (!databaseUri && (isCLI || isProduction)) {
+if (!databaseUri && (isCLI || isProduction || isBuildPhase)) {
   throw new Error(
     'DATABASE_URI (or DATABASE_URL) is required. Example: postgresql://user:password@localhost:5432/reviewcartdeals',
   )
@@ -103,10 +110,11 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: isCLI ? migrationDatabaseUri : databaseUri,
+      connectionString: isCLI || isBuildPhase ? migrationDatabaseUri : databaseUri,
       max: databasePoolMax,
-      idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 10_000,
+      connectionTimeoutMillis: databaseConnectTimeoutMs,
+      idleTimeoutMillis: isServerlessRuntime ? 5_000 : 30_000,
+      ...(isServerlessRuntime ? { allowExitOnIdle: true } : {}),
     },
     push: false,
   }),

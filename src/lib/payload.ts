@@ -21,7 +21,13 @@ export async function getPayloadClient(): Promise<Payload> {
   }
 
   if (!cache.promise) {
-    cache.promise = getPayload({ config: configPromise })
+    cache.promise = getPayload({ config: configPromise }).then(async (payload) => {
+      if (process.env.VERCEL === '1' && payload.db.pool) {
+        const { attachDatabasePool } = await import('@vercel/functions')
+        attachDatabasePool(payload.db.pool)
+      }
+      return payload
+    })
   }
 
   cache.client = await cache.promise
