@@ -33,10 +33,7 @@ export default function VariantVisualGalleryRowLabel() {
 
   const optionValueId = useMemo(() => getRelationshipId(data?.optionValue), [data?.optionValue])
 
-  const firstImageId = useMemo(
-    () => getRelationshipId(data?.gallery?.[0]?.image),
-    [data?.gallery?.[0]?.image],
-  )
+  const firstImageId = getRelationshipId(data?.gallery?.[0]?.image)
 
   useEffect(() => {
     if (

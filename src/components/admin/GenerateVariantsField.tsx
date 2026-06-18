@@ -16,26 +16,11 @@ import {
   getVariantOptionTypeIdsFromForm,
   resolveVariantTypesForPreview,
 } from '@/lib/productOptionAvailability'
-import { getRelationshipId } from '@/lib/variantOptionValues'
 import type { AvailabilityRow } from '@/lib/productOptionAvailability'
 
 function resolveAvailabilityFromForm(value: unknown): AvailabilityRow[] {
   if (!Array.isArray(value)) return []
   return value as AvailabilityRow[]
-}
-
-function serializeAvailabilityKey(rows: AvailabilityRow[]): string {
-  return rows
-    .map((row) => {
-      const typeId = getRelationshipId(row.type)
-      const valueIds = (row.optionValues ?? [])
-        .map((entry) => getRelationshipId(entry))
-        .filter((id): id is number => id !== null)
-        .sort((left, right) => left - right)
-        .join(',')
-      return `${typeId ?? 'none'}:${valueIds}`
-    })
-    .join('|')
 }
 
 export default function GenerateVariantsField() {
@@ -53,20 +38,21 @@ export default function GenerateVariantsField() {
     resolveAvailabilityFromForm(fields.variantOptionAvailability?.value),
   )
 
-  const availabilityKey = useMemo(
-    () => serializeAvailabilityKey(variantOptionAvailability),
-    [variantOptionAvailability],
-  )
-
-  const typeIds = useMemo(
-    () => getVariantOptionTypeIdsFromForm(variantOptionTypes),
+  const typeIdsKey = useMemo(
+    () => getVariantOptionTypeIdsFromForm(variantOptionTypes).join(','),
     [variantOptionTypes],
   )
 
+  const typeIds = useMemo(
+    () => (typeIdsKey.length === 0 ? [] : typeIdsKey.split(',').map(Number)),
+    [typeIdsKey],
+  )
+
   useEffect(() => {
+    const ids = typeIdsKey.length === 0 ? [] : typeIdsKey.split(',').map(Number)
     let cancelled = false
     const timer = window.setTimeout(() => {
-      void fetchVariantTypeLabels(typeIds).then((labels) => {
+      void fetchVariantTypeLabels(ids).then((labels) => {
         if (!cancelled) setTypeLabelById(labels)
       })
     }, 150)
@@ -75,7 +61,7 @@ export default function GenerateVariantsField() {
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [typeIds.join(',')])
+  }, [typeIdsKey])
 
   const resolvedTypes = useMemo(
     () =>
@@ -85,22 +71,25 @@ export default function GenerateVariantsField() {
 
   const effectiveAvailability = useMemo(
     () => getEffectiveAvailabilityForPreview(variantOptionTypes, variantOptionAvailability),
-    [availabilityKey, typeIds.join(',')],
+    [variantOptionTypes, variantOptionAvailability],
   )
 
-  const optionValueIds = useMemo(
-    () => collectOptionValueIds(effectiveAvailability),
+  const optionValueIdsKey = useMemo(
+    () => collectOptionValueIds(effectiveAvailability).join(','),
     [effectiveAvailability],
   )
 
   useEffect(() => {
+    const ids = typeIdsKey.length === 0 ? [] : typeIdsKey.split(',').map(Number)
+    const valueIds = optionValueIdsKey.length === 0 ? [] : optionValueIdsKey.split(',').map(Number)
+
     let cancelled = false
     const timer = window.setTimeout(() => {
       async function loadOptionValueLabels() {
         const labelsFromTypes =
-          typeIds.length > 0 ? await fetchPublishedOptionValueLabelsForTypes(typeIds) : {}
+          ids.length > 0 ? await fetchPublishedOptionValueLabelsForTypes(ids) : {}
         const labelsFromIds =
-          optionValueIds.length > 0 ? await fetchVariantOptionValueLabels(optionValueIds) : {}
+          valueIds.length > 0 ? await fetchVariantOptionValueLabels(valueIds) : {}
 
         if (!cancelled) {
           setOptionValueLabelById({ ...labelsFromTypes, ...labelsFromIds })
@@ -114,7 +103,7 @@ export default function GenerateVariantsField() {
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [optionValueIds.join(','), typeIds.join(',')])
+  }, [typeIdsKey, optionValueIdsKey])
 
   const matrixPreview = useMemo(
     () => computeVariantMatrixPreview(resolvedTypes, effectiveAvailability, optionValueLabelById),
@@ -192,8 +181,9 @@ export default function GenerateVariantsField() {
             Generate variant combinations
           </p>
           <p className="mt-1 text-sm text-(--theme-elevation-800)">
-            Uses the available values selected above. Empty rows auto-fill with all published
-            catalog values for that type — remove any you do not want before generating.
+            Save the product (or wait for autosave) after changing variant types so availability and
+            gallery rows can synchronize before generating variants. Uses the available values
+            selected above — remove any you do not want before generating.
           </p>
         </div>
 
@@ -209,8 +199,8 @@ export default function GenerateVariantsField() {
           ) : !matrixPreview.isReady ? (
             <p className="text-sm text-(--theme-elevation-700)">
               {missingTypeLabels.length > 0
-                ? `Select available values for: ${missingTypeLabels.join(', ')}. Published option values must exist in Catalog → Variant Option Values.`
-                : 'Assign variant option types and available values to preview combinations.'}
+                ? `Save the product (or wait for autosave), then select available values for: ${missingTypeLabels.join(', ')}. Published option values must exist in Catalog → Variant Option Values.`
+                : 'Save the product (or wait for autosave) after changing variant types so availability rows can sync, then preview combinations here.'}
             </p>
           ) : (
             <>

@@ -1,10 +1,8 @@
 'use client'
 
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React from 'react'
 import type { ArrayFieldClientComponent } from 'payload'
 import { ArrayField, Button, useField, useForm } from '@payloadcms/ui'
-
-import { getRelationshipId } from '@/lib/variantOptionValues'
 
 type GalleryImagesFieldProps = React.ComponentProps<ArrayFieldClientComponent>
 
@@ -17,9 +15,7 @@ function resolveSchemaPath(props: GalleryImagesFieldProps): string {
 }
 
 function GalleryImagesField(props: GalleryImagesFieldProps) {
-  const { addFieldRow, removeFieldRow } = useForm()
-  const isPruningRef = useRef(false)
-  const [isReady, setIsReady] = useState(false)
+  const { addFieldRow } = useForm()
 
   const { rows = [] } = useField({
     path: props.path,
@@ -40,40 +36,12 @@ function GalleryImagesField(props: GalleryImagesFieldProps) {
     schemaPath,
   }
 
-  const galleryRowCount = rows.length
-
-  const removePhantomEmptyRows = useCallback(() => {
-    if (isPruningRef.current || galleryRowCount === 0) return
-
-    const emptyIndices = rows
-      .map((row, index) => {
-        const imageFromRow = getRelationshipId((row as { image?: unknown })?.image)
-        return imageFromRow === null ? index : -1
-      })
-      .filter((index) => index >= 0)
-
-    if (emptyIndices.length <= 1) return
-
-    isPruningRef.current = true
-    for (let index = emptyIndices.length - 1; index >= 0; index--) {
-      removeFieldRow({ path: props.path, rowIndex: emptyIndices[index] })
-    }
-    isPruningRef.current = false
-  }, [galleryRowCount, props.path, removeFieldRow, rows])
-
-  useLayoutEffect(() => {
-    removePhantomEmptyRows()
-    setIsReady(true)
-  }, [galleryRowCount, removePhantomEmptyRows])
-
   const handleAddImage = () => {
     addFieldRow({
       path: props.path,
       schemaPath,
     })
   }
-
-  if (!isReady) return null
 
   const showEmptyState = rows.length === 0
 

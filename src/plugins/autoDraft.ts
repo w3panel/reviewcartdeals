@@ -5,7 +5,7 @@ import { publishedStatusWhere } from '@/lib/publishedOnly'
 export interface AutoDraftPluginOptions {
   /** Extra collection slugs to skip. Auth and upload collections are always skipped. */
   exclude?: string[]
-  /** Autosave debounce interval in milliseconds. @default 800 */
+  /** Autosave debounce interval in milliseconds. @default 5000 */
   autosaveInterval?: number
   /** Max versions kept per document. @default 50 */
   maxPerDoc?: number
@@ -115,7 +115,7 @@ export const autoDraftPlugin =
   (pluginOptions: AutoDraftPluginOptions = {}): Plugin =>
   (config: Config): Config => {
     const exclude = new Set(pluginOptions.exclude ?? [])
-    const autosaveInterval = pluginOptions.autosaveInterval ?? 800
+    const autosaveInterval = pluginOptions.autosaveInterval ?? 5000
     const maxPerDoc = pluginOptions.maxPerDoc ?? 50
 
     return {

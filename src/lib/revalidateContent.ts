@@ -1,9 +1,13 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
-import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
+import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, PayloadRequest } from 'payload'
 
 import { CACHE_TAGS } from '@/lib/cacheTags'
 
 const REVALIDATE_CONTEXT_KEY = 'skipRevalidation'
+
+export function isAutosaveRequest(req: PayloadRequest): boolean {
+  return req.query?.autosave === 'true' || req.query?.autosave === true
+}
 
 export function shouldSkipRevalidation(context: Record<string, unknown> | undefined): boolean {
   return Boolean(context?.[REVALIDATE_CONTEXT_KEY])
@@ -19,8 +23,8 @@ function revalidateFrontendPaths(paths: string[]) {
   }
 }
 
-export const revalidateAfterProductChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterProductChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (isAutosaveRequest(req) || shouldSkipRevalidation(context)) return doc
 
   revalidateTag(CACHE_TAGS.products, 'max')
   revalidateTag(CACHE_TAGS.reviews, 'max')
@@ -48,8 +52,8 @@ export const revalidateAfterProductDelete: CollectionAfterDeleteHook = ({ doc, c
   return doc
 }
 
-export const revalidateAfterCategoryChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterCategoryChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (isAutosaveRequest(req) || shouldSkipRevalidation(context)) return doc
 
   revalidateTag(CACHE_TAGS.categories, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -78,8 +82,8 @@ export const revalidateAfterCategoryDelete: CollectionAfterDeleteHook = ({ doc, 
   return doc
 }
 
-export const revalidateAfterBrandChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterBrandChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (isAutosaveRequest(req) || shouldSkipRevalidation(context)) return doc
 
   revalidateTag(CACHE_TAGS.brands, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -100,8 +104,8 @@ export const revalidateAfterBrandDelete: CollectionAfterDeleteHook = ({ doc, con
   return doc
 }
 
-export const revalidateAfterReviewChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterReviewChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (isAutosaveRequest(req) || shouldSkipRevalidation(context)) return doc
 
   revalidateTag(CACHE_TAGS.reviews, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -118,8 +122,8 @@ export const revalidateAfterReviewDelete: CollectionAfterDeleteHook = ({ doc, co
   return doc
 }
 
-export const revalidateAfterNavChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterNavChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (isAutosaveRequest(req) || shouldSkipRevalidation(context)) return doc
 
   revalidateTag(CACHE_TAGS.nav, 'max')
   revalidatePath('/', 'layout')

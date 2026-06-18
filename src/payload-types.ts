@@ -343,7 +343,7 @@ export interface Product {
    */
   variantOptionTypes?: (number | VariantType)[] | null;
   /**
-   * Choose which catalog values apply to this product. Empty rows auto-fill with all published values for that type when you save.
+   * Choose which catalog values apply to this product. Save the product (or wait for autosave) after changing variant types so availability rows can synchronize. Empty rows auto-fill with all published values for that type on save.
    */
   variantOptionAvailability?:
     | {
@@ -356,7 +356,7 @@ export interface Product {
       }[]
     | null;
   /**
-   * Upload product-specific images for each visual option (e.g. each Color). Images are not shared with other products that use the same catalog value.
+   * Upload product-specific images for each visual option (e.g. each Color). Images are not shared with other products that use the same catalog value. Save the product (or wait for autosave) after changing available values so gallery rows can synchronize.
    */
   variantVisualGalleries?:
     | {
