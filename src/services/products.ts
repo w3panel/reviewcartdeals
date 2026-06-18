@@ -36,9 +36,18 @@ async function fetchProductVariants(productId: string | number): Promise<Product
   const response = await payload.find({
     collection: 'product-variants',
     where: withPublishedOnly({
-      product: {
-        equals: productId,
-      },
+      and: [
+        {
+          product: {
+            equals: productId,
+          },
+        },
+        {
+          active: {
+            equals: true,
+          },
+        },
+      ],
     }),
     depth: 2,
     limit: 500,
@@ -47,7 +56,7 @@ async function fetchProductVariants(productId: string | number): Promise<Product
       title: true,
       product: true,
       options: true,
-      gallery: true,
+      active: true,
       updatedAt: true,
       createdAt: true,
     },
@@ -86,6 +95,7 @@ async function fetchRelatedProducts(
       slug: true,
       brand: true,
       gallery: true,
+      valueGalleries: true,
       description: true,
       enableVariants: true,
       category: true,

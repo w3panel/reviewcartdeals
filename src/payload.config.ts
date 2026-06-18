@@ -20,11 +20,11 @@ import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
 import { Brands } from './collections/Brands'
 import { Tags } from './collections/Tags'
-import { ProductVariants } from './collections/ProductVariants'
+import { VariantGroups } from './collections/VariantGroups'
+import { VariantValues } from './collections/VariantValues'
 import { Products } from './collections/Products'
+import { ProductVariants } from './collections/ProductVariants'
 import { Reviews } from './collections/Reviews'
-import { VariantTypes } from './collections/VariantTypes'
-import { VariantOptionValues } from './collections/VariantOptionValues'
 import { NavItems } from './collections/NavItems'
 
 const filename = fileURLToPath(import.meta.url)
@@ -97,8 +97,8 @@ export default buildConfig({
     Categories,
     Brands,
     Tags,
-    VariantTypes,
-    VariantOptionValues,
+    VariantGroups,
+    VariantValues,
     Products,
     ProductVariants,
     Reviews,

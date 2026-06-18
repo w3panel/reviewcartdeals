@@ -1,23 +1,17 @@
 import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
+
+import { filterValuesByGroupId } from '@/collections/VariantValues'
 import { generateProductVariants } from '@/lib/generateProductVariants'
-import { validateProductAttributes } from '@/lib/productAttributeHooks'
-import {
-  syncVariantOptionAvailability,
-  validateProductOptionAvailability,
-} from '@/lib/productOptionAvailabilityHooks'
-import {
-  sanitizeVariantVisualGalleriesOnSave,
-  syncVariantVisualGalleries,
-} from '@/lib/productVisualGalleryHooks'
 import { findCatalogProducts } from '@/lib/productFilters'
+import { getRelationshipId, emptyRelationshipFilter } from '@/lib/relationships'
 import { revalidateAfterProductChange, revalidateAfterProductDelete } from '@/lib/revalidateContent'
 import { getProductReviewStatsBatch } from '@/services/reviews'
-import { getRelationshipId } from '@/lib/variantOptionValues'
-
-function emptyRelationshipFilter() {
-  return { id: { in: [] as number[] } }
-}
+import {
+  preserveProductFieldsOnPartialUpdate,
+  sanitizeProductVariantConfig,
+  validateProductVariantConfig,
+} from '@/lib/variantValidation'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -30,11 +24,9 @@ export const Products: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [
-      syncVariantOptionAvailability,
-      syncVariantVisualGalleries,
-      sanitizeVariantVisualGalleriesOnSave,
-      validateProductAttributes,
-      validateProductOptionAvailability,
+      preserveProductFieldsOnPartialUpdate,
+      sanitizeProductVariantConfig,
+      validateProductVariantConfig,
     ],
     afterChange: [revalidateAfterProductChange],
     afterDelete: [revalidateAfterProductDelete],
@@ -156,8 +148,9 @@ export const Products: CollectionConfig = {
       },
       admin: {
         description:
-          'Add as many product images as needed. The first image is used as the listing thumbnail.',
+          'Default product images. When variants are enabled, use Value Galleries below for visual groups (e.g. Color).',
         initCollapsed: false,
+        condition: (_, siblingData) => !siblingData?.enableVariants,
       },
       fields: [
         {
@@ -188,189 +181,153 @@ export const Products: CollectionConfig = {
       defaultValue: false,
     },
     {
-      name: 'enableVariants',
-      type: 'checkbox',
-      defaultValue: false,
-      label: 'Enable Variants',
+      type: 'collapsible',
+      label: 'Variants',
       admin: {
-        description:
-          'Turn on when this product has selectable options such as color or size. Variant Types define the dimensions; Product Variants define purchasable combinations.',
-      },
-    },
-    {
-      name: 'variantOptionTypes',
-      type: 'relationship',
-      relationTo: 'variant-types',
-      hasMany: true,
-      admin: {
-        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        description:
-          'Global catalog dimensions for this product (e.g. Color, Size). Values come from Variant Option Values and can be reused across products.',
-      },
-    },
-    {
-      name: 'variantOptionAvailability',
-      type: 'array',
-      labels: {
-        singular: 'Available Values',
-        plural: 'Available Values by Type',
-      },
-      admin: {
-        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        description:
-          'Choose which catalog values apply to this product. Save the product (or wait for autosave) after changing variant types so availability rows can synchronize. Empty rows auto-fill with all published values for that type on save.',
         initCollapsed: false,
-        components: {
-          Field: '@/components/admin/VariantOptionAvailabilityField',
-        },
       },
       fields: [
         {
-          name: 'type',
-          label: 'Variant Type',
-          type: 'relationship',
-          relationTo: 'variant-types',
-          required: true,
+          name: 'variantSetupGuide',
+          type: 'ui',
           admin: {
-            readOnly: true,
-          },
-        },
-        {
-          name: 'optionValues',
-          label: 'Available Values',
-          type: 'relationship',
-          relationTo: 'variant-option-values',
-          hasMany: true,
-          filterOptions: ({ siblingData }) => {
-            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
-            if (typeId === null) return emptyRelationshipFilter()
-
-            return {
-              variantType: {
-                equals: typeId,
-              },
-            }
-          },
-          admin: {
-            description: 'Values offered for this product and type (e.g. Blue, Red).',
-          },
-        },
-      ],
-    },
-    {
-      name: 'generateVariants',
-      type: 'ui',
-      admin: {
-        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        components: {
-          Field: '@/components/admin/GenerateVariantsField',
-        },
-      },
-    },
-    {
-      name: 'variantVisualGalleries',
-      type: 'array',
-      labels: {
-        singular: 'Visual Gallery',
-        plural: 'Variant Visual Galleries',
-      },
-      admin: {
-        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        description:
-          'Upload product-specific images for each visual option (e.g. each Color). Images are not shared with other products that use the same catalog value. Save the product (or wait for autosave) after changing available values so gallery rows can synchronize.',
-        initCollapsed: false,
-        isSortable: false,
-        components: {
-          Field: '@/components/admin/VariantVisualGalleriesField',
-          RowLabel: '@/components/admin/VariantVisualGalleryRowLabel',
-        },
-      },
-      fields: [
-        {
-          name: 'optionValue',
-          type: 'relationship',
-          relationTo: 'variant-option-values',
-          required: true,
-          admin: {
-            hidden: true,
-            readOnly: true,
-          },
-        },
-        {
-          name: 'gallery',
-          type: 'array',
-          minRows: 0,
-          labels: {
-            singular: 'Image',
-            plural: 'Images',
-          },
-          admin: {
-            description: 'Optional. Add images one at a time — none are required.',
-            initCollapsed: false,
             components: {
-              Field: '@/components/admin/VariantVisualGalleryImagesField',
+              Field: '@/components/admin/VariantSetupGuideField',
             },
+          },
+        },
+        {
+          name: 'enableVariants',
+          type: 'checkbox',
+          label: 'Enable Variants',
+          defaultValue: false,
+          admin: {
+            description:
+              'Turn on when this product has selectable options (e.g. color or size). Configure groups and values below, then generate combinations.',
+          },
+        },
+        {
+          name: 'variantGroupSettings',
+          type: 'array',
+          labels: {
+            singular: 'Variant Group',
+            plural: 'Variant Groups (this product)',
+          },
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+            description:
+              'Product-specific configuration: choose which global variant groups apply and which values are offered.',
+            initCollapsed: false,
           },
           fields: [
             {
-              name: 'image',
+              name: 'group',
+              label: 'Variant Group',
               type: 'relationship',
-              relationTo: 'media',
-              required: false,
+              relationTo: 'variant-groups',
+              required: true,
+            },
+            {
+              name: 'values',
+              label: 'Available Values',
+              type: 'relationship',
+              relationTo: 'variant-values',
+              hasMany: true,
+              required: true,
+              filterOptions: ({ siblingData }) => {
+                const groupId = getRelationshipId(
+                  (siblingData as { group?: unknown } | undefined)?.group,
+                )
+                return filterValuesByGroupId(groupId)
+              },
+              admin: {
+                allowCreate: false,
+                description:
+                  'Only pick values that belong to the variant group selected in this row (e.g. Color values on the Color row). If you change the group, clear old values and re-select.',
+              },
             },
           ],
         },
-      ],
-    },
-    {
-      name: 'linkedVariants',
-      type: 'join',
-      collection: 'product-variants',
-      on: 'product',
-      admin: {
-        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        allowCreate: true,
-        defaultColumns: ['title', '_status'],
-        description:
-          'Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup. Product Variants define purchasable combinations only — images live in Variant Visual Galleries above.',
-      },
-    },
-    {
-      name: 'productAttributes',
-      type: 'array',
-      labels: {
-        singular: 'Product Attribute',
-        plural: 'Product Attributes',
-      },
-      admin: {
-        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
-        description:
-          'Shared details for every variant (e.g. Fit: Regular). These do not create separate combinations.',
-        initCollapsed: true,
-      },
-      fields: [
         {
-          name: 'type',
-          label: 'Attribute Type',
-          type: 'relationship',
-          relationTo: 'variant-types',
-          required: true,
+          name: 'valueGalleries',
+          type: 'array',
+          labels: {
+            singular: 'Value Gallery',
+            plural: 'Value Galleries (this product)',
+          },
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+            description:
+              'Product-specific images for visual variant values (e.g. each Color). Saving also adds each gallery value to that group’s Available Values if missing.',
+            initCollapsed: false,
+          },
+          fields: [
+            {
+              name: 'value',
+              label: 'Variant Value',
+              type: 'relationship',
+              relationTo: 'variant-values',
+              required: true,
+              filterOptions: ({ data }) => {
+                const configuredValueIds = new Set<number>()
+                const settings = (data as { variantGroupSettings?: Array<{ values?: unknown[] }> })
+                  ?.variantGroupSettings
+
+                for (const row of settings ?? []) {
+                  for (const value of row.values ?? []) {
+                    const valueId = getRelationshipId(value)
+                    if (valueId !== null) configuredValueIds.add(valueId)
+                  }
+                }
+
+                if (configuredValueIds.size === 0) return emptyRelationshipFilter()
+
+                return {
+                  id: {
+                    in: [...configuredValueIds],
+                  },
+                }
+              },
+            },
+            {
+              name: 'gallery',
+              type: 'array',
+              labels: {
+                singular: 'Image',
+                plural: 'Images',
+              },
+              fields: [
+                {
+                  name: 'image',
+                  type: 'relationship',
+                  relationTo: 'media',
+                  required: true,
+                },
+              ],
+            },
+          ],
         },
         {
-          name: 'optionValue',
-          label: 'Value',
-          type: 'relationship',
-          relationTo: 'variant-option-values',
-          required: true,
-          filterOptions: ({ siblingData }) => {
-            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
-            if (typeId === null) return emptyRelationshipFilter()
-
-            return {
-              variantType: {
-                equals: typeId,
-              },
-            }
+          name: 'generateVariants',
+          type: 'ui',
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+            components: {
+              Field: '@/components/admin/GenerateVariantsField',
+            },
+          },
+        },
+        {
+          name: 'linkedVariants',
+          type: 'join',
+          collection: 'product-variants',
+          on: 'product',
+          admin: {
+            condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+            allowCreate: false,
+            defaultColumns: ['title', 'active', '_status'],
+            description:
+              'Generated combinations for this product. Use Generate missing combinations above — do not create variants manually here.',
           },
         },
       ],

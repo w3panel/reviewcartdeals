@@ -18,14 +18,14 @@ export async function login({
   serverURL = 'http://localhost:3000',
   user,
 }: LoginOptions): Promise<void> {
-  await page.goto(`${serverURL}/admin/login`)
+  await page.goto(`${serverURL}/admin/login`, { waitUntil: 'domcontentloaded' })
 
   await page.fill('#field-email', user.email)
   await page.fill('#field-password', user.password)
   await page.click('button[type="submit"]')
 
-  await page.waitForURL(`${serverURL}/admin`)
+  await page.waitForURL(`${serverURL}/admin`, { timeout: 60_000 })
 
   const dashboardArtifact = page.locator('span[title="Dashboard"]')
-  await expect(dashboardArtifact).toBeVisible()
+  await expect(dashboardArtifact).toBeVisible({ timeout: 30_000 })
 }

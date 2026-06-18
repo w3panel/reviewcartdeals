@@ -1,10 +1,9 @@
 import React from 'react'
-import Link from 'next/link'
-import { Search } from 'lucide-react'
 import { filterNavShell, getNavigation } from '@/services/navigation'
 import { getNavVisibilityClasses } from '@/lib/navVisibility'
 import { getNavIcon } from '@/lib/navIcons'
 import { HeaderCartIcon } from './HeaderCartIcon'
+import { HeaderSearch } from './HeaderSearch'
 import { HeaderToolbar } from './HeaderToolbar'
 import { NavItemLink, getNavButtonClasses } from './NavItemLink'
 import { NavMegaMenu } from './NavMegaMenu'
@@ -55,13 +54,7 @@ export async function Header({
         )}
 
         <div className={`flex items-center gap-4 ${headerItems.length === 0 ? 'ml-auto' : ''}`}>
-          <Link
-            href="/search"
-            className="flex min-w-[280px] items-center gap-3 rounded-full border border-border bg-surface px-4 py-2.5 transition-colors hover:border-primary/40"
-          >
-            <Search className="h-4 w-4 text-primary" />
-            <span className="text-sm text-muted-foreground">Search watches, wallets, bags...</span>
-          </Link>
+          <HeaderSearch variant="desktop" />
           <HeaderCartIcon />
         </div>
       </div>

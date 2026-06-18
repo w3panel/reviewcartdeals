@@ -1,307 +1,399 @@
-import { getProductMainImage } from '@/lib/utils'
-import { resolveProductVisualGalleryImages } from '@/lib/productVisualGalleries'
-import type {
-  Media,
-  Product,
-  ProductVariant,
-  VariantOptionValue,
-  VariantType,
-} from '@/payload-types'
-import {
-  getOptionValueLabel,
-  getRelationshipId,
-  resolveOptionValueLabel,
-} from '@/lib/variantOptionValues'
+import type { Media, Product, ProductVariant, VariantGroup, VariantValue } from '@/payload-types'
+import { getRelationshipId } from '@/lib/relationships'
+import { buildCombinationKey } from '@/lib/variantCombinations'
 
 export type { ProductVariant }
 
-export type SelectedVariantOptions = Record<string, string>
+export type SelectedVariantOptions = Record<string, number>
 
-export type VariantOptionChoice = {
-  id: string
+export type VariantGroupSummary = {
+  id: number
   label: string
+  isVisual: boolean
 }
 
-function getVariantTypeId(type: number | VariantType): string {
-  return typeof type === 'object' && type !== null ? String(type.id) : String(type)
-}
-
-function optionValueMatchesSelection(
-  option: NonNullable<ProductVariant['options']>[number],
-  selectedValue: string,
-): boolean {
-  const optionValueId = getRelationshipId(option.optionValue)
-  const label = resolveOptionValueLabel(option)
-  return selectedValue === String(optionValueId) || selectedValue === label
-}
-
-export function getVariantOptionTypes(
-  product: Product,
-  variants: ProductVariant[] = [],
-): VariantType[] {
-  const fromProduct = (product.variantOptionTypes ?? []).flatMap((entry) => {
-    if (typeof entry === 'object' && entry !== null && 'id' in entry) {
-      return [entry as VariantType]
-    }
-    return []
-  })
-
-  if (fromProduct.length > 0) return fromProduct
-
-  const typeById = new Map<number, VariantType>()
-  for (const variant of variants) {
-    for (const option of variant.options ?? []) {
-      if (typeof option.type === 'object' && option.type !== null && 'label' in option.type) {
-        typeById.set(option.type.id, option.type)
-      }
-    }
-  }
-
-  return Array.from(typeById.values())
-}
-
-export function getPrimaryVisualType(variantOptionTypes: VariantType[]): VariantType | null {
-  const flagged = variantOptionTypes.filter((type) => type.isPrimaryVisualType)
-  if (flagged.length > 0) return flagged[0]
-  return variantOptionTypes[0] ?? null
-}
-
-/** @deprecated Use getPrimaryVisualType */
-export function getGalleryOptionType(variantOptionTypes: VariantType[]): VariantType | null {
-  return getPrimaryVisualType(variantOptionTypes)
-}
-
-export function resolveGalleryImages(
-  product: Product,
-  variants: ProductVariant[],
-  selectedOptions: SelectedVariantOptions,
-  variantOptionTypes: VariantType[],
-  defaultGalleryImages: Media[],
-): Media[] {
-  const images = resolveProductVisualGalleryImages(
-    product,
-    variants,
-    selectedOptions,
-    variantOptionTypes,
-  )
-  return images.length > 0 ? images : defaultGalleryImages
-}
-
-export function resolveSelectedOptionValue(
-  variants: ProductVariant[],
-  selectedOptions: SelectedVariantOptions,
-  variantTypeId: number | string,
-): VariantOptionValue | null {
-  const typeKey = String(variantTypeId)
-  const selectedValue = selectedOptions[typeKey]
-  if (!selectedValue) return null
-
-  for (const variant of variants) {
-    for (const option of variant.options ?? []) {
-      if (getVariantTypeId(option.type) !== typeKey) continue
-      if (!optionValueMatchesSelection(option, selectedValue)) continue
-
-      if (typeof option.optionValue === 'object' && option.optionValue !== null) {
-        return option.optionValue as VariantOptionValue
-      }
-    }
-  }
-
-  return null
-}
-
-export function hasVariants(product: Product, variants: ProductVariant[] = []): boolean {
-  return Boolean(product.enableVariants && variants.length > 0)
-}
-
-function getVariantTypeLabel(type: number | VariantType): string {
-  if (typeof type === 'object' && type !== null) return type.label
-  return 'Option'
-}
-
-export function formatVariantAttributeSummary(variant: ProductVariant): string {
-  if (!variant.options?.length) return ''
-
-  return variant.options
-    .map((option) => `${getVariantTypeLabel(option.type)}: ${resolveOptionValueLabel(option)}`)
-    .filter((entry) => !entry.endsWith(': '))
-    .join(', ')
-}
-
-export function formatVariantLabel(variant: ProductVariant, index = 0): string {
-  const summary = formatVariantAttributeSummary(variant)
-  if (summary) return summary
-  if (variant.title) return variant.title
-  return `Option ${index + 1}`
-}
-
-export function formatVariantEnquiryDetails(variant: ProductVariant): string {
-  if (!variant.options?.length) return 'Variant selected'
-
-  return variant.options
-    .map((option) => `${getVariantTypeLabel(option.type)}: ${resolveOptionValueLabel(option)}`)
-    .filter((entry) => !entry.endsWith(': '))
-    .join('\n')
-}
-
-export function getVariantThumbnail(
-  product: Product,
-  variants: ProductVariant[],
-  selectedOptions: SelectedVariantOptions,
-  variantOptionTypes: VariantType[],
-): number | Media | null | undefined {
-  const images = resolveProductVisualGalleryImages(
-    product,
-    variants,
-    selectedOptions,
-    variantOptionTypes,
-  )
-  if (images[0]) return images[0]
-
-  return getProductMainImage(product)
+export type VariantValueSummary = {
+  id: number
+  label: string
+  groupId: number
 }
 
 export function getCartItemKey(
   productId: string | number,
   variantId?: string | number | null,
 ): string {
-  return variantId ? `${productId}:${variantId}` : String(productId)
+  return variantId != null ? `${productId}:${variantId}` : String(productId)
 }
 
-export function getInitialSelectedOptions(variant: ProductVariant): SelectedVariantOptions {
-  const selectedOptions: SelectedVariantOptions = {}
+export function hasVariants(product: Product, variants: ProductVariant[] = []): boolean {
+  return Boolean(product.enableVariants && variants.length > 0)
+}
 
-  for (const option of variant.options ?? []) {
-    const typeId = getRelationshipId(option.type)
-    const optionValueId = getRelationshipId(option.optionValue)
-    if (typeId !== null && optionValueId !== null) {
-      selectedOptions[String(typeId)] = String(optionValueId)
+export function hasVariantConfiguration(product: Product): boolean {
+  if (!product.enableVariants) return false
+
+  const hasGroupSettings = (product.variantGroupSettings ?? []).some((row) => {
+    const groupId = getRelationshipId(row.group)
+    if (groupId === null) return false
+    return (row.values ?? []).some((value) => getRelationshipId(value) !== null)
+  })
+
+  if (hasGroupSettings) return true
+
+  return (product.valueGalleries ?? []).some((row) => getRelationshipId(row.value) !== null)
+}
+
+/** Show color/size pickers when combinations exist or product variant settings are configured. */
+export function shouldShowVariantSelector(
+  product: Product,
+  variants: ProductVariant[] = [],
+): boolean {
+  return hasVariants(product, variants) || hasVariantConfiguration(product)
+}
+
+/** Switch gallery images by selected color when a visual group has per-value galleries. */
+export function usesVisualVariantGallery(
+  product: Product,
+  variants: ProductVariant[] = [],
+): boolean {
+  if (!product.enableVariants) return false
+
+  const groups = getVariantOptionTypes(product, variants)
+  const visualGroup = getPrimaryVisualType(groups)
+  if (!visualGroup) return false
+
+  return (product.valueGalleries ?? []).some((row) => getRelationshipId(row.value) !== null)
+}
+
+function resolveGroupSummary(group: number | VariantGroup): VariantGroupSummary | null {
+  const id = getRelationshipId(group)
+  if (id === null) return null
+
+  if (typeof group === 'object' && group !== null) {
+    return {
+      id,
+      label: group.label,
+      isVisual: Boolean(group.isVisual),
     }
   }
 
-  return selectedOptions
+  return { id, label: String(id), isVisual: false }
 }
 
-export function variantMatchesSelection(
-  variant: ProductVariant,
-  selectedOptions: SelectedVariantOptions,
-): boolean {
-  if (!variant.options?.length) return false
+function resolveValueSummary(value: number | VariantValue): VariantValueSummary | null {
+  const id = getRelationshipId(value)
+  if (id === null) return null
 
-  return Object.entries(selectedOptions).every(([typeId, selectedValue]) => {
-    const option = variant.options?.find((row) => getVariantTypeId(row.type) === typeId)
-    if (!option) return false
-    return optionValueMatchesSelection(option, selectedValue)
-  })
+  if (typeof value === 'object' && value !== null) {
+    const groupId = getRelationshipId(value.group)
+    if (groupId === null) return null
+    return {
+      id,
+      label: value.label,
+      groupId,
+    }
+  }
+
+  return null
 }
 
-export function matchVariant(
+export function getVariantGroupsFromProduct(product: Product): VariantGroupSummary[] {
+  const groups: VariantGroupSummary[] = []
+  const seen = new Set<number>()
+
+  for (const row of product.variantGroupSettings ?? []) {
+    const summary = resolveGroupSummary(row.group as number | VariantGroup)
+    if (summary && !seen.has(summary.id)) {
+      groups.push(summary)
+      seen.add(summary.id)
+    }
+  }
+
+  if (groups.length === 0) {
+    for (const row of product.valueGalleries ?? []) {
+      const value = row.value
+      if (typeof value !== 'object' || value === null) continue
+
+      const summary = resolveGroupSummary(value.group as number | VariantGroup)
+      if (summary && !seen.has(summary.id)) {
+        groups.push(summary)
+        seen.add(summary.id)
+      }
+    }
+  }
+
+  return groups
+}
+
+export function getVariantOptionTypes(
+  product: Product,
   variants: ProductVariant[],
+): VariantGroupSummary[] {
+  const fromProduct = getVariantGroupsFromProduct(product)
+  if (fromProduct.length > 0) return fromProduct
+
+  const groupMap = new Map<number, VariantGroupSummary>()
+
+  for (const variant of variants) {
+    for (const option of variant.options ?? []) {
+      const summary = resolveGroupSummary(option.group as number | VariantGroup)
+      if (summary) groupMap.set(summary.id, summary)
+    }
+  }
+
+  return [...groupMap.values()]
+}
+
+export function getPrimaryVisualType(groups: VariantGroupSummary[]): VariantGroupSummary | null {
+  return groups.find((group) => group.isVisual) ?? null
+}
+
+function getAllowedValueIds(product: Product, groupId: number): Set<number> {
+  const allowed = new Set<number>()
+  for (const row of product.variantGroupSettings ?? []) {
+    if (getRelationshipId(row.group) !== groupId) continue
+    for (const value of row.values ?? []) {
+      const valueId = getRelationshipId(value)
+      if (valueId !== null) allowed.add(valueId)
+    }
+  }
+
+  if (allowed.size === 0) {
+    for (const row of product.valueGalleries ?? []) {
+      const value = row.value
+      if (typeof value !== 'object' || value === null) continue
+      if (getRelationshipId(value.group) !== groupId) continue
+      allowed.add(value.id)
+    }
+  }
+
+  return allowed
+}
+
+export function getSelectableOptionChoices(
+  product: Product,
+  variants: ProductVariant[],
+  groupId: number,
   selectedOptions: SelectedVariantOptions,
-): ProductVariant | null {
-  return variants.find((variant) => variantMatchesSelection(variant, selectedOptions)) ?? null
+): VariantValueSummary[] {
+  const allowedIds = getAllowedValueIds(product, groupId)
+  const valueMap = new Map<number, VariantValueSummary>()
+
+  for (const variant of variants) {
+    if (!variant.active) continue
+
+    const matchesOtherGroups = (variant.options ?? []).every((option) => {
+      const optionGroupId = getRelationshipId(option.group)
+      if (optionGroupId === null || optionGroupId === groupId) return true
+      const selected = selectedOptions[String(optionGroupId)]
+      if (selected === undefined) return true
+      return getRelationshipId(option.value) === selected
+    })
+
+    if (!matchesOtherGroups) continue
+
+    for (const option of variant.options ?? []) {
+      if (getRelationshipId(option.group) !== groupId) continue
+      const summary = resolveValueSummary(option.value as number | VariantValue)
+      if (summary && allowedIds.has(summary.id)) {
+        valueMap.set(summary.id, summary)
+      }
+    }
+  }
+
+  if (valueMap.size === 0 && allowedIds.size > 0) {
+    for (const row of product.variantGroupSettings ?? []) {
+      if (getRelationshipId(row.group) !== groupId) continue
+
+      for (const value of row.values ?? []) {
+        const valueId = getRelationshipId(value)
+        if (valueId === null || !allowedIds.has(valueId)) continue
+
+        const summary = resolveValueSummary(value as number | VariantValue)
+        valueMap.set(valueId, summary ?? { id: valueId, label: `Option ${valueId}`, groupId })
+      }
+    }
+
+    for (const row of product.valueGalleries ?? []) {
+      const value = row.value
+      if (typeof value !== 'object' || value === null) continue
+      if (getRelationshipId(value.group) !== groupId) continue
+      if (!allowedIds.has(value.id)) continue
+
+      valueMap.set(value.id, {
+        id: value.id,
+        label: value.label,
+        groupId,
+      })
+    }
+  }
+
+  return [...valueMap.values()].sort((a, b) => a.label.localeCompare(b.label))
 }
 
 export function resolveSelectedVariant(
   variants: ProductVariant[],
   selectedOptions: SelectedVariantOptions,
-  variantOptionTypes: VariantType[],
+  groups: VariantGroupSummary[],
 ): ProductVariant | null {
-  const allTypesSelected = variantOptionTypes.every(
-    (type) => selectedOptions[String(type.id)] !== undefined,
-  )
-  if (!allTypesSelected) return null
-  return matchVariant(variants, selectedOptions)
-}
+  if (groups.length === 0) return null
 
-export function existsVariantMatchingSelection(
-  variants: ProductVariant[],
-  selectedOptions: SelectedVariantOptions,
-): boolean {
-  return variants.some((variant) => variantMatchesSelection(variant, selectedOptions))
-}
+  const activeVariants = variants.filter((variant) => variant.active)
 
-export function isOptionValueSelectable(
-  variants: ProductVariant[],
-  variantTypeId: number | string,
-  optionValueId: number | string,
-  selectedOptions: SelectedVariantOptions,
-): boolean {
-  const typeKey = String(variantTypeId)
-  const candidateSelection = {
-    ...selectedOptions,
-    [typeKey]: String(optionValueId),
+  for (const variant of activeVariants) {
+    const matches = groups.every((group) => {
+      const selectedValueId = selectedOptions[String(group.id)]
+      if (selectedValueId === undefined) return false
+
+      return (variant.options ?? []).some(
+        (option) =>
+          getRelationshipId(option.group) === group.id &&
+          getRelationshipId(option.value) === selectedValueId,
+      )
+    })
+
+    if (matches) return variant
   }
 
-  return existsVariantMatchingSelection(variants, candidateSelection)
+  return null
 }
 
-export function getSelectableOptionChoices(
-  variants: ProductVariant[],
-  variantTypeId: number | string,
-  selectedOptions: SelectedVariantOptions,
-): VariantOptionChoice[] {
-  const typeKey = String(variantTypeId)
-  const choices = new Map<string, string>()
-
-  for (const variant of variants) {
-    for (const option of variant.options ?? []) {
-      if (getVariantTypeId(option.type) !== typeKey) continue
-
-      const optionValueId = getRelationshipId(option.optionValue)
-      if (optionValueId === null) continue
-
-      const candidateSelection = {
-        ...selectedOptions,
-        [typeKey]: String(optionValueId),
-      }
-
-      if (!existsVariantMatchingSelection(variants, candidateSelection)) continue
-
-      const label = resolveOptionValueLabel(option)
-      if (label) {
-        choices.set(String(optionValueId), label)
-      }
+export function getInitialSelectedOptions(variant: ProductVariant): SelectedVariantOptions {
+  const selected: SelectedVariantOptions = {}
+  for (const option of variant.options ?? []) {
+    const groupId = getRelationshipId(option.group)
+    const valueId = getRelationshipId(option.value)
+    if (groupId !== null && valueId !== null) {
+      selected[String(groupId)] = valueId
     }
   }
-
-  return Array.from(choices.entries())
-    .map(([id, label]) => ({ id, label }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+  return selected
 }
 
-export function pruneSelectedOptions(
+export function getInitialSelectedOptionsForProduct(
+  product: Product,
   variants: ProductVariant[],
-  selectedOptions: SelectedVariantOptions,
-  variantOptionTypes: VariantType[],
+  groups: VariantGroupSummary[],
 ): SelectedVariantOptions {
-  const next: SelectedVariantOptions = {}
+  const firstActive = variants.find((variant) => variant.active)
+  if (firstActive) return getInitialSelectedOptions(firstActive)
 
-  for (const type of variantOptionTypes) {
-    const typeKey = String(type.id)
-    const selectedValue = selectedOptions[typeKey]
-    if (!selectedValue) continue
-
-    const candidate = { ...next, [typeKey]: selectedValue }
-    if (existsVariantMatchingSelection(variants, candidate)) {
-      next[typeKey] = selectedValue
+  const selected: SelectedVariantOptions = {}
+  for (const group of groups) {
+    const choices = getSelectableOptionChoices(product, variants, group.id, selected)
+    if (choices[0]) {
+      selected[String(group.id)] = choices[0].id
     }
   }
-
-  return next
+  return selected
 }
 
-export function getAvailableOptionValues(
+function getMediaFromGalleryRow(row: { image?: number | Media | null }): Media | null {
+  const image = row.image
+  if (image && typeof image === 'object') return image
+  return null
+}
+
+export function resolveGalleryImages(
+  product: Product,
+  selectedOptions: SelectedVariantOptions,
+  groups: VariantGroupSummary[],
+  fallbackImages: Media[],
+): Media[] {
+  const visualGroup = getPrimaryVisualType(groups)
+  if (!visualGroup) return fallbackImages
+
+  const selectedValueId = selectedOptions[String(visualGroup.id)]
+  if (selectedValueId === undefined) return fallbackImages
+
+  const galleryRow = (product.valueGalleries ?? []).find(
+    (row) => getRelationshipId(row.value) === selectedValueId,
+  )
+
+  const images = (galleryRow?.gallery ?? [])
+    .map((row) => getMediaFromGalleryRow(row))
+    .filter((image): image is Media => image !== null)
+
+  return images.length > 0 ? images : fallbackImages
+}
+
+export function getDefaultGalleryImages(product: Product): Media[] {
+  const fromMainGallery = (product.gallery ?? [])
+    .map((row) => getMediaFromGalleryRow(row))
+    .filter((image): image is Media => image !== null)
+
+  if (fromMainGallery.length > 0) return fromMainGallery
+
+  for (const row of product.valueGalleries ?? []) {
+    const images = (row.gallery ?? [])
+      .map((galleryRow) => getMediaFromGalleryRow(galleryRow))
+      .filter((image): image is Media => image !== null)
+
+    if (images.length > 0) return images
+  }
+
+  return []
+}
+
+export function formatSelectedOptionsDetails(
+  product: Product,
   variants: ProductVariant[],
-  variantTypeId: number | string,
-): string[] {
-  return getSelectableOptionChoices(variants, variantTypeId, {}).map((choice) => choice.id)
-}
-
-export function getOptionValueDisplay(
-  option: NonNullable<ProductVariant['options']>[number],
+  selectedOptions: SelectedVariantOptions,
+  groups: VariantGroupSummary[],
 ): string {
-  return resolveOptionValueLabel(option)
+  const lines = groups
+    .map((group) => {
+      const valueId = selectedOptions[String(group.id)]
+      if (valueId === undefined) return null
+
+      const choice = getSelectableOptionChoices(product, variants, group.id, selectedOptions).find(
+        (entry) => entry.id === valueId,
+      )
+
+      return choice ? `${group.label}: ${choice.label}` : null
+    })
+    .filter((line): line is string => Boolean(line))
+
+  return lines.join('\n')
 }
 
-export { getOptionValueLabel, getRelationshipId }
+export function formatVariantLabel(variant: ProductVariant): string {
+  if (variant.title) return variant.title
+
+  const labels = (variant.options ?? [])
+    .map((option) => {
+      const value = option.value
+      if (typeof value === 'object' && value !== null && 'label' in value) {
+        return String((value as VariantValue).label)
+      }
+      return null
+    })
+    .filter((label): label is string => Boolean(label))
+
+  return labels.join(' / ') || 'Variant'
+}
+
+export function formatVariantEnquiryDetails(variant: ProductVariant): string {
+  const lines = (variant.options ?? []).map((option) => {
+    const groupLabel =
+      typeof option.group === 'object' && option.group !== null
+        ? (option.group as VariantGroup).label
+        : 'Option'
+    const valueLabel =
+      typeof option.value === 'object' && option.value !== null
+        ? (option.value as VariantValue).label
+        : String(option.value)
+    return `${groupLabel}: ${valueLabel}`
+  })
+
+  return lines.join('\n')
+}
+
+export function getCombinationKeyFromVariant(variant: ProductVariant): string {
+  return buildCombinationKey(
+    (variant.options ?? []).map((option) => ({
+      groupId: getRelationshipId(option.group)!,
+      valueId: getRelationshipId(option.value)!,
+    })),
+  )
+}

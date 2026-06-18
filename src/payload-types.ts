@@ -72,8 +72,8 @@ export interface Config {
     categories: Category;
     brands: Brand;
     tags: Tag;
-    'variant-types': VariantType;
-    'variant-option-values': VariantOptionValue;
+    'variant-groups': VariantGroup;
+    'variant-values': VariantValue;
     products: Product;
     'product-variants': ProductVariant;
     reviews: Review;
@@ -84,8 +84,8 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
-    'variant-types': {
-      optionValues: 'variant-option-values';
+    'variant-groups': {
+      linkedValues: 'variant-values';
     };
     products: {
       linkedVariants: 'product-variants';
@@ -97,8 +97,8 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
-    'variant-types': VariantTypesSelect<false> | VariantTypesSelect<true>;
-    'variant-option-values': VariantOptionValuesSelect<false> | VariantOptionValuesSelect<true>;
+    'variant-groups': VariantGroupsSelect<false> | VariantGroupsSelect<true>;
+    'variant-values': VariantValuesSelect<false> | VariantValuesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
@@ -257,30 +257,30 @@ export interface Tag {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Catalog definitions for attributes and variant options (e.g. Color, Size). Assign values under Variant Option Values.
+ * Global variant dimensions shared across products (e.g. Color, Size). Create values in Linked Values below, then use them on products.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variant-types".
+ * via the `definition` "variant-groups".
  */
-export interface VariantType {
+export interface VariantGroup {
   id: number;
   /**
-   * Display name shown in the admin and storefront, e.g. Color or Size.
+   * Display name shown to customers and in the admin (e.g. Color).
    */
   label: string;
   /**
-   * Machine key auto-generated from the label. Edit to override.
+   * Internal key (lowercase, no spaces). Used for stable references.
    */
   name: string;
   /**
-   * When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each product under Variant Visual Galleries.
+   * When enabled, selecting a value from this group can switch the product image gallery on the storefront.
    */
-  isPrimaryVisualType?: boolean | null;
+  isVisual?: boolean | null;
   /**
-   * Allowed values for this type. Use + to add values here or under Catalog → Variant Option Values.
+   * Values for this group (e.g. Red, Blue). Create here, publish, then select them on products under Available Values.
    */
-  optionValues?: {
-    docs?: (number | VariantOptionValue)[];
+  linkedValues?: {
+    docs?: (number | VariantValue)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -289,19 +289,21 @@ export interface VariantType {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Global selectable values (e.g. Blue, Large). Prefer creating from Variant Groups → Linked Values so the group is set automatically.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variant-option-values".
+ * via the `definition` "variant-values".
  */
-export interface VariantOptionValue {
+export interface VariantValue {
   id: number;
   /**
-   * The variant type this value belongs to (e.g. Color).
+   * Display name (e.g. Navy Blue).
    */
-  variantType: number | VariantType;
+  label: string;
   /**
-   * Display value shown in admin and on the storefront, e.g. Red or Black.
+   * The variant group this value belongs to. Required before publishing; drafts may be created without a group.
    */
-  value: string;
+  group?: (number | null) | VariantGroup;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -323,7 +325,7 @@ export interface Product {
    */
   description: string;
   /**
-   * Add as many product images as needed. The first image is used as the listing thumbnail.
+   * Default product images. When variants are enabled, use Value Galleries below for visual groups (e.g. Color).
    */
   gallery?:
     | {
@@ -335,38 +337,31 @@ export interface Product {
   featured?: boolean | null;
   limitedEdition?: boolean | null;
   /**
-   * Turn on when this product has selectable options such as color or size. Variant Types define the dimensions; Product Variants define purchasable combinations.
+   * Turn on when this product has selectable options (e.g. color or size). Configure groups and values below, then generate combinations.
    */
   enableVariants?: boolean | null;
   /**
-   * Global catalog dimensions for this product (e.g. Color, Size). Values come from Variant Option Values and can be reused across products.
+   * Product-specific configuration: choose which global variant groups apply and which values are offered.
    */
-  variantOptionTypes?: (number | VariantType)[] | null;
-  /**
-   * Choose which catalog values apply to this product. Save the product (or wait for autosave) after changing variant types so availability rows can synchronize. Empty rows auto-fill with all published values for that type on save.
-   */
-  variantOptionAvailability?:
+  variantGroupSettings?:
     | {
-        type: number | VariantType;
+        group: number | VariantGroup;
         /**
-         * Values offered for this product and type (e.g. Blue, Red).
+         * Only pick values that belong to the variant group selected in this row (e.g. Color values on the Color row). If you change the group, clear old values and re-select.
          */
-        optionValues?: (number | VariantOptionValue)[] | null;
+        values: (number | VariantValue)[];
         id?: string | null;
       }[]
     | null;
   /**
-   * Upload product-specific images for each visual option (e.g. each Color). Images are not shared with other products that use the same catalog value. Save the product (or wait for autosave) after changing available values so gallery rows can synchronize.
+   * Product-specific images for visual variant values (e.g. each Color). Saving also adds each gallery value to that group’s Available Values if missing.
    */
-  variantVisualGalleries?:
+  valueGalleries?:
     | {
-        optionValue: number | VariantOptionValue;
-        /**
-         * Optional. Add images one at a time — none are required.
-         */
+        value: number | VariantValue;
         gallery?:
           | {
-              image?: (number | null) | Media;
+              image: number | Media;
               id?: string | null;
             }[]
           | null;
@@ -374,23 +369,13 @@ export interface Product {
       }[]
     | null;
   /**
-   * Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup. Product Variants define purchasable combinations only — images live in Variant Visual Galleries above.
+   * Generated combinations for this product. Use Generate missing combinations above — do not create variants manually here.
    */
   linkedVariants?: {
     docs?: (number | ProductVariant)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  /**
-   * Shared details for every variant (e.g. Fit: Regular). These do not create separate combinations.
-   */
-  productAttributes?:
-    | {
-        type: number | VariantType;
-        optionValue: number | VariantOptionValue;
-        id?: string | null;
-      }[]
-    | null;
   /**
    * Add as many specification rows as needed. Each row is a name/value pair.
    */
@@ -411,26 +396,29 @@ export interface Product {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * One row per purchasable combination. Generated from the product configuration or edited manually.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "product-variants".
  */
 export interface ProductVariant {
   id: number;
-  product: number | Product;
   /**
-   * Auto-generated from the selected option values.
+   * Auto-generated from selected values. You can override if needed.
    */
   title?: string | null;
+  product: number | Product;
   /**
-   * Add one row per differentiating variant type (e.g. Color). Pick a catalog option value — free text is not allowed.
+   * Inactive variants are hidden on the storefront.
+   */
+  active?: boolean | null;
+  /**
+   * One value per variant group on the parent product.
    */
   options?:
     | {
-        type: number | VariantType;
-        /**
-         * Select a value defined on the variant type. Add new values under Catalog → Variant Option Values.
-         */
-        optionValue: number | VariantOptionValue;
+        group: number | VariantGroup;
+        value: number | VariantValue;
         id?: string | null;
       }[]
     | null;
@@ -550,12 +538,12 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
-        relationTo: 'variant-types';
-        value: number | VariantType;
+        relationTo: 'variant-groups';
+        value: number | VariantGroup;
       } | null)
     | ({
-        relationTo: 'variant-option-values';
-        value: number | VariantOptionValue;
+        relationTo: 'variant-values';
+        value: number | VariantValue;
       } | null)
     | ({
         relationTo: 'products';
@@ -721,24 +709,24 @@ export interface TagsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variant-types_select".
+ * via the `definition` "variant-groups_select".
  */
-export interface VariantTypesSelect<T extends boolean = true> {
+export interface VariantGroupsSelect<T extends boolean = true> {
   label?: T;
   name?: T;
-  isPrimaryVisualType?: T;
-  optionValues?: T;
+  isVisual?: T;
+  linkedValues?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variant-option-values_select".
+ * via the `definition` "variant-values_select".
  */
-export interface VariantOptionValuesSelect<T extends boolean = true> {
-  variantType?: T;
-  value?: T;
+export interface VariantValuesSelect<T extends boolean = true> {
+  label?: T;
+  group?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -762,18 +750,17 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   limitedEdition?: T;
   enableVariants?: T;
-  variantOptionTypes?: T;
-  variantOptionAvailability?:
+  variantGroupSettings?:
     | T
     | {
-        type?: T;
-        optionValues?: T;
+        group?: T;
+        values?: T;
         id?: T;
       };
-  variantVisualGalleries?:
+  valueGalleries?:
     | T
     | {
-        optionValue?: T;
+        value?: T;
         gallery?:
           | T
           | {
@@ -783,13 +770,6 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   linkedVariants?: T;
-  productAttributes?:
-    | T
-    | {
-        type?: T;
-        optionValue?: T;
-        id?: T;
-      };
   specifications?:
     | T
     | {
@@ -813,13 +793,14 @@ export interface ProductsSelect<T extends boolean = true> {
  * via the `definition` "product-variants_select".
  */
 export interface ProductVariantsSelect<T extends boolean = true> {
-  product?: T;
   title?: T;
+  product?: T;
+  active?: T;
   options?:
     | T
     | {
-        type?: T;
-        optionValue?: T;
+        group?: T;
+        value?: T;
         id?: T;
       };
   updatedAt?: T;
