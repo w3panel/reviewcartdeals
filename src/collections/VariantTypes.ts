@@ -65,7 +65,7 @@ export const VariantTypes: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description:
-          'When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each Variant Option Value.',
+          'When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each product under Variant Visual Galleries.',
       },
     },
     {

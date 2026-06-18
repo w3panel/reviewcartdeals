@@ -1,4 +1,5 @@
 import { getProductMainImage } from '@/lib/utils'
+import { resolveProductVisualGalleryImages } from '@/lib/productVisualGalleries'
 import type {
   Media,
   Product,
@@ -19,19 +20,6 @@ export type SelectedVariantOptions = Record<string, string>
 export type VariantOptionChoice = {
   id: string
   label: string
-}
-
-function isMediaObject(value: unknown): value is Media {
-  return value !== null && typeof value === 'object' && 'id' in value
-}
-
-function getMediaFromGalleryRow(
-  row: NonNullable<VariantOptionValue['gallery']>[number] | Media | null | undefined,
-): number | Media | null | undefined {
-  if (!row || typeof row !== 'object') return undefined
-  if ('image' in row) return row.image ?? undefined
-  if ('url' in row || 'id' in row) return row as Media
-  return undefined
 }
 
 function getVariantTypeId(type: number | VariantType): string {
@@ -83,12 +71,20 @@ export function getGalleryOptionType(variantOptionTypes: VariantType[]): Variant
   return getPrimaryVisualType(variantOptionTypes)
 }
 
-export function buildOptionValueGalleryImages(
-  optionValue: VariantOptionValue | null | undefined,
+export function resolveGalleryImages(
+  product: Product,
+  variants: ProductVariant[],
+  selectedOptions: SelectedVariantOptions,
+  variantOptionTypes: VariantType[],
+  defaultGalleryImages: Media[],
 ): Media[] {
-  if (!optionValue?.gallery?.length) return []
-
-  return optionValue.gallery.map((row) => getMediaFromGalleryRow(row)).filter(isMediaObject)
+  const images = resolveProductVisualGalleryImages(
+    product,
+    variants,
+    selectedOptions,
+    variantOptionTypes,
+  )
+  return images.length > 0 ? images : defaultGalleryImages
 }
 
 export function resolveSelectedOptionValue(
@@ -112,27 +108,6 @@ export function resolveSelectedOptionValue(
   }
 
   return null
-}
-
-export function resolveGalleryImages(
-  variants: ProductVariant[],
-  selectedOptions: SelectedVariantOptions,
-  variantOptionTypes: VariantType[],
-  defaultGalleryImages: Media[],
-): Media[] {
-  const primaryType = getPrimaryVisualType(variantOptionTypes)
-  const typesToTry = [
-    primaryType,
-    ...variantOptionTypes.filter((type) => type.id !== primaryType?.id),
-  ].filter((type): type is VariantType => Boolean(type))
-
-  for (const type of typesToTry) {
-    const optionValue = resolveSelectedOptionValue(variants, selectedOptions, type.id)
-    const images = buildOptionValueGalleryImages(optionValue)
-    if (images.length > 0) return images
-  }
-
-  return defaultGalleryImages
 }
 
 export function hasVariants(product: Product, variants: ProductVariant[] = []): boolean {
@@ -170,17 +145,18 @@ export function formatVariantEnquiryDetails(variant: ProductVariant): string {
 }
 
 export function getVariantThumbnail(
+  product: Product,
   variants: ProductVariant[],
   selectedOptions: SelectedVariantOptions,
   variantOptionTypes: VariantType[],
-  product: Product,
 ): number | Media | null | undefined {
-  const galleryType = getPrimaryVisualType(variantOptionTypes)
-  if (galleryType) {
-    const optionValue = resolveSelectedOptionValue(variants, selectedOptions, galleryType.id)
-    const galleryImages = buildOptionValueGalleryImages(optionValue)
-    if (galleryImages[0]) return galleryImages[0]
-  }
+  const images = resolveProductVisualGalleryImages(
+    product,
+    variants,
+    selectedOptions,
+    variantOptionTypes,
+  )
+  if (images[0]) return images[0]
 
   return getProductMainImage(product)
 }

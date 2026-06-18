@@ -106,26 +106,5 @@ export const VariantOptionValues: CollectionConfig = {
         description: 'Display value shown in admin and on the storefront, e.g. Red or Black.',
       },
     },
-    {
-      name: 'gallery',
-      type: 'array',
-      labels: {
-        singular: 'Image',
-        plural: 'Gallery',
-      },
-      admin: {
-        description:
-          'Images shown when this option value is selected on the storefront. Only needed for types marked as Primary visual type (e.g. Color).',
-        initCollapsed: true,
-      },
-      fields: [
-        {
-          name: 'image',
-          type: 'relationship',
-          relationTo: 'media',
-          required: true,
-        },
-      ],
-    },
   ],
 }

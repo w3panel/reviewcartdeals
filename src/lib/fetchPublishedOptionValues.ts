@@ -3,33 +3,75 @@ export async function fetchPublishedOptionValueIdsForType(typeId: number): Promi
   return docs.map((doc) => doc.id)
 }
 
+const publishedOptionValuesCache = new Map<string, Array<{ id: number; value: string }>>()
+const publishedOptionValuesInFlight = new Map<
+  string,
+  Promise<Array<{ id: number; value: string }>>
+>()
+const variantOptionValueLabelsCache = new Map<string, Record<number, string>>()
+const variantTypesCache = new Map<
+  string,
+  Array<{ id: number; label: string; isPrimaryVisualType?: boolean | null }>
+>()
+const mediaThumbnailCache = new Map<number, string | null>()
+
+function buildIdsCacheKey(ids: number[]): string {
+  return [...ids].sort((left, right) => left - right).join(',')
+}
+
+async function loadPublishedOptionValuesForType(
+  typeId: number,
+  cacheKey: string,
+): Promise<Array<{ id: number; value: string }>> {
+  try {
+    const params = new URLSearchParams({
+      depth: '0',
+      limit: '250',
+    })
+    params.append('where[and][0][variantType][equals]', String(typeId))
+    params.append('where[and][1][_status][equals]', 'published')
+
+    const response = await fetch(`/api/variant-option-values?${params.toString()}`, {
+      credentials: 'include',
+    })
+
+    if (!response.ok) return []
+
+    const json = (await response.json()) as { docs?: Array<{ id: number; value?: string }> }
+    const docs = (json.docs ?? []).map((doc) => ({
+      id: doc.id,
+      value: doc.value?.trim() || String(doc.id),
+    }))
+    publishedOptionValuesCache.set(cacheKey, docs)
+    return docs
+  } finally {
+    publishedOptionValuesInFlight.delete(cacheKey)
+  }
+}
+
 export async function fetchPublishedOptionValuesForType(
   typeId: number,
 ): Promise<Array<{ id: number; value: string }>> {
-  const params = new URLSearchParams({
-    depth: '0',
-    limit: '250',
-  })
-  params.append('where[and][0][variantType][equals]', String(typeId))
-  params.append('where[and][1][_status][equals]', 'published')
+  const cacheKey = String(typeId)
+  const cached = publishedOptionValuesCache.get(cacheKey)
+  if (cached) return cached
 
-  const response = await fetch(`/api/variant-option-values?${params.toString()}`, {
-    credentials: 'include',
-  })
+  const inFlight = publishedOptionValuesInFlight.get(cacheKey)
+  if (inFlight) return inFlight
 
-  if (!response.ok) return []
-
-  const json = (await response.json()) as { docs?: Array<{ id: number; value?: string }> }
-  return (json.docs ?? []).map((doc) => ({
-    id: doc.id,
-    value: doc.value?.trim() || String(doc.id),
-  }))
+  const request = loadPublishedOptionValuesForType(typeId, cacheKey)
+  publishedOptionValuesInFlight.set(cacheKey, request)
+  return request
 }
 
 export async function fetchVariantOptionValueLabels(
   optionValueIds: number[],
 ): Promise<Record<number, string>> {
   if (optionValueIds.length === 0) return {}
+
+  const cacheKey = buildIdsCacheKey(optionValueIds)
+  const cached = variantOptionValueLabelsCache.get(cacheKey)
+  if (cached) return cached
 
   const params = new URLSearchParams({
     depth: '0',
@@ -51,6 +93,7 @@ export async function fetchVariantOptionValueLabels(
     labels[doc.id] = doc.value?.trim() || String(doc.id)
   }
 
+  variantOptionValueLabelsCache.set(cacheKey, labels)
   return labels
 }
 
@@ -73,8 +116,14 @@ export async function fetchPublishedOptionValueLabelsForTypes(
   return Object.assign({}, ...labelSets)
 }
 
-export async function fetchVariantTypeLabels(typeIds: number[]): Promise<Record<number, string>> {
-  if (typeIds.length === 0) return {}
+export async function fetchVariantTypesByIds(
+  typeIds: number[],
+): Promise<Array<{ id: number; label: string; isPrimaryVisualType?: boolean | null }>> {
+  if (typeIds.length === 0) return []
+
+  const cacheKey = buildIdsCacheKey(typeIds)
+  const cached = variantTypesCache.get(cacheKey)
+  if (cached) return cached
 
   const params = new URLSearchParams({
     depth: '0',
@@ -88,16 +137,51 @@ export async function fetchVariantTypeLabels(typeIds: number[]): Promise<Record<
     credentials: 'include',
   })
 
-  if (!response.ok) return {}
+  if (!response.ok) return []
 
   const json = (await response.json()) as {
-    docs?: Array<{ id: number; label?: string; name?: string }>
+    docs?: Array<{
+      id: number
+      label?: string
+      name?: string
+      isPrimaryVisualType?: boolean | null
+    }>
   }
 
+  const types = (json.docs ?? []).map((doc) => ({
+    id: doc.id,
+    label: doc.label?.trim() || doc.name?.trim() || `Type ${doc.id}`,
+    isPrimaryVisualType: doc.isPrimaryVisualType,
+  }))
+  variantTypesCache.set(cacheKey, types)
+  return types
+}
+
+export async function fetchMediaThumbnailUrl(mediaId: number): Promise<string | null> {
+  if (mediaThumbnailCache.has(mediaId)) {
+    return mediaThumbnailCache.get(mediaId) ?? null
+  }
+
+  const response = await fetch(`/api/media/${mediaId}?depth=0`, {
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    mediaThumbnailCache.set(mediaId, null)
+    return null
+  }
+
+  const json = (await response.json()) as { url?: string; thumbnailURL?: string }
+  const url = json.thumbnailURL ?? json.url ?? null
+  mediaThumbnailCache.set(mediaId, url)
+  return url
+}
+
+export async function fetchVariantTypeLabels(typeIds: number[]): Promise<Record<number, string>> {
+  const types = await fetchVariantTypesByIds(typeIds)
   const labels: Record<number, string> = {}
-  for (const doc of json.docs ?? []) {
-    labels[doc.id] = doc.name?.trim() || doc.label?.trim() || `Type ${doc.id}`
+  for (const type of types) {
+    labels[type.id] = type.label
   }
-
   return labels
 }

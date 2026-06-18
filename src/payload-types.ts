@@ -273,7 +273,7 @@ export interface VariantType {
    */
   name: string;
   /**
-   * When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each Variant Option Value.
+   * When enabled, the storefront gallery follows the selected value of this type (e.g. Color). Upload images on each product under Variant Visual Galleries.
    */
   isPrimaryVisualType?: boolean | null;
   /**
@@ -302,15 +302,6 @@ export interface VariantOptionValue {
    * Display value shown in admin and on the storefront, e.g. Red or Black.
    */
   value: string;
-  /**
-   * Images shown when this option value is selected on the storefront. Only needed for types marked as Primary visual type (e.g. Color).
-   */
-  gallery?:
-    | {
-        image: number | Media;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -344,11 +335,11 @@ export interface Product {
   featured?: boolean | null;
   limitedEdition?: boolean | null;
   /**
-   * Turn on when this product has selectable options such as color or size.
+   * Turn on when this product has selectable options such as color or size. Variant Types define the dimensions; Product Variants define purchasable combinations.
    */
   enableVariants?: boolean | null;
   /**
-   * Option dimensions that create separate variants (e.g. Color and Size). Each combination becomes one product variant.
+   * Global catalog dimensions for this product (e.g. Color, Size). Values come from Variant Option Values and can be reused across products.
    */
   variantOptionTypes?: (number | VariantType)[] | null;
   /**
@@ -358,14 +349,32 @@ export interface Product {
     | {
         type: number | VariantType;
         /**
-         * Values offered for this product and type (e.g. Pink, Black).
+         * Values offered for this product and type (e.g. Blue, Red).
          */
         optionValues?: (number | VariantOptionValue)[] | null;
         id?: string | null;
       }[]
     | null;
   /**
-   * Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup.
+   * Upload product-specific images for each visual option (e.g. each Color). Images are not shared with other products that use the same catalog value.
+   */
+  variantVisualGalleries?:
+    | {
+        optionValue: number | VariantOptionValue;
+        /**
+         * Optional. Add images one at a time — none are required.
+         */
+        gallery?:
+          | {
+              image?: (number | null) | Media;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup. Product Variants define purchasable combinations only — images live in Variant Visual Galleries above.
    */
   linkedVariants?: {
     docs?: (number | ProductVariant)[];
@@ -730,12 +739,6 @@ export interface VariantTypesSelect<T extends boolean = true> {
 export interface VariantOptionValuesSelect<T extends boolean = true> {
   variantType?: T;
   value?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -765,6 +768,18 @@ export interface ProductsSelect<T extends boolean = true> {
     | {
         type?: T;
         optionValues?: T;
+        id?: T;
+      };
+  variantVisualGalleries?:
+    | T
+    | {
+        optionValue?: T;
+        gallery?:
+          | T
+          | {
+              image?: T;
+              id?: T;
+            };
         id?: T;
       };
   linkedVariants?: T;

@@ -1,14 +1,18 @@
 'use client'
 
 import React, { useCallback } from 'react'
+import Image from 'next/image'
 import type { Product, ProductVariant } from '@/payload-types'
 import {
+  getPrimaryVisualType,
   getSelectableOptionChoices,
   getVariantOptionTypes,
   isOptionValueSelectable,
   pruneSelectedOptions,
   type SelectedVariantOptions,
 } from '@/lib/productVariants'
+import { getOptionChoiceThumbnail } from '@/lib/productVisualGalleries'
+import { getImageUrl } from '@/lib/utils'
 
 type VariantSelectorProps = {
   product: Product
@@ -24,6 +28,7 @@ export function VariantSelector({
   onSelectOptions,
 }: VariantSelectorProps) {
   const variantOptionTypes = getVariantOptionTypes(product, variants)
+  const primaryVisualType = getPrimaryVisualType(variantOptionTypes)
 
   const handleSelect = useCallback(
     (typeId: number, optionValueId: string) => {
@@ -49,6 +54,7 @@ export function VariantSelector({
         const typeKey = String(variantType.id)
         const choices = getSelectableOptionChoices(variants, variantType.id, selectedOptions)
         const selectedValue = selectedOptions[typeKey]
+        const showThumbnails = primaryVisualType?.id === variantType.id
 
         return (
           <div key={variantType.id}>
@@ -64,6 +70,9 @@ export function VariantSelector({
                   choice.id,
                   selectedOptions,
                 )
+                const thumbnail = showThumbnails
+                  ? getOptionChoiceThumbnail(product, choice.id)
+                  : null
 
                 return (
                   <button
@@ -71,7 +80,7 @@ export function VariantSelector({
                     type="button"
                     disabled={!isSelectable}
                     onClick={() => handleSelect(variantType.id, choice.id)}
-                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-all ${
                       isSelected
                         ? 'border-primary bg-primary text-primary-foreground'
                         : isSelectable
@@ -80,6 +89,17 @@ export function VariantSelector({
                     }`}
                     aria-pressed={isSelected}
                   >
+                    {thumbnail ? (
+                      <span className="relative h-5 w-5 overflow-hidden rounded-full border border-border/60">
+                        <Image
+                          src={getImageUrl(thumbnail)}
+                          alt=""
+                          fill
+                          sizes="20px"
+                          className="object-cover"
+                        />
+                      </span>
+                    ) : null}
                     {choice.label}
                   </button>
                 )

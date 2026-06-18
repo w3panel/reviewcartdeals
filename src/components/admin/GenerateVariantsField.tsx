@@ -16,11 +16,26 @@ import {
   getVariantOptionTypeIdsFromForm,
   resolveVariantTypesForPreview,
 } from '@/lib/productOptionAvailability'
+import { getRelationshipId } from '@/lib/variantOptionValues'
 import type { AvailabilityRow } from '@/lib/productOptionAvailability'
 
 function resolveAvailabilityFromForm(value: unknown): AvailabilityRow[] {
   if (!Array.isArray(value)) return []
   return value as AvailabilityRow[]
+}
+
+function serializeAvailabilityKey(rows: AvailabilityRow[]): string {
+  return rows
+    .map((row) => {
+      const typeId = getRelationshipId(row.type)
+      const valueIds = (row.optionValues ?? [])
+        .map((entry) => getRelationshipId(entry))
+        .filter((id): id is number => id !== null)
+        .sort((left, right) => left - right)
+        .join(',')
+      return `${typeId ?? 'none'}:${valueIds}`
+    })
+    .join('|')
 }
 
 export default function GenerateVariantsField() {
@@ -36,6 +51,11 @@ export default function GenerateVariantsField() {
 
   const variantOptionAvailability = useFormFields(([fields]) =>
     resolveAvailabilityFromForm(fields.variantOptionAvailability?.value),
+  )
+
+  const availabilityKey = useMemo(
+    () => serializeAvailabilityKey(variantOptionAvailability),
+    [variantOptionAvailability],
   )
 
   const typeIds = useMemo(
@@ -65,7 +85,7 @@ export default function GenerateVariantsField() {
 
   const effectiveAvailability = useMemo(
     () => getEffectiveAvailabilityForPreview(variantOptionTypes, variantOptionAvailability),
-    [variantOptionTypes, variantOptionAvailability],
+    [availabilityKey, typeIds.join(',')],
   )
 
   const optionValueIds = useMemo(

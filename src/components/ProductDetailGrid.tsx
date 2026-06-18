@@ -46,13 +46,27 @@ export function ProductDetailGrid({
 
   const galleryImages = useMemo(() => {
     if (!productHasVariants) return defaultGalleryImages
-    return resolveGalleryImages(variants, selectedOptions, variantOptionTypes, defaultGalleryImages)
-  }, [productHasVariants, variants, selectedOptions, variantOptionTypes, defaultGalleryImages])
+    return resolveGalleryImages(
+      product,
+      variants,
+      selectedOptions,
+      variantOptionTypes,
+      defaultGalleryImages,
+    )
+  }, [
+    productHasVariants,
+    product,
+    variants,
+    selectedOptions,
+    variantOptionTypes,
+    defaultGalleryImages,
+  ])
 
-  const galleryType = getPrimaryVisualType(variantOptionTypes)
-  const galleryOptionValueId = galleryType
-    ? resolveSelectedOptionValue(variants, selectedOptions, galleryType.id)?.id
-    : undefined
+  const galleryOptionValueId = useMemo(() => {
+    const galleryType = getPrimaryVisualType(variantOptionTypes)
+    if (!galleryType) return undefined
+    return resolveSelectedOptionValue(variants, selectedOptions, galleryType.id)?.id
+  }, [variants, selectedOptions, variantOptionTypes])
 
   return (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">

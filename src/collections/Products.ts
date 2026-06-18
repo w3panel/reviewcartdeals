@@ -6,6 +6,10 @@ import {
   syncVariantOptionAvailability,
   validateProductOptionAvailability,
 } from '@/lib/productOptionAvailabilityHooks'
+import {
+  sanitizeVariantVisualGalleriesOnSave,
+  syncVariantVisualGalleries,
+} from '@/lib/productVisualGalleryHooks'
 import { findCatalogProducts } from '@/lib/productFilters'
 import { revalidateAfterProductChange, revalidateAfterProductDelete } from '@/lib/revalidateContent'
 import { getProductReviewStatsBatch } from '@/services/reviews'
@@ -27,6 +31,8 @@ export const Products: CollectionConfig = {
   hooks: {
     beforeValidate: [
       syncVariantOptionAvailability,
+      syncVariantVisualGalleries,
+      sanitizeVariantVisualGalleriesOnSave,
       validateProductAttributes,
       validateProductOptionAvailability,
     ],
@@ -187,7 +193,8 @@ export const Products: CollectionConfig = {
       defaultValue: false,
       label: 'Enable Variants',
       admin: {
-        description: 'Turn on when this product has selectable options such as color or size.',
+        description:
+          'Turn on when this product has selectable options such as color or size. Variant Types define the dimensions; Product Variants define purchasable combinations.',
       },
     },
     {
@@ -198,7 +205,7 @@ export const Products: CollectionConfig = {
       admin: {
         condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
         description:
-          'Option dimensions that create separate variants (e.g. Color and Size). Each combination becomes one product variant.',
+          'Global catalog dimensions for this product (e.g. Color, Size). Values come from Variant Option Values and can be reused across products.',
       },
     },
     {
@@ -245,7 +252,7 @@ export const Products: CollectionConfig = {
             }
           },
           admin: {
-            description: 'Values offered for this product and type (e.g. Pink, Black).',
+            description: 'Values offered for this product and type (e.g. Blue, Red).',
           },
         },
       ],
@@ -261,6 +268,61 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'variantVisualGalleries',
+      type: 'array',
+      labels: {
+        singular: 'Visual Gallery',
+        plural: 'Variant Visual Galleries',
+      },
+      admin: {
+        condition: (_, siblingData) => Boolean(siblingData?.enableVariants),
+        description:
+          'Upload product-specific images for each visual option (e.g. each Color). Images are not shared with other products that use the same catalog value.',
+        initCollapsed: false,
+        isSortable: false,
+        components: {
+          Field: '@/components/admin/VariantVisualGalleriesField',
+          RowLabel: '@/components/admin/VariantVisualGalleryRowLabel',
+        },
+      },
+      fields: [
+        {
+          name: 'optionValue',
+          type: 'relationship',
+          relationTo: 'variant-option-values',
+          required: true,
+          admin: {
+            hidden: true,
+            readOnly: true,
+          },
+        },
+        {
+          name: 'gallery',
+          type: 'array',
+          minRows: 0,
+          labels: {
+            singular: 'Image',
+            plural: 'Images',
+          },
+          admin: {
+            description: 'Optional. Add images one at a time — none are required.',
+            initCollapsed: false,
+            components: {
+              Field: '@/components/admin/VariantVisualGalleryImagesField',
+            },
+          },
+          fields: [
+            {
+              name: 'image',
+              type: 'relationship',
+              relationTo: 'media',
+              required: false,
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'linkedVariants',
       type: 'join',
       collection: 'product-variants',
@@ -270,7 +332,7 @@ export const Products: CollectionConfig = {
         allowCreate: true,
         defaultColumns: ['title', '_status'],
         description:
-          'Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup.',
+          'Advanced: inspect or manually edit individual variant combinations. Prefer Generate Variant Combinations above for bulk setup. Product Variants define purchasable combinations only — images live in Variant Visual Galleries above.',
       },
     },
     {

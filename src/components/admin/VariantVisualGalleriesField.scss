@@ -1,0 +1,175 @@
+.variant-visual-galleries-field {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.variant-visual-galleries-field__guide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.5rem;
+  background: var(--theme-elevation-50);
+  color: var(--theme-elevation-800);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.variant-visual-galleries-field__guide p {
+  margin: 0;
+}
+
+.variant-visual-galleries-field > .array-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.variant-visual-galleries-field > .array-field > .array-field__header {
+  display: none;
+}
+
+.variant-visual-galleries-field > .array-field .array-field__row {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--theme-elevation-0);
+}
+
+.variant-visual-galleries-field > .array-field .collapsible {
+  border: none;
+  border-radius: 0;
+}
+
+.variant-visual-galleries-field > .array-field .collapsible__header-wrap {
+  padding: 0.875rem 1rem;
+  background: var(--theme-elevation-50);
+  border-bottom: 1px solid var(--theme-elevation-150);
+}
+
+.variant-visual-galleries-field > .array-field .collapsible__content {
+  padding: 0.75rem 1rem 1rem;
+}
+
+.variant-visual-galleries-field__empty {
+  padding: 1rem;
+  border: 1px dashed var(--theme-elevation-200);
+  border-radius: 0.5rem;
+  color: var(--theme-elevation-600);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.variant-visual-galleries-field__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.variant-visual-galleries-field__card {
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: var(--theme-elevation-0);
+}
+
+.variant-visual-galleries-field__card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  background: var(--theme-elevation-50);
+  border-bottom: 1px solid var(--theme-elevation-150);
+}
+
+.variant-visual-galleries-field__card-thumb {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 1px solid var(--theme-elevation-200);
+}
+
+.variant-visual-galleries-field__card-thumb--empty {
+  display: inline-block;
+  background: var(--theme-elevation-100);
+  border: 1px dashed var(--theme-elevation-250);
+}
+
+.variant-visual-galleries-field__card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--theme-text);
+}
+
+.variant-visual-galleries-field__card-subtitle {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--theme-elevation-600);
+}
+
+.variant-visual-galleries-field__card-body {
+  padding: 0.75rem 1rem 1rem;
+}
+
+.variant-visual-galleries-field__card-body .array-field__header-actions {
+  display: flex;
+}
+
+.variant-visual-galleries-field__card-body .array-field__title {
+  display: block;
+  font-size: 0.875rem;
+}
+
+.variant-visual-galleries-field__card-body .array-field {
+  margin: 0;
+}
+
+.variant-visual-gallery-images__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.variant-visual-gallery-images__array-host--hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.variant-visual-gallery-images__array-host--hidden .array-field__header,
+.variant-visual-gallery-images__array-host--hidden .array-field__draggable-rows,
+.variant-visual-gallery-images__array-host--hidden .array-field__add-row {
+  display: none;
+}
+
+.variant-visual-gallery-images__empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--theme-elevation-600);
+}
+
+.variant-visual-gallery-images__actions {
+  margin-top: 0.75rem;
+}
+
+.variant-visual-gallery-images .array-field__add-row {
+  display: none;
+}
+
+.variant-visual-gallery-images .array-field__draggable-rows:empty {
+  display: none;
+}
+
+.variant-visual-galleries-field__card-body .collapsible__content {
+  padding: 0.75rem 0 0;
+}

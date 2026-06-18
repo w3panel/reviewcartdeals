@@ -106,6 +106,29 @@ export function rowHasOptionValues(row: AvailabilityRow): boolean {
   return (row.optionValues ?? []).map((entry) => getRelationshipId(entry)).some((id) => id !== null)
 }
 
+function getRowValueIds(row: AvailabilityRow): number[] {
+  return (row.optionValues ?? [])
+    .map((entry) => getRelationshipId(entry))
+    .filter((id): id is number => id !== null)
+    .sort((left, right) => left - right)
+}
+
+export function availabilityRowsEqual(left: AvailabilityRow[], right: AvailabilityRow[]): boolean {
+  if (left.length !== right.length) return false
+
+  return left.every((row, index) => {
+    const other = right[index]
+    const typeId = getRelationshipId(row.type)
+    const otherTypeId = getRelationshipId(other?.type)
+    if (typeId !== otherTypeId) return false
+
+    const valueIds = getRowValueIds(row)
+    const otherValueIds = getRowValueIds(other ?? {})
+    if (valueIds.length !== otherValueIds.length) return false
+    return valueIds.every((id, valueIndex) => id === otherValueIds[valueIndex])
+  })
+}
+
 export async function populateDefaultOptionValues(
   rows: AvailabilityRow[],
   loadPublishedOptionValueIds: (typeId: number) => Promise<number[]>,

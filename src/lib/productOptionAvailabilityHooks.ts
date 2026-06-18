@@ -4,10 +4,12 @@ import type { Product, VariantType } from '@/payload-types'
 import { publishedStatusWhere } from '@/lib/publishedOnly'
 import { getRelationshipId } from '@/lib/variantOptionValues'
 import {
+  availabilityRowsEqual,
   type AvailabilityRow,
   buildSyncedAvailabilityRows,
   getAvailabilityRows,
   populateDefaultOptionValues,
+  rowHasOptionValues,
 } from '@/lib/productOptionAvailability'
 
 function getVariantOptionTypeIds(data: Pick<Product, 'variantOptionTypes'>): number[] {
@@ -71,22 +73,27 @@ export const syncVariantOptionAvailability: CollectionBeforeValidateHook = async
 
   let rows = buildSyncedAvailabilityRows(typeIds, existingRows ?? [])
 
-  rows = await populateDefaultOptionValues(rows, async (typeId) => {
-    const result = await req.payload.find({
-      collection: 'variant-option-values',
-      where: {
-        and: [{ variantType: { equals: typeId } }, publishedStatusWhere],
-      },
-      depth: 0,
-      limit: 250,
-      pagination: false,
-      overrideAccess: true,
+  const needsDefaults = rows.some((row) => !rowHasOptionValues(row))
+  if (needsDefaults) {
+    rows = await populateDefaultOptionValues(rows, async (typeId) => {
+      const result = await req.payload.find({
+        collection: 'variant-option-values',
+        where: {
+          and: [{ variantType: { equals: typeId } }, publishedStatusWhere],
+        },
+        depth: 0,
+        limit: 250,
+        pagination: false,
+        overrideAccess: true,
+      })
+
+      return result.docs.map((doc) => Number(doc.id))
     })
+  }
 
-    return result.docs.map((doc) => Number(doc.id))
-  })
-
-  data.variantOptionAvailability = rows as Product['variantOptionAvailability']
+  if (!availabilityRowsEqual(existingRows ?? [], rows)) {
+    data.variantOptionAvailability = rows as Product['variantOptionAvailability']
+  }
 
   return data
 }
