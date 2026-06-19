@@ -56,6 +56,16 @@ function getMediaFromGalleryRow(
   return undefined
 }
 
+/** Brand display name when the relationship is populated; null when unset. */
+export function getProductBrandTitle(product: Pick<Product, 'brand'>): string | null {
+  const brand = product.brand
+  if (brand == null) return null
+  if (typeof brand === 'object' && brand !== null && 'title' in brand) {
+    return brand.title
+  }
+  return null
+}
+
 /** First gallery image — used as listing thumbnail. */
 export function getProductMainImage(product: Product): number | Media | null | undefined {
   if (product.enableVariants) {

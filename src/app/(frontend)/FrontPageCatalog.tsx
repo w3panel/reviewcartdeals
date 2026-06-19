@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import dynamic from 'next/dynamic'
 import { ChevronDown } from 'lucide-react'
 import type { Category } from '@/payload-types'
+import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
 import { ProductReviewCard, type ProductWithStats } from '@/components/ProductReviewCard'
+import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
+import { useFilterSheet } from '@/context/FilterSheetContext'
 
 const FilterSheet = dynamic(() =>
   import('@/components/FilterSheet').then((mod) => ({ default: mod.FilterSheet })),
@@ -16,66 +19,26 @@ const SortSheet = dynamic(() =>
 interface FrontPageCatalogProps {
   categories: Category[]
   brands: string[]
+  filterOptions: CatalogFilterOptions
   initialProducts: ProductWithStats[]
   initialTotalDocs: number
-}
-
-interface CatalogResponse {
-  docs: ProductWithStats[]
-  totalDocs: number
 }
 
 export function FrontPageCatalog({
   categories,
   brands,
+  filterOptions,
   initialProducts,
   initialTotalDocs,
 }: FrontPageCatalogProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
-  const [products, setProducts] = useState<ProductWithStats[]>(initialProducts)
-  const [totalDocs, setTotalDocs] = useState<number>(initialTotalDocs)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSortOpen, setIsSortOpen] = useState(false)
+  const [isSortOpen, setIsSortOpen] = React.useState(false)
+  const { closeFilter } = useFilterSheet()
+  const filters = useCatalogFilterState({
+    initialTotalDocs,
+    initialDocs: initialProducts,
+  })
 
-  useEffect(() => {
-    if (!selectedCategory && selectedBrands.length === 0) {
-      return
-    }
-
-    const fetchFilteredProducts = async () => {
-      setIsLoading(true)
-      const params = new URLSearchParams()
-      if (selectedCategory) params.set('category', selectedCategory)
-      if (selectedBrands.length > 0) params.set('brand', selectedBrands.join(','))
-
-      try {
-        const res = await fetch(`/api/products/catalog?${params.toString()}`)
-        if (res.ok) {
-          const data = (await res.json()) as CatalogResponse
-          setProducts(data.docs || [])
-          setTotalDocs(data.totalDocs || 0)
-        }
-      } catch (err) {
-        console.error('Failed to fetch filtered products', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchFilteredProducts()
-  }, [selectedCategory, selectedBrands])
-
-  const toggleBrand = (brandTitle: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brandTitle) ? prev.filter((b) => b !== brandTitle) : [...prev, brandTitle],
-    )
-  }
-
-  const handleClearAll = () => {
-    setSelectedCategory(null)
-    setSelectedBrands([])
-  }
+  const products = filters.docs ?? initialProducts
 
   return (
     <>
@@ -93,17 +56,17 @@ export function FrontPageCatalog({
           </div>
 
           <p className="mb-4 text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${totalDocs.toLocaleString()} products`}
+            {filters.isLoading ? 'Loading...' : `${filters.totalDocs.toLocaleString()} products`}
           </p>
 
-          {products.length === 0 && !isLoading ? (
+          {products.length === 0 && !filters.isLoading ? (
             <div className="rounded-2xl border border-border bg-card py-16 text-center">
               <p className="text-muted-foreground">No products found matching your filters.</p>
             </div>
           ) : (
             <div
               className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${
-                isLoading ? 'pointer-events-none opacity-50' : ''
+                filters.isLoading ? 'pointer-events-none opacity-50' : ''
               }`}
             >
               {products.map((product) => (
@@ -117,13 +80,22 @@ export function FrontPageCatalog({
       <FilterSheet
         categories={categories}
         brands={brands}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        selectedBrands={selectedBrands}
-        setSelectedBrands={setSelectedBrands}
-        toggleBrand={toggleBrand}
-        handleClearAll={handleClearAll}
-        totalDocs={totalDocs}
+        filterOptions={filterOptions}
+        searchQuery={filters.searchQuery}
+        setSearchQuery={filters.setSearchQuery}
+        selectedCategories={filters.selectedCategories}
+        setSelectedCategories={filters.setSelectedCategories}
+        toggleCategory={filters.toggleCategory}
+        selectedBrands={filters.selectedBrands}
+        setSelectedBrands={filters.setSelectedBrands}
+        toggleBrand={filters.toggleBrand}
+        selectedSpecs={filters.selectedSpecs}
+        toggleSpec={filters.toggleSpec}
+        selectedVariants={filters.selectedVariants}
+        setSelectedVariants={filters.setSelectedVariants}
+        handleClearAll={filters.handleClearAll}
+        onApply={() => closeFilter()}
+        totalDocs={filters.totalDocs}
       />
 
       {isSortOpen && <SortSheet isOpen={isSortOpen} onClose={() => setIsSortOpen(false)} />}

@@ -40,12 +40,16 @@ export const Products: CollectionConfig = {
         const q = searchParams.get('q') || undefined
         const category = searchParams.get('category') || undefined
         const brand = searchParams.get('brand') || undefined
+        const spec = searchParams.get('spec') || undefined
+        const variants = searchParams.get('variants') || undefined
         const page = Number(searchParams.get('page') || '1') || 1
 
         const result = await findCatalogProducts(req.payload, {
           search: q,
           categorySlug: category === 'ALL' || !category ? undefined : category,
           brand: brand === 'ALL' || !brand ? undefined : brand,
+          spec: spec || undefined,
+          variants: variants || undefined,
           page,
           limit: 12,
         })
@@ -128,8 +132,10 @@ export const Products: CollectionConfig = {
       name: 'brand',
       type: 'relationship',
       relationTo: 'brands',
-      required: true,
       index: true,
+      admin: {
+        description: 'Optional. Leave empty if the product has no brand.',
+      },
     },
     {
       name: 'description',

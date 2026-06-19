@@ -1,10 +1,21 @@
 import React, { Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { getCategories } from '@/services/categories'
-import { getAllBrands } from '@/services/products'
+import { getProducts, getAllBrands } from '@/services/products'
+import { getCatalogFilterOptions } from '@/services/catalogFilters'
 import { SearchCatalog } from './SearchCatalog'
 
+const SearchFilterHost = dynamic(() =>
+  import('@/components/SearchFilterHost').then((mod) => ({ default: mod.SearchFilterHost })),
+)
+
 export default async function SearchPage() {
-  const [categories, brands] = await Promise.all([getCategories(), getAllBrands()])
+  const [categories, brands, filterOptions, { totalDocs }] = await Promise.all([
+    getCategories(),
+    getAllBrands(),
+    getCatalogFilterOptions(),
+    getProducts({ limit: 1 }),
+  ])
 
   return (
     <div className="min-h-screen w-full bg-background pb-24 md:pb-12">
@@ -23,9 +34,18 @@ export default async function SearchPage() {
             <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
           }
         >
-          <SearchCatalog categories={categories} brands={brands} />
+          <SearchCatalog categories={categories} brands={brands} filterOptions={filterOptions} />
         </Suspense>
       </section>
+
+      <Suspense fallback={null}>
+        <SearchFilterHost
+          categories={categories}
+          brands={brands}
+          filterOptions={filterOptions}
+          initialTotalDocs={totalDocs}
+        />
+      </Suspense>
     </div>
   )
 }

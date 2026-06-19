@@ -1,68 +1,86 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
-import { FilterSelectField } from '@/components/FilterSelectField'
+import { CatalogFilterFields, countCatalogFilterSelections } from '@/components/CatalogFilterFields'
+import type { CatalogFilterOptions, SelectedVariantFilters } from '@/lib/catalogFilterTypes'
+import { toggleVariantValue } from '@/lib/catalogFilterParams'
 import type { Category } from '@/payload-types'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
 interface FilterSheetProps {
   categories: Category[]
   brands: string[]
-  selectedCategory: string | null
-  setSelectedCategory: (cat: string | null) => void
+  filterOptions: CatalogFilterOptions
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  selectedCategories: string[]
+  setSelectedCategories: (categories: string[]) => void
+  toggleCategory: (slug: string) => void
   selectedBrands: string[]
   setSelectedBrands: (brands: string[]) => void
   toggleBrand: (brand: string) => void
+  selectedSpecs: string[]
+  toggleSpec: (spec: string) => void
+  selectedVariants: SelectedVariantFilters
+  setSelectedVariants: (variants: SelectedVariantFilters) => void
   handleClearAll: () => void
+  onApply?: () => void
   totalDocs: number
 }
-
-type OpenField = 'category' | 'brand' | null
 
 export function FilterSheet({
   categories,
   brands,
-  selectedCategory,
-  setSelectedCategory,
+  filterOptions,
+  searchQuery,
+  setSearchQuery,
+  selectedCategories,
+  setSelectedCategories,
+  toggleCategory,
   selectedBrands,
   setSelectedBrands,
   toggleBrand,
+  selectedSpecs,
+  toggleSpec,
+  selectedVariants,
+  setSelectedVariants,
   handleClearAll,
+  onApply,
   totalDocs,
 }: FilterSheetProps) {
   const { isOpen, closeFilter } = useFilterSheet()
-  const [openField, setOpenField] = useState<OpenField>(null)
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
 
-  const categoryOptions = useMemo(
+  const activeFilterCount = countCatalogFilterSelections({
+    searchQuery,
+    selectedCategories,
+    selectedBrands,
+    selectedSpecs,
+    selectedVariants,
+  })
+
+  const categoryLabelBySlug = useMemo(
     () =>
-      categories
-        .filter((category) => category.slug)
-        .map((category) => ({
-          value: category.slug as string,
-          label: category.title,
-        })),
+      Object.fromEntries(
+        categories
+          .filter((category) => category.slug)
+          .map((category) => [category.slug as string, category.title]),
+      ),
     [categories],
   )
 
-  const brandOptions = useMemo(
-    () => brands.map((brand) => ({ value: brand, label: brand })),
-    [brands],
-  )
-
-  const activeFilterCount =
-    (selectedCategory ? 1 : 0) + (selectedBrands.length > 0 ? selectedBrands.length : 0)
-
-  useEffect(() => {
-    if (!isOpen) setOpenField(null)
-  }, [isOpen])
-
-  const toggleField = (field: Exclude<OpenField, null>) => {
-    setOpenField((current) => (current === field ? null : field))
-  }
+  const variantLabelById = useMemo(() => {
+    const map = new Map<number, string>()
+    for (const group of filterOptions.variantGroups) {
+      for (const value of group.values) {
+        map.set(value.id, `${group.label}: ${value.label}`)
+      }
+    }
+    return map
+  }, [filterOptions.variantGroups])
 
   if (!isOpen) return null
 
@@ -90,40 +108,44 @@ export function FilterSheet({
       </div>
 
       <div className="luxury-panel flex-1 overflow-y-auto px-4 py-4 no-scrollbar">
-        <div className="mx-auto max-w-2xl space-y-4">
-          <FilterSelectField
-            label="Category"
-            value={selectedCategory}
-            placeholder="All Categories"
-            options={categoryOptions}
-            isOpen={openField === 'category'}
-            onToggle={() => toggleField('category')}
-            onChange={setSelectedCategory}
-          />
-
-          <FilterSelectField
-            label="Brand"
-            value={selectedBrands[0] ?? null}
-            placeholder="All Brands"
-            options={brandOptions}
-            isOpen={openField === 'brand'}
-            onToggle={() => toggleField('brand')}
-            onChange={(value) => setSelectedBrands(value ? [value] : [])}
+        <div className="mx-auto max-w-2xl">
+          <CatalogFilterFields
+            categories={categories}
+            brands={brands}
+            filterOptions={filterOptions}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedCategories={selectedCategories}
+            setSelectedCategories={setSelectedCategories}
+            selectedBrands={selectedBrands}
+            setSelectedBrands={setSelectedBrands}
+            selectedSpecs={selectedSpecs}
+            toggleSpec={toggleSpec}
+            selectedVariants={selectedVariants}
+            setSelectedVariants={setSelectedVariants}
           />
 
           {activeFilterCount > 0 ? (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {selectedCategory ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {searchQuery.trim() ? (
                 <button
                   type="button"
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => setSearchQuery('')}
                   className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
                 >
-                  {categoryOptions.find((option) => option.value === selectedCategory)?.label ??
-                    selectedCategory}{' '}
-                  ×
+                  &ldquo;{searchQuery.trim()}&rdquo; ×
                 </button>
               ) : null}
+              {selectedCategories.map((slug) => (
+                <button
+                  key={slug}
+                  type="button"
+                  onClick={() => toggleCategory(slug)}
+                  className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                >
+                  {categoryLabelBySlug[slug] ?? slug} ×
+                </button>
+              ))}
               {selectedBrands.map((brand) => (
                 <button
                   key={brand}
@@ -134,6 +156,32 @@ export function FilterSheet({
                   {brand} ×
                 </button>
               ))}
+              {selectedSpecs.map((spec) => (
+                <button
+                  key={spec}
+                  type="button"
+                  onClick={() => toggleSpec(spec)}
+                  className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                >
+                  {spec} ×
+                </button>
+              ))}
+              {Object.entries(selectedVariants).flatMap(([groupId, valueIds]) =>
+                valueIds.map((valueId) => (
+                  <button
+                    key={`${groupId}-${valueId}`}
+                    type="button"
+                    onClick={() =>
+                      setSelectedVariants(
+                        toggleVariantValue(selectedVariants, Number(groupId), valueId),
+                      )
+                    }
+                    className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                  >
+                    {variantLabelById.get(valueId) ?? valueId} ×
+                  </button>
+                )),
+              )}
             </div>
           ) : null}
         </div>
@@ -143,7 +191,10 @@ export function FilterSheet({
         <div className="mx-auto flex max-w-2xl overflow-hidden rounded-xl bg-primary shadow-[0_-8px_32px_rgba(212,175,55,0.12)]">
           <button
             type="button"
-            onClick={closeFilter}
+            onClick={() => {
+              onApply?.()
+              closeFilter()
+            }}
             className="flex-1 px-4 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             Apply Filters ({totalDocs.toLocaleString()})

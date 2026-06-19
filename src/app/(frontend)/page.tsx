@@ -2,6 +2,7 @@ import React from 'react'
 import dynamic from 'next/dynamic'
 import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
+import { getCatalogFilterOptions } from '@/services/catalogFilters'
 import { emptyProductReviewStats, getProductReviewStatsBatch } from '@/services/reviews'
 import { HomeHero } from '@/components/HomeHero'
 import { CategoryScroller } from '@/components/CategoryScroller'
@@ -26,11 +27,13 @@ const HomeFilterHost = dynamic(() =>
 export const revalidate = 120
 
 export default async function HomePage() {
-  const [categories, { products: allProducts, totalDocs }, brands] = await Promise.all([
-    getCategories(),
-    getProducts({ limit: 12 }),
-    getAllBrands(),
-  ])
+  const [categories, { products: allProducts, totalDocs }, brands, filterOptions] =
+    await Promise.all([
+      getCategories(),
+      getProducts({ limit: 12 }),
+      getAllBrands(),
+      getCatalogFilterOptions(),
+    ])
 
   const statsByProduct = await getProductReviewStatsBatch(allProducts.map((prod) => prod.id))
   const productsWithStats = allProducts.map((prod) => ({
@@ -58,12 +61,18 @@ export default async function HomePage() {
         <FrontPageCatalog
           categories={categories}
           brands={brands}
+          filterOptions={filterOptions}
           initialProducts={productsWithStats}
           initialTotalDocs={totalDocs}
         />
       </div>
       <ValuePropositions />
-      <HomeFilterHost categories={categories} brands={brands} initialTotalDocs={totalDocs} />
+      <HomeFilterHost
+        categories={categories}
+        brands={brands}
+        filterOptions={filterOptions}
+        initialTotalDocs={totalDocs}
+      />
     </div>
   )
 }
