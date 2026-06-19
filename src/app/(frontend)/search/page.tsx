@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react'
 import { getCategories } from '@/services/categories'
 import { getAllBrands, getProducts } from '@/services/products'
@@ -33,6 +34,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       page,
       limit: 12,
     }),
+=======
+import React, { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import { getCategories } from '@/services/categories'
+import { getProducts, getAllBrands } from '@/services/products'
+import { getCatalogFilterOptions } from '@/services/catalogFilters'
+import { SearchCatalog } from './SearchCatalog'
+
+const SearchFilterHost = dynamic(() =>
+  import('@/components/SearchFilterHost').then((mod) => ({ default: mod.SearchFilterHost })),
+)
+
+export default async function SearchPage() {
+  const [categories, brands, filterOptions, { totalDocs }] = await Promise.all([
+    getCategories(),
+    getAllBrands(),
+    getCatalogFilterOptions(),
+    getProducts({ limit: 1 }),
+>>>>>>> 8ddc32c (enhanced filteres option)
   ])
 
   return (
@@ -47,6 +67,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+<<<<<<< HEAD
         <SearchCatalog
           categories={categories}
           brands={brands}
@@ -58,7 +79,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           }}
           params={{ q, category, brand, sort, page }}
         />
+=======
+        <Suspense
+          fallback={
+            <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
+          }
+        >
+          <SearchCatalog categories={categories} brands={brands} filterOptions={filterOptions} />
+        </Suspense>
+>>>>>>> 8ddc32c (enhanced filteres option)
       </section>
+
+      <Suspense fallback={null}>
+        <SearchFilterHost
+          categories={categories}
+          brands={brands}
+          filterOptions={filterOptions}
+          initialTotalDocs={totalDocs}
+        />
+      </Suspense>
     </div>
   )
 }

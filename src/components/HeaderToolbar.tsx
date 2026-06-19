@@ -1,13 +1,13 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { SlidersHorizontal } from 'lucide-react'
 import type { NavItem } from '@/payload-types'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 import { HeaderSearch } from '@/components/HeaderSearch'
 import { MobileMenu } from '@/components/MobileMenu'
+import Link from 'next/link'
 
 type HeaderToolbarProps = {
   navItems: NavItem[]
@@ -17,6 +17,8 @@ export function HeaderToolbar({ navItems: _navItems }: HeaderToolbarProps) {
   const pathname = usePathname()
   const { openFilter } = useFilterSheet()
   const isHome = pathname === '/'
+  const isSearch = pathname === '/search'
+  const showFilterSheet = isHome || isSearch
 
   return (
     <div className="flex items-center gap-2 px-4 pb-3 pt-3 lg:hidden">
@@ -24,7 +26,7 @@ export function HeaderToolbar({ navItems: _navItems }: HeaderToolbarProps) {
 
       <HeaderSearch variant="mobile" className="min-w-0 flex-1" />
 
-      {isHome ? (
+      {showFilterSheet ? (
         <button
           type="button"
           onClick={openFilter}

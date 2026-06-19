@@ -1,8 +1,14 @@
 import type { BasePayload, Where } from 'payload'
 
+<<<<<<< HEAD
 import { getBrandIdsByTitlesCached, getCategoryIdsBySlugCached } from '@/lib/cachedLookups'
 import { type CatalogSort, parseCatalogSort } from '@/lib/catalogUrl'
+=======
+import { parseListParam, parseVariantsParam } from '@/lib/catalogFilterParams'
+import { getBrandIdsByTitlesCached, getCategoryIdsBySlugsCached } from '@/lib/cachedLookups'
+>>>>>>> 8ddc32c (enhanced filteres option)
 import { withPublishedOnly } from '@/lib/publishedOnly'
+import { findProductIdsByVariantFilters } from '@/lib/variantFilterLookups'
 
 export type { CatalogSort }
 
@@ -11,7 +17,12 @@ export interface CatalogQueryOptions {
   featured?: boolean
   search?: string
   brand?: string
+<<<<<<< HEAD
   sort?: CatalogSort | string
+=======
+  spec?: string
+  variants?: string
+>>>>>>> 8ddc32c (enhanced filteres option)
   page?: number
   limit?: number
 }
@@ -51,12 +62,69 @@ function noMatchWhere(): Where {
   return { id: { equals: IMPOSSIBLE_ID } }
 }
 
+async function findProductIdsBySpecKeys(
+  payload: BasePayload,
+  specKeys: string[],
+): Promise<number[]> {
+  if (specKeys.length === 0) return []
+
+  try {
+    const { rows } = await payload.db.pool.query<{ id: number }>(
+      `SELECT p.id
+       FROM products p
+       WHERE p._status = 'published'
+         AND (
+           SELECT COUNT(DISTINCT ps.key)
+           FROM products_specifications ps
+           WHERE ps._parent_id = p.id
+             AND ps.key = ANY($1::text[])
+         ) = $2`,
+      [specKeys, specKeys.length],
+    )
+
+    return rows.map((row) => Number(row.id)).filter((id) => Number.isFinite(id))
+  } catch {
+    const response = await payload.find({
+      collection: 'products',
+      where: withPublishedOnly(),
+      depth: 0,
+      limit: 1000,
+      pagination: false,
+      select: {
+        specifications: true,
+      },
+    })
+
+    return response.docs
+      .filter((product) => {
+        const productKeys = new Set(
+          (product.specifications ?? [])
+            .map((row) => row.key?.trim())
+            .filter((key): key is string => Boolean(key)),
+        )
+        return specKeys.every((key) => productKeys.has(key))
+      })
+      .map((product) => product.id)
+  }
+}
+
+function intersectProductIds(current: number[] | null, next: number[]): number[] {
+  if (next.length === 0) return []
+  if (current === null) return next
+  const nextSet = new Set(next)
+  return current.filter((id) => nextSet.has(id))
+}
+
 export async function buildProductsWhere(
-  options: Pick<CatalogQueryOptions, 'categorySlug' | 'featured' | 'search' | 'brand'>,
+  options: Pick<
+    CatalogQueryOptions,
+    'categorySlug' | 'featured' | 'search' | 'brand' | 'spec' | 'variants'
+  >,
   payload: BasePayload,
 ): Promise<Where | undefined> {
-  const { categorySlug, featured, search, brand } = options
+  const { categorySlug, featured, search, brand, spec, variants } = options
   const andFilters: Where[] = []
+  let productIdFilter: number[] | null = null
 
   if (featured !== undefined) {
     andFilters.push({
@@ -85,7 +153,11 @@ export async function buildProductsWhere(
   }
 
   if (categorySlug) {
-    const categoryIds = await getCategoryIdsBySlugCached(categorySlug, payload)
+    const slugs = categorySlug
+      .split(',')
+      .map((slug) => slug.trim())
+      .filter(Boolean)
+    const categoryIds = await getCategoryIdsBySlugsCached(slugs, payload)
 
     if (categoryIds.length === 0) {
       andFilters.push(noMatchWhere())
@@ -100,11 +172,36 @@ export async function buildProductsWhere(
 
   if (search) {
     const ftsProductIds = await findProductIdsByFullTextSearch(payload, search)
-    if (ftsProductIds.length === 0) {
-      andFilters.push({ id: { equals: -1 } })
-    } else {
-      andFilters.push({ id: { in: ftsProductIds } })
+    productIdFilter = intersectProductIds(productIdFilter, ftsProductIds)
+    if (productIdFilter.length === 0) {
+      andFilters.push(noMatchWhere())
     }
+  }
+
+  const specKeys = parseListParam(spec)
+  if (specKeys.length > 0) {
+    const specProductIds = await findProductIdsBySpecKeys(payload, specKeys)
+    productIdFilter = intersectProductIds(productIdFilter, specProductIds)
+    if (productIdFilter.length === 0) {
+      andFilters.push(noMatchWhere())
+    }
+  }
+
+  const variantFilters = parseVariantsParam(variants)
+  if (Object.keys(variantFilters).length > 0) {
+    const variantProductIds = await findProductIdsByVariantFilters(payload, variantFilters)
+    productIdFilter = intersectProductIds(productIdFilter, variantProductIds)
+    if (productIdFilter.length === 0) {
+      andFilters.push(noMatchWhere())
+    }
+  }
+
+  if (productIdFilter !== null && productIdFilter.length > 0) {
+    andFilters.push({
+      id: {
+        in: productIdFilter,
+      },
+    })
   }
 
   return andFilters.length > 0 ? { and: andFilters } : undefined

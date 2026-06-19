@@ -1,20 +1,51 @@
+<<<<<<< HEAD
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
+=======
+'use client'
+
+import React, { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import { CatalogFilterFields } from '@/components/CatalogFilterFields'
+import { FilterActiveChips } from '@/components/FilterActiveChips'
+import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
+import {
+  appendCatalogFiltersToParams,
+  buildSearchPath,
+  buildSearchPathFromSnapshot,
+  hasActiveCatalogFilters,
+  snapshotFromSearchParams,
+} from '@/lib/catalogFilterParams'
+>>>>>>> 8ddc32c (enhanced filteres option)
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import type { Product, Category } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
-import { FormSelect } from '@/components/FormSelect'
 
+<<<<<<< HEAD
 export interface SearchCatalogData {
   products: Product[]
+=======
+interface SearchCatalogProps {
+  categories: Category[]
+  brands: string[]
+  filterOptions: CatalogFilterOptions
+}
+
+interface CatalogResponse {
+  docs: Product[]
+>>>>>>> 8ddc32c (enhanced filteres option)
   totalDocs: number
   totalPages: number
   page: number
 }
 
+<<<<<<< HEAD
 export interface SearchCatalogParams {
   q: string
   category: string
@@ -22,6 +53,19 @@ export interface SearchCatalogParams {
   sort: CatalogSort
   page: number
 }
+=======
+export function SearchCatalog({ categories, brands, filterOptions }: SearchCatalogProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const appliedFilters = useMemo(() => snapshotFromSearchParams(searchParams), [searchParams])
+
+  const [searchQuery, setSearchQuery] = useState(appliedFilters.q)
+  const [selectedCategories, setSelectedCategories] = useState(appliedFilters.categories)
+  const [selectedBrands, setSelectedBrands] = useState(appliedFilters.brands)
+  const [selectedSpecs, setSelectedSpecs] = useState(appliedFilters.specs)
+  const [selectedVariants, setSelectedVariants] = useState(appliedFilters.variants)
+>>>>>>> 8ddc32c (enhanced filteres option)
 
 interface SearchCatalogProps {
   categories: Category[]
@@ -30,6 +74,7 @@ interface SearchCatalogProps {
   params: SearchCatalogParams
 }
 
+<<<<<<< HEAD
 function buildPageHref(params: SearchCatalogParams, page: number): string {
   return buildCatalogSearchUrl({
     q: params.q || undefined,
@@ -43,12 +88,82 @@ function buildPageHref(params: SearchCatalogParams, page: number): string {
 export function SearchCatalog({ categories, brands, catalog, params }: SearchCatalogProps) {
   const { products, totalDocs, totalPages, page: currentPage } = catalog
   const { q, category, brand, sort } = params
+=======
+  useEffect(() => {
+    setSearchQuery(appliedFilters.q)
+    setSelectedCategories(appliedFilters.categories)
+    setSelectedBrands(appliedFilters.brands)
+    setSelectedSpecs(appliedFilters.specs)
+    setSelectedVariants(appliedFilters.variants)
+  }, [appliedFilters])
 
-  const categoryOptions = categories
-    .filter((cat) => cat.slug)
-    .map((cat) => ({ value: cat.slug as string, label: cat.title }))
+  useEffect(() => {
+    const params = appendCatalogFiltersToParams(new URLSearchParams(), {
+      q: appliedFilters.q,
+      categories: appliedFilters.categories,
+      brands: appliedFilters.brands,
+      specs: appliedFilters.specs,
+      variants: appliedFilters.variants,
+      page: searchParams.get('page') || '1',
+    })
 
-  const brandOptions = brands.map((b) => ({ value: b, label: b }))
+    setLoading(true)
+    fetch(`/api/products/catalog?${params.toString()}`)
+      .then((res) => res.json() as Promise<CatalogResponse>)
+      .then((result) => {
+        setData(result)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [appliedFilters, searchParams])
+
+  const products = data?.docs ?? []
+  const totalDocs = data?.totalDocs ?? 0
+  const totalPages = data?.totalPages ?? 1
+  const currentPage = Number(searchParams.get('page') || '1') || 1
+>>>>>>> 8ddc32c (enhanced filteres option)
+
+  const hasFilters = hasActiveCatalogFilters({
+    q: appliedFilters.q,
+    categories: appliedFilters.categories,
+    brands: appliedFilters.brands,
+    specs: appliedFilters.specs,
+    variants: appliedFilters.variants,
+  })
+
+  const applySidebarFilters = () => {
+    router.push(
+      buildSearchPathFromSnapshot({
+        q: searchQuery,
+        categories: selectedCategories,
+        brands: selectedBrands,
+        specs: selectedSpecs,
+        variants: selectedVariants,
+      }),
+    )
+  }
+
+  const clearSidebarFilters = () => {
+    router.push('/search')
+  }
+
+  const buildPageHref = (page: number) => {
+    const params = appendCatalogFiltersToParams(new URLSearchParams(), {
+      q: appliedFilters.q,
+      categories: appliedFilters.categories,
+      brands: appliedFilters.brands,
+      specs: appliedFilters.specs,
+      variants: appliedFilters.variants,
+      page,
+    })
+    return buildSearchPath(params)
+  }
+
+  const toggleSpec = (spec: string) => {
+    setSelectedSpecs((prev) =>
+      prev.includes(spec) ? prev.filter((entry) => entry !== spec) : [...prev, spec],
+    )
+  }
 
   const sortOptions = (['popular', 'newest', 'rating'] as CatalogSort[]).map((value) => ({
     value,
@@ -59,6 +174,7 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       <div className="hidden lg:col-span-1 lg:block">
         <div className="sticky top-28 rounded-xl border border-border bg-card p-6">
+<<<<<<< HEAD
           <div className="mb-6 flex items-center gap-2 border-b border-border pb-4">
             <SlidersHorizontal className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-white">
@@ -151,26 +267,75 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
             options={sortOptions}
             emptyValue="popular"
           />
+=======
+          <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-white">
+                Filters
+              </h2>
+            </div>
+            {hasFilters ? (
+              <button
+                type="button"
+                onClick={clearSidebarFilters}
+                className="text-xs font-medium text-primary hover:text-primary-hover"
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
+
+          <CatalogFilterFields
+            categories={categories}
+            brands={brands}
+            filterOptions={filterOptions}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedCategories={selectedCategories}
+            setSelectedCategories={setSelectedCategories}
+            selectedBrands={selectedBrands}
+            setSelectedBrands={setSelectedBrands}
+            selectedSpecs={selectedSpecs}
+            toggleSpec={toggleSpec}
+            selectedVariants={selectedVariants}
+            setSelectedVariants={setSelectedVariants}
+          />
+
+>>>>>>> 8ddc32c (enhanced filteres option)
           <button
-            type="submit"
-            className="rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground"
+            type="button"
+            onClick={applySidebarFilters}
+            className="mt-6 w-full rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             Apply Filters
           </button>
-        </form>
+        </div>
+      </div>
+
+      <div id="catalog-results" className="scroll-mt-24 lg:col-span-3">
+        <FilterActiveChips
+          categories={categories}
+          filterOptions={filterOptions}
+          applied={appliedFilters}
+        />
 
         <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Found {totalDocs} Products · {catalogSortToLabel(sort)}
           </span>
+<<<<<<< HEAD
           {(q || category || brand || sort !== 'popular') && (
+=======
+          {hasFilters ? (
+>>>>>>> 8ddc32c (enhanced filteres option)
             <Link
               href="/search"
               className="text-xs font-semibold uppercase tracking-widest text-primary transition-colors hover:text-foreground"
             >
               Reset All
             </Link>
-          )}
+          ) : null}
         </div>
 
         {products.length === 0 ? (
@@ -226,11 +391,15 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
               })}
             </div>
 
-            {totalPages > 1 && (
+            {totalPages > 1 ? (
               <div className="mt-16 flex items-center justify-center gap-4">
                 {currentPage > 1 ? (
                   <Link
+<<<<<<< HEAD
                     href={buildPageHref(params, currentPage - 1)}
+=======
+                    href={buildPageHref(currentPage - 1)}
+>>>>>>> 8ddc32c (enhanced filteres option)
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -247,7 +416,11 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
 
                 {currentPage < totalPages ? (
                   <Link
+<<<<<<< HEAD
                     href={buildPageHref(params, currentPage + 1)}
+=======
+                    href={buildPageHref(currentPage + 1)}
+>>>>>>> 8ddc32c (enhanced filteres option)
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronRight className="h-5 w-5" />
@@ -258,7 +431,7 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
