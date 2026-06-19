@@ -1,0 +1,5 @@
+[test]
+# Bun's test runner discovers *.spec.ts recursively from the project root by default.
+# Playwright e2e specs live in tests/e2e and must run via `bun run test:e2e` only.
+root = "tests/int"
+pathIgnorePatterns = ["tests/e2e/**"]

@@ -3,10 +3,10 @@
 import React, { useMemo } from 'react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import type { Product, ProductVariant } from '@/payload-types'
-import { formatProductAttributesDetails } from '@/lib/productAttributes'
 import {
+  formatSelectedOptionsDetails,
   formatVariantEnquiryDetails,
-  hasVariants,
+  getVariantOptionTypes,
   type SelectedVariantOptions,
 } from '@/lib/productVariants'
 import { AddToCartButton } from '@/components/AddToCartButton'
@@ -19,6 +19,8 @@ type ProductEnquiryActionsProps = {
   selectedOptions: SelectedVariantOptions
   onSelectOptions: (selectedOptions: SelectedVariantOptions) => void
   selectedVariant: ProductVariant | null
+  showVariantSelector: boolean
+  requireVariantSelection: boolean
 }
 
 export function ProductEnquiryActions({
@@ -28,26 +30,34 @@ export function ProductEnquiryActions({
   selectedOptions,
   onSelectOptions,
   selectedVariant,
+  showVariantSelector,
+  requireVariantSelection,
 }: ProductEnquiryActionsProps) {
-  const productHasVariants = hasVariants(product, variants)
-
   const enquiryWhatsappLink = useMemo(() => {
     const url = new URL(whatsappLink)
     const message = decodeURIComponent(url.searchParams.get('text') ?? '')
-    const attributeDetails = formatProductAttributesDetails(product)
-    const variantDetails = selectedVariant ? formatVariantEnquiryDetails(selectedVariant) : ''
-    const extraDetails = [attributeDetails, variantDetails].filter(Boolean).join('\n')
+    const variantDetails = selectedVariant
+      ? formatVariantEnquiryDetails(selectedVariant)
+      : formatSelectedOptionsDetails(
+          product,
+          variants,
+          selectedOptions,
+          getVariantOptionTypes(product, variants),
+        )
+    const extraDetails = variantDetails ? `\n${variantDetails}` : ''
 
     if (extraDetails) {
-      url.searchParams.set('text', `${message}\n${extraDetails}`)
+      url.searchParams.set('text', `${message}${extraDetails}`)
     }
 
     return url.toString()
-  }, [whatsappLink, product, selectedVariant])
+  }, [whatsappLink, selectedVariant, product, variants, selectedOptions])
+
+  const selectionIncomplete = requireVariantSelection && !selectedVariant
 
   return (
     <>
-      {productHasVariants && (
+      {showVariantSelector && (
         <VariantSelector
           product={product}
           variants={variants}
@@ -56,16 +66,16 @@ export function ProductEnquiryActions({
         />
       )}
 
-      <div className={`flex flex-col gap-3 ${productHasVariants ? 'mt-6' : 'mt-6 sm:mt-8'}`}>
+      <div className="mt-6 flex flex-col gap-3">
         <a
           href={enquiryWhatsappLink}
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
-            productHasVariants && !selectedVariant ? 'pointer-events-none opacity-50' : ''
+            selectionIncomplete ? 'pointer-events-none opacity-50' : ''
           }`}
-          aria-disabled={productHasVariants && !selectedVariant}
-          tabIndex={productHasVariants && !selectedVariant ? -1 : undefined}
+          aria-disabled={selectionIncomplete}
+          tabIndex={selectionIncomplete ? -1 : undefined}
         >
           <WhatsAppIcon className="h-5 w-5" />
           Enquire via WhatsApp
@@ -73,7 +83,7 @@ export function ProductEnquiryActions({
         <AddToCartButton
           product={product}
           variant={selectedVariant}
-          disabled={productHasVariants && !selectedVariant}
+          disabled={selectionIncomplete}
         />
       </div>
     </>

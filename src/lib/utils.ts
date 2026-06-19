@@ -58,12 +58,28 @@ function getMediaFromGalleryRow(
 
 /** First gallery image — used as listing thumbnail. */
 export function getProductMainImage(product: Product): number | Media | null | undefined {
+  if (product.enableVariants) {
+    const firstValueGallery = product.valueGalleries?.find((row) => row.gallery?.length)
+    const firstImage = firstValueGallery?.gallery?.[0]
+    const fromValueGallery = getMediaFromGalleryRow(firstImage)
+    if (fromValueGallery) return fromValueGallery
+  }
+
   if (!product.gallery?.length) return undefined
   return getMediaFromGalleryRow(product.gallery[0])
 }
 
 /** All populated gallery images in order for the product page carousel. */
 export function buildProductGalleryImages(product: Product): Media[] {
+  if (product.enableVariants) {
+    const fromValueGalleries = (product.valueGalleries ?? [])
+      .flatMap((row) => row.gallery ?? [])
+      .map((row) => getMediaFromGalleryRow(row))
+      .filter(isMediaObject)
+
+    if (fromValueGalleries.length > 0) return fromValueGalleries
+  }
+
   if (!product.gallery?.length) return []
 
   return product.gallery.map((row) => getMediaFromGalleryRow(row)).filter(isMediaObject)

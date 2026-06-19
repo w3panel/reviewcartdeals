@@ -19,6 +19,7 @@ const CATALOG_CARD_SELECT = {
   brand: true,
   category: true,
   gallery: true,
+  valueGalleries: true,
   featured: true,
   limitedEdition: true,
   enableVariants: true,

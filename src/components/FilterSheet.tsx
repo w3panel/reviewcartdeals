@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, ChevronDown } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
+import { FilterSelectField } from '@/components/FilterSelectField'
 import type { Category } from '@/payload-types'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
@@ -19,6 +20,8 @@ interface FilterSheetProps {
   totalDocs: number
 }
 
+type OpenField = 'category' | 'brand' | null
+
 export function FilterSheet({
   categories,
   brands,
@@ -31,14 +34,42 @@ export function FilterSheet({
   totalDocs,
 }: FilterSheetProps) {
   const { isOpen, closeFilter } = useFilterSheet()
+  const [openField, setOpenField] = useState<OpenField>(null)
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
+
+  const categoryOptions = useMemo(
+    () =>
+      categories
+        .filter((category) => category.slug)
+        .map((category) => ({
+          value: category.slug as string,
+          label: category.title,
+        })),
+    [categories],
+  )
+
+  const brandOptions = useMemo(
+    () => brands.map((brand) => ({ value: brand, label: brand })),
+    [brands],
+  )
+
+  const activeFilterCount =
+    (selectedCategory ? 1 : 0) + (selectedBrands.length > 0 ? selectedBrands.length : 0)
+
+  useEffect(() => {
+    if (!isOpen) setOpenField(null)
+  }, [isOpen])
+
+  const toggleField = (field: Exclude<OpenField, null>) => {
+    setOpenField((current) => (current === field ? null : field))
+  }
 
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black">
-      <div className="flex items-center justify-between border-b border-border px-4 py-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={closeFilter}
@@ -49,81 +80,71 @@ export function FilterSheet({
           </button>
           <h2 className="font-serif text-2xl text-white">Filters</h2>
         </div>
-        <button type="button" onClick={handleClearAll} className="text-sm font-medium text-primary">
+        <button
+          type="button"
+          onClick={handleClearAll}
+          className="text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+        >
           Clear All
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 no-scrollbar">
-        <div className="mx-auto max-w-2xl space-y-8">
-          <div>
-            <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              Category
-            </label>
-            <div className="relative">
-              <select
-                value={selectedCategory ?? ''}
-                onChange={(event) => setSelectedCategory(event.target.value || null)}
-                className="w-full appearance-none rounded-2xl border border-border bg-surface px-4 py-4 text-sm text-white outline-none focus:border-primary"
-              >
-                <option value="">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.slug ?? ''}>
-                    {category.title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
-          </div>
+      <div className="luxury-panel flex-1 overflow-y-auto px-4 py-4 no-scrollbar">
+        <div className="mx-auto max-w-2xl space-y-4">
+          <FilterSelectField
+            label="Category"
+            value={selectedCategory}
+            placeholder="All Categories"
+            options={categoryOptions}
+            isOpen={openField === 'category'}
+            onToggle={() => toggleField('category')}
+            onChange={setSelectedCategory}
+          />
 
-          <div>
-            <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              Brand
-            </label>
-            <div className="relative">
-              <select
-                value={selectedBrands[0] ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value
-                  setSelectedBrands(value ? [value] : [])
-                }}
-                className="w-full appearance-none rounded-2xl border border-border bg-surface px-4 py-4 text-sm text-white outline-none focus:border-primary"
-              >
-                <option value="">All Brands</option>
-                {brands.map((brand) => (
-                  <option key={brand} value={brand}>
-                    {brand}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
-          </div>
+          <FilterSelectField
+            label="Brand"
+            value={selectedBrands[0] ?? null}
+            placeholder="All Brands"
+            options={brandOptions}
+            isOpen={openField === 'brand'}
+            onToggle={() => toggleField('brand')}
+            onChange={(value) => setSelectedBrands(value ? [value] : [])}
+          />
 
-          {selectedBrands.length > 1 && (
-            <div className="flex flex-wrap gap-2">
+          {activeFilterCount > 0 ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {selectedCategory ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory(null)}
+                  className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+                >
+                  {categoryOptions.find((option) => option.value === selectedCategory)?.label ??
+                    selectedCategory}{' '}
+                  ×
+                </button>
+              ) : null}
               {selectedBrands.map((brand) => (
                 <button
                   key={brand}
                   type="button"
                   onClick={() => toggleBrand(brand)}
-                  className="rounded-full border border-primary px-3 py-1.5 text-xs font-medium text-primary"
+                  className="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
                 >
                   {brand} ×
                 </button>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
-      <div className="border-t border-border p-4 pb-safe">
-        <div className="mx-auto flex max-w-2xl overflow-hidden rounded-2xl bg-primary">
+      <div className="border-t border-border bg-black p-4 pb-safe">
+        <div className="mx-auto flex max-w-2xl overflow-hidden rounded-xl bg-primary shadow-[0_-8px_32px_rgba(212,175,55,0.12)]">
           <button
             type="button"
             onClick={closeFilter}
-            className="flex-1 px-4 py-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
+            className="flex-1 px-4 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             Apply Filters ({totalDocs.toLocaleString()})
           </button>
@@ -131,7 +152,7 @@ export function FilterSheet({
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex w-16 items-center justify-center border-l border-primary-foreground/15 bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
+            className="flex w-14 items-center justify-center border-l border-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-hover"
             aria-label="Contact on WhatsApp"
           >
             <WhatsAppIcon className="h-5 w-5" />

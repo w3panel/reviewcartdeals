@@ -3,9 +3,10 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 import type { NavItem } from '@/payload-types'
 import { useFilterSheet } from '@/context/FilterSheetContext'
+import { HeaderSearch } from '@/components/HeaderSearch'
 import { MobileMenu } from '@/components/MobileMenu'
 
 type HeaderToolbarProps = {
@@ -21,15 +22,7 @@ export function HeaderToolbar({ navItems: _navItems }: HeaderToolbarProps) {
     <div className="flex items-center gap-2 px-4 pb-3 pt-3 lg:hidden">
       <MobileMenu />
 
-      <Link
-        href="/search"
-        className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
-      >
-        <span className="truncate text-sm text-muted-foreground">
-          Search watches, wallets, bags...
-        </span>
-        <Search className="h-4 w-4 flex-shrink-0 text-primary" />
-      </Link>
+      <HeaderSearch variant="mobile" className="min-w-0 flex-1" />
 
       {isHome ? (
         <button

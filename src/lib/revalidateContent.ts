@@ -2,8 +2,18 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
 
 import { CACHE_TAGS } from '@/lib/cacheTags'
+import { isAutosaveRequest } from '@/lib/isAutosaveRequest'
+
+export { isAutosaveRequest }
 
 const REVALIDATE_CONTEXT_KEY = 'skipRevalidation'
+
+/** Only published (or legacy non-draft) documents affect the storefront cache. */
+export function isPublishedForRevalidation(
+  doc: { _status?: string | null } | null | undefined,
+): boolean {
+  return doc?._status !== 'draft'
+}
 
 export function shouldSkipRevalidation(context: Record<string, unknown> | undefined): boolean {
   return Boolean(context?.[REVALIDATE_CONTEXT_KEY])
@@ -19,8 +29,14 @@ function revalidateFrontendPaths(paths: string[]) {
   }
 }
 
-export const revalidateAfterProductChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterProductChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (
+    isAutosaveRequest(req) ||
+    shouldSkipRevalidation(context) ||
+    !isPublishedForRevalidation(doc)
+  ) {
+    return doc
+  }
 
   revalidateTag(CACHE_TAGS.products, 'max')
   revalidateTag(CACHE_TAGS.reviews, 'max')
@@ -35,7 +51,7 @@ export const revalidateAfterProductChange: CollectionAfterChangeHook = ({ doc, c
 }
 
 export const revalidateAfterProductDelete: CollectionAfterDeleteHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+  if (shouldSkipRevalidation(context) || !isPublishedForRevalidation(doc)) return doc
 
   revalidateTag(CACHE_TAGS.products, 'max')
   revalidateTag(CACHE_TAGS.reviews, 'max')
@@ -48,8 +64,14 @@ export const revalidateAfterProductDelete: CollectionAfterDeleteHook = ({ doc, c
   return doc
 }
 
-export const revalidateAfterCategoryChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterCategoryChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (
+    isAutosaveRequest(req) ||
+    shouldSkipRevalidation(context) ||
+    !isPublishedForRevalidation(doc)
+  ) {
+    return doc
+  }
 
   revalidateTag(CACHE_TAGS.categories, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -64,7 +86,7 @@ export const revalidateAfterCategoryChange: CollectionAfterChangeHook = ({ doc, 
 }
 
 export const revalidateAfterCategoryDelete: CollectionAfterDeleteHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+  if (shouldSkipRevalidation(context) || !isPublishedForRevalidation(doc)) return doc
 
   revalidateTag(CACHE_TAGS.categories, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -78,8 +100,14 @@ export const revalidateAfterCategoryDelete: CollectionAfterDeleteHook = ({ doc, 
   return doc
 }
 
-export const revalidateAfterBrandChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterBrandChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (
+    isAutosaveRequest(req) ||
+    shouldSkipRevalidation(context) ||
+    !isPublishedForRevalidation(doc)
+  ) {
+    return doc
+  }
 
   revalidateTag(CACHE_TAGS.brands, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -90,7 +118,7 @@ export const revalidateAfterBrandChange: CollectionAfterChangeHook = ({ doc, con
 }
 
 export const revalidateAfterBrandDelete: CollectionAfterDeleteHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+  if (shouldSkipRevalidation(context) || !isPublishedForRevalidation(doc)) return doc
 
   revalidateTag(CACHE_TAGS.brands, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -100,8 +128,14 @@ export const revalidateAfterBrandDelete: CollectionAfterDeleteHook = ({ doc, con
   return doc
 }
 
-export const revalidateAfterReviewChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterReviewChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (
+    isAutosaveRequest(req) ||
+    shouldSkipRevalidation(context) ||
+    !isPublishedForRevalidation(doc)
+  ) {
+    return doc
+  }
 
   revalidateTag(CACHE_TAGS.reviews, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -110,7 +144,7 @@ export const revalidateAfterReviewChange: CollectionAfterChangeHook = ({ doc, co
 }
 
 export const revalidateAfterReviewDelete: CollectionAfterDeleteHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+  if (shouldSkipRevalidation(context) || !isPublishedForRevalidation(doc)) return doc
 
   revalidateTag(CACHE_TAGS.reviews, 'max')
   revalidateTag(CACHE_TAGS.products, 'max')
@@ -118,8 +152,8 @@ export const revalidateAfterReviewDelete: CollectionAfterDeleteHook = ({ doc, co
   return doc
 }
 
-export const revalidateAfterNavChange: CollectionAfterChangeHook = ({ doc, context }) => {
-  if (shouldSkipRevalidation(context)) return doc
+export const revalidateAfterNavChange: CollectionAfterChangeHook = ({ doc, context, req }) => {
+  if (isAutosaveRequest(req) || shouldSkipRevalidation(context)) return doc
 
   revalidateTag(CACHE_TAGS.nav, 'max')
   revalidatePath('/', 'layout')

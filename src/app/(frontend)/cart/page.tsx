@@ -7,7 +7,6 @@ import { ArrowLeft, Trash2, Send } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
-import { formatProductAttributesDetails } from '@/lib/productAttributes'
 import {
   formatVariantEnquiryDetails,
   formatVariantLabel,
@@ -38,15 +37,9 @@ export default function CartPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send the data to an API
-    // For now, we can format a WhatsApp message as an example, or just clear and show success
     const productList = cartItems
       .map((item) => {
-        const attributeDetails = formatProductAttributesDetails(item.product)
         const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
-        if (attributeDetails) {
-          lines.push(`  ${attributeDetails.replace(/\n/g, '\n  ')}`)
-        }
         if (item.variant) {
           lines.push(`  ${formatVariantEnquiryDetails(item.variant).replace(/\n/g, '\n  ')}`)
         }
@@ -57,7 +50,6 @@ export default function CartPage() {
       `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`,
     )
 
-    // Open whatsapp
     const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
     window.open(`https://wa.me/${whatsappNumber}?text=${waText}`, '_blank')
     clearCart()
@@ -86,7 +78,6 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24 text-foreground">
-      {/* Header */}
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-primary/20 px-4 h-16 flex items-center">
         <Link href="/" className="p-2 -ml-2 text-primary hover:text-foreground transition-colors">
           <ArrowLeft className="w-6 h-6" />
@@ -98,7 +89,6 @@ export default function CartPage() {
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-8 mt-4">
-        {/* Selected Items */}
         <section>
           <h2 className="text-sm font-medium text-primary mb-4 px-1">Selected Pieces</h2>
           <div className="bg-card rounded-3xl p-2 shadow-lg border border-border divide-y divide-border">
@@ -154,7 +144,6 @@ export default function CartPage() {
           </div>
         </section>
 
-        {/* Enquiry Form */}
         <section>
           <h2 className="text-sm font-medium text-primary mb-4 px-1">Client Details</h2>
           <form

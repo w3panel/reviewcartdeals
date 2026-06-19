@@ -1,7 +1,7 @@
 import type { Brand, Media, Product, ProductVariant } from '@/payload-types'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 
-export const CART_STORAGE_KEY = 'reviewcartdeals_cart_v2'
+export const CART_STORAGE_KEY = 'reviewcartdeals_cart_v4'
 export const LIKED_STORAGE_KEY = 'reviewcartdeals_liked_v2'
 
 export type StoredProductSummary = {
@@ -17,7 +17,6 @@ export type StoredProductSummary = {
 export type StoredVariantSummary = {
   id: number | string
   title?: string | null
-  options?: ProductVariant['options']
 }
 
 export type StoredCartItem = {
@@ -56,7 +55,6 @@ export function toStoredVariantSummary(
   return {
     id: variant.id,
     title: variant.title,
-    options: variant.options,
   }
 }
 
@@ -96,7 +94,6 @@ export function toDisplayVariant(
   return {
     id: summary.id,
     title: summary.title ?? undefined,
-    options: summary.options,
     updatedAt: '',
     createdAt: '',
   } as ProductVariant

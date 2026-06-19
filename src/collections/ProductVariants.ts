@@ -1,47 +1,49 @@
 import type { CollectionConfig } from 'payload'
 
-import {
-  autoTitleProductVariant,
-  getProductVariantTypeIds,
-  validateProductVariant,
-} from '@/lib/productVariantHooks'
-import { getRelationshipId } from '@/lib/variantOptionValues'
-
-function emptyRelationshipFilter() {
-  return { id: { in: [] as number[] } }
-}
+import { filterValuesByGroupId } from '@/collections/VariantValues'
+import { getRelationshipId } from '@/lib/relationships'
+import { setProductVariantTitle, validateProductVariantOptions } from '@/lib/variantValidation'
 
 export const ProductVariants: CollectionConfig = {
   slug: 'product-variants',
+  labels: {
+    singular: 'Product Variant',
+    plural: 'Product Variants',
+  },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'product', '_status'],
-    group: 'Catalog',
+    defaultColumns: ['title', 'product', 'active', '_status'],
+    description:
+      'One row per purchasable combination. Generated from the product configuration or edited manually.',
   },
   access: {
     read: () => true,
   },
   hooks: {
-    beforeValidate: [validateProductVariant],
-    beforeChange: [autoTitleProductVariant],
+    beforeValidate: [validateProductVariantOptions],
+    beforeChange: [setProductVariantTitle],
   },
   fields: [
+    {
+      name: 'title',
+      type: 'text',
+      admin: {
+        description: 'Auto-generated from selected values. You can override if needed.',
+      },
+    },
     {
       name: 'product',
       type: 'relationship',
       relationTo: 'products',
       required: true,
       index: true,
-      admin: {
-        position: 'sidebar',
-      },
     },
     {
-      name: 'title',
-      type: 'text',
+      name: 'active',
+      type: 'checkbox',
+      defaultValue: true,
       admin: {
-        readOnly: true,
-        description: 'Auto-generated from the selected option values.',
+        description: 'Inactive variants are hidden on the storefront.',
       },
     },
     {
@@ -49,66 +51,30 @@ export const ProductVariants: CollectionConfig = {
       type: 'array',
       labels: {
         singular: 'Option',
-        plural: 'Variant Options',
+        plural: 'Options',
       },
-      minRows: 1,
       admin: {
-        description:
-          'Add one row per differentiating variant type (e.g. Color). Pick a catalog option value — free text is not allowed.',
-        initCollapsed: false,
+        description: 'One value per variant group on the parent product.',
       },
       fields: [
         {
-          name: 'type',
-          label: 'Variant Type',
+          name: 'group',
+          label: 'Variant Group',
           type: 'relationship',
-          relationTo: 'variant-types',
+          relationTo: 'variant-groups',
           required: true,
-          filterOptions: async ({ data, req, siblingData }) => {
-            const allowedIds = await getProductVariantTypeIds(data?.product, req)
-            if (allowedIds.length === 0) return emptyRelationshipFilter()
-
-            const currentTypeId = getRelationshipId(
-              (siblingData as { type?: unknown } | undefined)?.type,
-            )
-            const usedInOtherRows = new Set<number>()
-
-            for (const row of (data?.options ?? []) as Array<{ type?: unknown }>) {
-              const rowTypeId = getRelationshipId(row?.type)
-              if (typeof rowTypeId === 'number' && rowTypeId !== currentTypeId) {
-                usedInOtherRows.add(rowTypeId)
-              }
-            }
-
-            const availableIds = allowedIds.filter((id) => !usedInOtherRows.has(id))
-            if (availableIds.length === 0) return emptyRelationshipFilter()
-
-            return {
-              id: {
-                in: availableIds,
-              },
-            }
-          },
         },
         {
-          name: 'optionValue',
+          name: 'value',
           label: 'Value',
           type: 'relationship',
-          relationTo: 'variant-option-values',
+          relationTo: 'variant-values',
           required: true,
           filterOptions: ({ siblingData }) => {
-            const typeId = getRelationshipId((siblingData as { type?: unknown } | undefined)?.type)
-            if (typeId === null) return emptyRelationshipFilter()
-
-            return {
-              variantType: {
-                equals: typeId,
-              },
-            }
-          },
-          admin: {
-            description:
-              'Select a value defined on the variant type. Add new values under Catalog → Variant Option Values.',
+            const groupId = getRelationshipId(
+              (siblingData as { group?: unknown } | undefined)?.group,
+            )
+            return filterValuesByGroupId(groupId)
           },
         },
       ],

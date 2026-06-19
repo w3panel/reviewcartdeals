@@ -8,9 +8,8 @@ import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
-import { getImageUrl, getProductMainImage, buildProductGalleryImages } from '@/lib/utils'
+import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
-import { formatProductAttributesSummary } from '@/lib/productAttributes'
 import type { Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { ProductDetailGrid } from '@/components/ProductDetailGrid'
@@ -60,10 +59,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     resolveProductCategory(product.category),
     getRelatedProducts(product.id, getCategoryId(product.category), 4),
     getProductReviews(product.id),
-    getProductVariants(product.id),
+    product.enableVariants ? getProductVariants(product.id) : Promise.resolve([]),
   ])
   const related = relatedProducts as Product[]
-  const galleryImages = buildProductGalleryImages(product)
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://reviewcartdeals.com'
   const productUrl = `${siteUrl}/product/${product.slug}`
@@ -99,7 +97,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductDetailGrid
           product={product}
           variants={variants}
-          defaultGalleryImages={galleryImages}
           whatsappLink={whatsappLink}
           beforeActions={
             <>
@@ -115,12 +112,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
                 {product.description}
               </p>
-
-              {formatProductAttributesSummary(product) && (
-                <p className="mt-4 text-sm text-foreground">
-                  {formatProductAttributesSummary(product)}
-                </p>
-              )}
             </>
           }
           afterActions={

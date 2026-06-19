@@ -1,15 +1,17 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import type { Media, Product, ProductVariant } from '@/payload-types'
+import type { Product, ProductVariant } from '@/payload-types'
 import {
-  getInitialSelectedOptions,
+  getDefaultGalleryImages,
+  getInitialSelectedOptionsForProduct,
   getPrimaryVisualType,
   getVariantOptionTypes,
   hasVariants,
   resolveGalleryImages,
-  resolveSelectedOptionValue,
   resolveSelectedVariant,
+  shouldShowVariantSelector,
+  usesVisualVariantGallery,
   type SelectedVariantOptions,
 } from '@/lib/productVariants'
 import { ProductGallery } from '@/components/ProductGallery'
@@ -18,7 +20,6 @@ import { ProductEnquiryActions } from '@/components/ProductEnquiryActions'
 type ProductDetailGridProps = {
   product: Product
   variants: ProductVariant[]
-  defaultGalleryImages: Media[]
   whatsappLink: string
   beforeActions: React.ReactNode
   afterActions?: React.ReactNode
@@ -27,40 +28,37 @@ type ProductDetailGridProps = {
 export function ProductDetailGrid({
   product,
   variants,
-  defaultGalleryImages,
   whatsappLink,
   beforeActions,
   afterActions,
 }: ProductDetailGridProps) {
   const productHasVariants = hasVariants(product, variants)
-  const variantOptionTypes = getVariantOptionTypes(product, variants)
+  const variantGroups = getVariantOptionTypes(product, variants)
+  const visualGallery = usesVisualVariantGallery(product, variants)
+  const defaultGalleryImages = useMemo(() => getDefaultGalleryImages(product), [product])
 
   const [selectedOptions, setSelectedOptions] = useState<SelectedVariantOptions>(() =>
-    variants[0] ? getInitialSelectedOptions(variants[0]) : {},
+    getInitialSelectedOptionsForProduct(product, variants, variantGroups),
   )
 
   const selectedVariant = useMemo(
-    () => resolveSelectedVariant(variants, selectedOptions, variantOptionTypes),
-    [variants, selectedOptions, variantOptionTypes],
+    () => resolveSelectedVariant(variants, selectedOptions, variantGroups),
+    [variants, selectedOptions, variantGroups],
   )
 
   const galleryImages = useMemo(() => {
-    if (!productHasVariants) return defaultGalleryImages
-    return resolveGalleryImages(variants, selectedOptions, variantOptionTypes, defaultGalleryImages)
-  }, [productHasVariants, variants, selectedOptions, variantOptionTypes, defaultGalleryImages])
+    if (visualGallery) {
+      return resolveGalleryImages(product, selectedOptions, variantGroups, defaultGalleryImages)
+    }
+    return defaultGalleryImages
+  }, [visualGallery, product, selectedOptions, variantGroups, defaultGalleryImages])
 
-  const galleryType = getPrimaryVisualType(variantOptionTypes)
-  const galleryOptionValueId = galleryType
-    ? resolveSelectedOptionValue(variants, selectedOptions, galleryType.id)?.id
-    : undefined
+  const visualGroup = getPrimaryVisualType(variantGroups)
+  const galleryKey = visualGroup ? selectedOptions[String(visualGroup.id)] : 'default'
 
   return (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12">
-      <ProductGallery
-        key={galleryOptionValueId ?? 'default'}
-        images={galleryImages}
-        title={product.title}
-      />
+      <ProductGallery key={galleryKey ?? 'default'} images={galleryImages} title={product.title} />
 
       <div className="flex flex-col">
         {beforeActions}
@@ -72,6 +70,8 @@ export function ProductDetailGrid({
           selectedOptions={selectedOptions}
           onSelectOptions={setSelectedOptions}
           selectedVariant={selectedVariant}
+          showVariantSelector={shouldShowVariantSelector(product, variants)}
+          requireVariantSelection={productHasVariants}
         />
 
         {afterActions}

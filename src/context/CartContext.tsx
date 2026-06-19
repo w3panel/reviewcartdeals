@@ -1,8 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import type { Product } from '@/payload-types'
-import { getCartItemKey, type ProductVariant } from '@/lib/productVariants'
+import type { Product, ProductVariant } from '@/payload-types'
+import { getCartItemKey } from '@/lib/productVariants'
 import {
   CART_STORAGE_KEY,
   migrateLegacyCart,
