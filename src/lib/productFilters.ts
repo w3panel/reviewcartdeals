@@ -27,6 +27,12 @@ const CATALOG_CARD_SELECT = {
   updatedAt: true,
 } as const
 
+const IMPOSSIBLE_ID = -1
+
+function noMatchWhere(): Where {
+  return { id: { equals: IMPOSSIBLE_ID } }
+}
+
 export async function buildProductsWhere(
   options: Pick<CatalogQueryOptions, 'categorySlug' | 'featured' | 'search' | 'brand'>,
   payload: BasePayload,
@@ -47,19 +53,31 @@ export async function buildProductsWhere(
       .split(',')
       .map((b) => b.trim())
       .filter(Boolean)
-    andFilters.push({
-      brand: {
-        in: await getBrandIdsByTitlesCached(titles, payload),
-      },
-    })
+    const brandIds = await getBrandIdsByTitlesCached(titles, payload)
+
+    if (brandIds.length === 0) {
+      andFilters.push(noMatchWhere())
+    } else {
+      andFilters.push({
+        brand: {
+          in: brandIds,
+        },
+      })
+    }
   }
 
   if (categorySlug) {
-    andFilters.push({
-      category: {
-        in: await getCategoryIdsBySlugCached(categorySlug, payload),
-      },
-    })
+    const categoryIds = await getCategoryIdsBySlugCached(categorySlug, payload)
+
+    if (categoryIds.length === 0) {
+      andFilters.push(noMatchWhere())
+    } else {
+      andFilters.push({
+        category: {
+          in: categoryIds,
+        },
+      })
+    }
   }
 
   if (search) {

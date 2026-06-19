@@ -8,6 +8,7 @@ import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-rea
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Product, Category, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
+import { FormSelect } from '@/components/FormSelect'
 
 interface SearchCatalogProps {
   categories: Category[]
@@ -34,8 +35,8 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
   useEffect(() => {
     const params = new URLSearchParams()
     if (q) params.set('q', q)
-    if (category) params.set('category', category)
-    if (brand) params.set('brand', brand)
+    if (category && category !== 'ALL') params.set('category', category)
+    if (brand && brand !== 'ALL') params.set('brand', brand)
     if (page) params.set('page', page)
 
     setLoading(true)
@@ -52,6 +53,12 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
   const totalDocs = data?.totalDocs ?? 0
   const totalPages = data?.totalPages ?? 1
   const currentPage = Number(page) || 1
+
+  const categoryOptions = categories
+    .filter((cat) => cat.slug)
+    .map((cat) => ({ value: cat.slug as string, label: cat.title }))
+
+  const brandOptions = brands.map((b) => ({ value: b, label: b }))
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
@@ -81,41 +88,21 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
               </div>
             </div>
 
-            <div>
-              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                Category
-              </label>
-              <select
-                name="category"
-                defaultValue={category || 'ALL'}
-                className="w-full rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              >
-                <option value="ALL">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.slug}>
-                    {cat.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FormSelect
+              name="category"
+              defaultValue={category || 'ALL'}
+              label="Category"
+              placeholder="All Categories"
+              options={categoryOptions}
+            />
 
-            <div>
-              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                Brand
-              </label>
-              <select
-                name="brand"
-                defaultValue={brand || 'ALL'}
-                className="w-full rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
-              >
-                <option value="ALL">All Brands</option>
-                {brands.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FormSelect
+              name="brand"
+              defaultValue={brand || 'ALL'}
+              label="Brand"
+              placeholder="All Brands"
+              options={brandOptions}
+            />
 
             <button
               type="submit"
@@ -139,31 +126,19 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
             />
             <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <select
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <FormSelect
               name="category"
               defaultValue={category || 'ALL'}
-              className="rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
-            >
-              <option value="ALL">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.slug}>
-                  {cat.title}
-                </option>
-              ))}
-            </select>
-            <select
+              placeholder="All Categories"
+              options={categoryOptions}
+            />
+            <FormSelect
               name="brand"
               defaultValue={brand || 'ALL'}
-              className="rounded-2xl border border-border bg-surface px-3 py-3 text-xs text-white focus:border-primary focus:outline-none"
-            >
-              <option value="ALL">All Brands</option>
-              {brands.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
+              placeholder="All Brands"
+              options={brandOptions}
+            />
           </div>
           <button
             type="submit"

@@ -489,7 +489,9 @@ export interface NavItem {
   /**
    * Icon for bottom bar, toolbar, or button items.
    */
-  icon?: ('none' | 'home' | 'grid' | 'star' | 'heart' | 'user' | 'message' | 'search' | 'menu' | 'phone') | null;
+  icon?:
+    | ('none' | 'home' | 'grid' | 'star' | 'heart' | 'user' | 'message' | 'search' | 'menu' | 'clipboardList' | 'phone')
+    | null;
   updatedAt: string;
   createdAt: string;
 }

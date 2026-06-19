@@ -6,6 +6,7 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import type { Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
+import { CategoryProductsFilters } from '@/components/CategoryProductsFilters'
 
 interface CategoryProductsProps {
   slug: string
@@ -48,18 +49,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
         </div>
 
         <div className="flex w-full md:w-auto gap-4">
-          <select
-            name="brand"
-            defaultValue={brand || 'ALL'}
-            className="w-full md:w-48 rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none"
-          >
-            <option value="ALL">All Brands</option>
-            {brands.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
+          <CategoryProductsFilters brands={brands} defaultBrand={brand} />
 
           <button
             type="submit"

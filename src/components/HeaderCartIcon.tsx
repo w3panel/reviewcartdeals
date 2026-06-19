@@ -3,6 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { ClipboardList } from 'lucide-react'
+import { CartCountBadge } from '@/components/CartCountBadge'
 import { useCart } from '@/context/CartContext'
 
 export function HeaderCartIcon() {
@@ -11,15 +12,13 @@ export function HeaderCartIcon() {
   return (
     <Link
       href="/cart"
-      className="relative p-2 text-foreground hover:text-primary transition-colors flex items-center justify-center"
-      aria-label="View Cart"
+      className="relative flex items-center justify-center p-2 text-foreground transition-colors hover:text-primary"
+      aria-label={itemCount > 0 ? `View cart, ${itemCount} items` : 'View cart'}
     >
-      <ClipboardList className="h-6 w-6" strokeWidth={2} />
-      {itemCount > 0 && (
-        <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-          {itemCount}
-        </span>
-      )}
+      <span className="relative inline-flex">
+        <ClipboardList className="h-6 w-6" strokeWidth={2} />
+        <CartCountBadge count={itemCount} />
+      </span>
     </Link>
   )
 }

@@ -12,6 +12,7 @@ import * as migration_20260624_remove_catalog_variants from './20260624_remove_c
 import * as migration_20260625_variant_system_v2 from './20260625_variant_system_v2'
 import * as migration_20260626_fix_products_rels_variant_values from './20260626_fix_products_rels_variant_values'
 import * as migration_20260627_variant_values_nullable_group from './20260627_variant_values_nullable_group'
+import * as migration_20260628_nav_items_clipboard_icon from './20260628_nav_items_clipboard_icon'
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260627_variant_values_nullable_group.up,
     down: migration_20260627_variant_values_nullable_group.down,
     name: '20260627_variant_values_nullable_group',
+  },
+  {
+    up: migration_20260628_nav_items_clipboard_icon.up,
+    down: migration_20260628_nav_items_clipboard_icon.down,
+    name: '20260628_nav_items_clipboard_icon',
   },
 ]
