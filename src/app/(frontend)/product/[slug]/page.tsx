@@ -117,13 +117,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           }
           afterActions={
             <>
-              <p className="mt-6 text-xs text-muted-foreground flex items-center gap-1.5">
+              <p className="mt-8 text-xs text-muted-foreground flex items-center gap-1.5">
                 <Award className="h-4 w-4 text-primary flex-shrink-0" />
                 Concierge assistance for custom specifications and delivery.
               </p>
 
               {product.specifications && product.specifications.length > 0 && (
-                <div className="mt-8">
+                <div id="specifications" className="mt-8 scroll-mt-24">
                   <h3 className="flex items-center gap-2 text-sm font-semibold tracking-widest text-foreground uppercase mb-4">
                     <ListCollapse className="h-4 w-4 text-primary" />
                     Specifications
