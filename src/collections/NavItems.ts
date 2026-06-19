@@ -19,6 +19,7 @@ const iconOptions = [
   { label: 'Message', value: 'message' },
   { label: 'Search', value: 'search' },
   { label: 'Menu', value: 'menu' },
+  { label: 'Clipboard list', value: 'clipboardList' },
   { label: 'Phone', value: 'phone' },
 ]
 

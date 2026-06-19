@@ -21,7 +21,7 @@ export function isBottomNavItemActive(
     return pathname.startsWith('/liked')
   }
 
-  if (item.icon === 'user' || item.href === '/cart') {
+  if (item.icon === 'clipboardList' || item.icon === 'user' || item.href === '/cart') {
     return pathname.startsWith('/cart')
   }
 

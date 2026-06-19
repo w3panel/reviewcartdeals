@@ -8,7 +8,7 @@ import { withQueryTiming } from '@/lib/observability'
 
 const LOOKUP_REVALIDATE_SECONDS = 300
 
-async function fetchBrandTitleToIdMap(payload: BasePayload): Promise<Map<string, string>> {
+async function fetchBrandTitleToIdMap(payload: BasePayload): Promise<Record<string, string>> {
   const response = await payload.find({
     collection: 'brands',
     where: withPublishedOnly(),
@@ -18,10 +18,10 @@ async function fetchBrandTitleToIdMap(payload: BasePayload): Promise<Map<string,
     select: { title: true },
   })
 
-  return new Map(response.docs.map((brand) => [brand.title, String(brand.id)]))
+  return Object.fromEntries(response.docs.map((brand) => [brand.title, String(brand.id)]))
 }
 
-async function fetchCategorySlugToIdMap(payload: BasePayload): Promise<Map<string, string>> {
+async function fetchCategorySlugToIdMap(payload: BasePayload): Promise<Record<string, string>> {
   const response = await payload.find({
     collection: 'categories',
     where: withPublishedOnly(),
@@ -31,39 +31,45 @@ async function fetchCategorySlugToIdMap(payload: BasePayload): Promise<Map<strin
     select: { slug: true },
   })
 
-  return new Map(response.docs.map((category) => [category.slug, String(category.id)]))
+  return Object.fromEntries(response.docs.map((category) => [category.slug, String(category.id)]))
 }
 
 export async function getBrandIdsByTitlesCached(
   titles: string[],
-  payload?: BasePayload,
+  _payload?: BasePayload,
 ): Promise<string[]> {
   if (titles.length === 0) return []
 
-  const client = payload ?? (await getPayloadClient())
+  void _payload
 
   const titleToId = await unstable_cache(
-    async () => fetchBrandTitleToIdMap(client),
-    ['brand-title-to-id-map'],
+    async () => {
+      const payload = await getPayloadClient()
+      return fetchBrandTitleToIdMap(payload)
+    },
+    ['brand-title-to-id-map-v2'],
     { tags: [CACHE_TAGS.brands, CACHE_TAGS.lookups], revalidate: LOOKUP_REVALIDATE_SECONDS },
   )()
 
-  return titles.map((title) => titleToId.get(title)).filter((id): id is string => Boolean(id))
+  return titles.map((title) => titleToId[title]).filter((id): id is string => Boolean(id))
 }
 
 export async function getCategoryIdsBySlugCached(
   slug: string,
-  payload?: BasePayload,
+  _payload?: BasePayload,
 ): Promise<string[]> {
-  const client = payload ?? (await getPayloadClient())
+  void _payload
 
   const slugToId = await unstable_cache(
-    async () => fetchCategorySlugToIdMap(client),
-    ['category-slug-to-id-map'],
+    async () => {
+      const client = await getPayloadClient()
+      return fetchCategorySlugToIdMap(client)
+    },
+    ['category-slug-to-id-map-v2'],
     { tags: [CACHE_TAGS.categories, CACHE_TAGS.lookups], revalidate: LOOKUP_REVALIDATE_SECONDS },
   )()
 
-  const id = slugToId.get(slug)
+  const id = slugToId[slug]
   return id ? [id] : []
 }
 

@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Circle, Home } from 'lucide-react'
 import type { NavItem } from '@/payload-types'
+import { CartCountBadge, isCartNavItem } from '@/components/CartCountBadge'
 import { useNavigationItems, useNavigationShell } from '@/context/NavigationContext'
+import { useCart } from '@/context/CartContext'
 import { isBottomNavItemActive } from '@/lib/bottomNavActive'
 import { getBottomNavShellClasses } from '@/lib/navVisibility'
 import { getNavIcon } from '@/lib/navIcons'
@@ -15,16 +17,29 @@ function isVisibleOnMobile(item: NavItem): boolean {
   return item.showOnMobile !== false
 }
 
-function renderBottomNavItem(item: NavItem, pathname: string) {
+function BottomNavItem({
+  item,
+  pathname,
+  itemCount,
+}: {
+  item: NavItem
+  pathname: string
+  itemCount: number
+}) {
   const Icon = getNavIcon(item.icon) ?? (item.href === '/' ? Home : Circle)
   const isActive = isBottomNavItemActive(pathname, item)
+  const showCartCount = isCartNavItem(item)
   const itemClassName =
     `flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 py-2 transition-colors ${
       isActive ? 'text-primary' : 'text-white/45'
     }`.trim()
+
   const icon = (
     <>
-      <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={isActive ? 2 : 1.5} />
+      <span className="relative inline-flex">
+        <Icon className="h-[22px] w-[22px] shrink-0" strokeWidth={isActive ? 2 : 1.5} />
+        {showCartCount ? <CartCountBadge count={itemCount} /> : null}
+      </span>
       <span
         className={`max-w-full truncate text-[10px] leading-tight ${
           isActive ? 'font-semibold' : 'font-normal'
@@ -35,7 +50,9 @@ function renderBottomNavItem(item: NavItem, pathname: string) {
     </>
   )
 
-  // Bottom bar always uses the href directly — mega menus belong in the header only.
+  const ariaLabel =
+    showCartCount && itemCount > 0 ? `${item.label}, ${itemCount} items` : item.label
+
   if (/^https?:\/\//i.test(item.href) || item.openInNewTab) {
     return (
       <NavItemLink key={item.id} item={item} className={itemClassName}>
@@ -45,7 +62,7 @@ function renderBottomNavItem(item: NavItem, pathname: string) {
   }
 
   return (
-    <Link key={item.id} href={item.href} className={itemClassName}>
+    <Link key={item.id} href={item.href} className={itemClassName} aria-label={ariaLabel}>
       {icon}
     </Link>
   )
@@ -53,6 +70,7 @@ function renderBottomNavItem(item: NavItem, pathname: string) {
 
 export function BottomNav() {
   const pathname = usePathname()
+  const { itemCount } = useCart()
   const allItems = useNavigationItems()
   const items = useNavigationShell('bottom')
     .filter(isVisibleOnMobile)
@@ -67,7 +85,9 @@ export function BottomNav() {
       aria-label="Mobile navigation"
     >
       <div className="flex h-full w-full items-stretch px-1">
-        {items.map((item) => renderBottomNavItem(item, pathname))}
+        {items.map((item) => (
+          <BottomNavItem key={item.id} item={item} pathname={pathname} itemCount={itemCount} />
+        ))}
       </div>
     </nav>
   )

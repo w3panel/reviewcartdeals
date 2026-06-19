@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import {
+  ClipboardList,
   Heart,
   Home,
   LayoutGrid,
@@ -22,6 +23,7 @@ const iconMap: Record<NonNullable<NavItem['icon']>, LucideIcon | null> = {
   message: MessageCircle,
   search: Search,
   menu: Menu,
+  clipboardList: ClipboardList,
   phone: Phone,
 }
 
