@@ -3,8 +3,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getProducts, getAllBrands } from '@/services/products'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getImageUrl, getProductMainImage } from '@/lib/utils'
-import type { Product, Brand } from '@/payload-types'
+import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
+import type { Product } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { CategoryProductsFilters } from '@/components/CategoryProductsFilters'
 
@@ -75,6 +75,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-3">
             {products.map((prod: Product) => {
               const imageUrl = getImageUrl(getProductMainImage(prod), 'card')
+              const brandTitle = getProductBrandTitle(prod)
               return (
                 <div
                   key={prod.id}
@@ -91,11 +92,11 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                       />
                     </div>
                     <div className="flex flex-grow flex-col p-3 sm:p-4">
-                      <span className="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                        {typeof prod.brand === 'object' && prod.brand !== null
-                          ? (prod.brand as Brand).title
-                          : String(prod.brand)}
-                      </span>
+                      {brandTitle ? (
+                        <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                          {brandTitle}
+                        </span>
+                      ) : null}
                       <h3 className="line-clamp-2 text-sm font-medium leading-snug text-white">
                         {prod.title}
                       </h3>

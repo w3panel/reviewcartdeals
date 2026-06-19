@@ -8,7 +8,7 @@ import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
-import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
 import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
 import type { Category, Product, Brand } from '@/payload-types'
@@ -91,10 +91,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const whatsappMessage = `Hello,\n\nI am interested in this product:\n\nProduct Name: ${product.title}\nProduct URL: ${productUrl}\n\nPlease share more details.`
   const whatsappLink = getWhatsAppUrl(whatsappMessage)
 
-  const brandTitle =
-    typeof product.brand === 'object' && product.brand !== null
-      ? (product.brand as Brand).title
-      : String(product.brand)
+  const brandTitle = getProductBrandTitle(product)
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground pb-28 md:pb-12">
@@ -133,10 +130,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
           whatsappLink={whatsappLink}
           beforeActions={
             <>
-              <span className="text-xs sm:text-sm font-semibold tracking-widest text-primary uppercase">
-                {brandTitle}
-              </span>
-              <h1 className="mt-2 font-serif text-2xl text-white leading-tight sm:text-3xl lg:text-4xl">
+              {brandTitle ? (
+                <span className="text-xs sm:text-sm font-semibold tracking-widest text-primary uppercase">
+                  {brandTitle}
+                </span>
+              ) : null}
+              <h1
+                className={`font-serif text-2xl text-white leading-tight sm:text-3xl lg:text-4xl ${brandTitle ? 'mt-2' : ''}`}
+              >
                 {product.title}
               </h1>
 
@@ -211,14 +212,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       />
                     </div>
                     <div>
-                      <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">
-                        {typeof prod.brand === 'object' && prod.brand !== null
-                          ? (prod.brand as Brand).title
-                          : String(prod.brand)}
-                        {typeof prod.brand === 'object' &&
-                          prod.brand !== null &&
-                          (prod.brand as Brand).verified && <BadgeCheck className="w-3.5 h-3.5" />}
-                      </div>
+                      {getProductBrandTitle(prod) ? (
+                        <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">
+                          {getProductBrandTitle(prod)}
+                          {typeof prod.brand === 'object' &&
+                            prod.brand !== null &&
+                            (prod.brand as Brand).verified && (
+                              <BadgeCheck className="w-3.5 h-3.5" />
+                            )}
+                        </div>
+                      ) : null}
                       <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight mt-1 line-clamp-2">
                         {prod.title}
                       </h3>
@@ -247,7 +250,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold text-primary uppercase truncate">{brandTitle}</p>
+              {brandTitle ? (
+                <p className="text-[10px] font-bold text-primary uppercase truncate">
+                  {brandTitle}
+                </p>
+              ) : null}
               <p className="text-xs font-medium text-foreground truncate">{product.title}</p>
             </div>
           </div>
