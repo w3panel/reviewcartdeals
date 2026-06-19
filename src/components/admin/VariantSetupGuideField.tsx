@@ -9,7 +9,7 @@ const steps = [
   },
   {
     title: 'Configure this product',
-    body: 'Enable variants, then add one row per dimension. Pick a Variant Group, then select Available Values. You cannot create new values here — only pick existing catalog values.',
+    body: 'Enable variants, then add one row per dimension. Pick a Variant Group, then select or add Available Values (use Create New in the picker).',
   },
   {
     title: 'Optional images',

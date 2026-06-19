@@ -289,7 +289,7 @@ export interface VariantGroup {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Global selectable values (e.g. Blue, Large). Prefer creating from Variant Groups → Linked Values so the group is set automatically.
+ * Global selectable values (e.g. Blue, Large). Create from Variant Groups → Linked Values, Catalog → Variant Values, or directly on a product under Available Values.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "variant-values".
@@ -350,7 +350,7 @@ export interface Product {
     | {
         group: number | VariantGroup;
         /**
-         * Only pick values that belong to the variant group selected in this row (e.g. Color values on the Color row). If you change the group, clear old values and re-select.
+         * Values offered for this product on this dimension. Pick existing catalog values or use Create New in the picker.
          */
         values: (number | VariantValue)[];
         id?: string | null;
