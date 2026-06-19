@@ -19,7 +19,7 @@ export const VariantValues: CollectionConfig = {
     defaultColumns: ['label', 'group', '_status'],
     group: 'Catalog',
     description:
-      'Global selectable values (e.g. Blue, Large). Prefer creating from Variant Groups → Linked Values so the group is set automatically.',
+      'Global selectable values (e.g. Blue, Large). Create from Variant Groups → Linked Values, Catalog → Variant Values, or directly on a product under Available Values.',
   },
   access: {
     read: () => true,

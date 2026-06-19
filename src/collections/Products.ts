@@ -247,9 +247,9 @@ export const Products: CollectionConfig = {
                 return filterValuesByGroupId(groupId)
               },
               admin: {
-                allowCreate: false,
+                allowCreate: true,
                 description:
-                  'Only pick values that belong to the variant group selected in this row (e.g. Color values on the Color row). If you change the group, clear old values and re-select.',
+                  'Values offered for this product on this dimension. Pick existing catalog values or use Create New in the picker.',
               },
             },
           ],
