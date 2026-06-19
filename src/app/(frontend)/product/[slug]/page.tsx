@@ -10,7 +10,8 @@ import { ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
-import type { Product, Brand } from '@/payload-types'
+import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
+import type { Category, Product, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { ProductDetailGrid } from '@/components/ProductDetailGrid'
 
@@ -43,9 +44,16 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const product = (await getProductBySlug(slug)) as Product | null
   if (!product) return {}
 
+  const imageUrl = getImageUrl(getProductMainImage(product), 'card')
+
   return {
     title: product.seo?.title || product.title,
     description: product.seo?.description || product.description,
+    openGraph: {
+      title: product.seo?.title || product.title,
+      description: product.seo?.description || product.description,
+      images: imageUrl ? [{ url: imageUrl }] : [],
+    },
   }
 }
 
@@ -55,19 +63,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!product) notFound()
 
-  const [category, relatedProducts, { reviews, stats }, variants] = await Promise.all([
-    resolveProductCategory(product.category),
-    getRelatedProducts(product.id, getCategoryId(product.category), 4),
+  let category: Category | null = null
+  try {
+    category = await resolveProductCategory(product.category)
+  } catch {
+    category = null
+  }
+
+  let related: Product[] = []
+  try {
+    related = (await getRelatedProducts(
+      product.id,
+      getCategoryId(product.category),
+      4,
+    )) as Product[]
+  } catch {
+    related = []
+  }
+
+  const [{ reviews, stats }, variants] = await Promise.all([
     getProductReviews(product.id),
     product.enableVariants ? getProductVariants(product.id) : Promise.resolve([]),
   ])
-  const related = relatedProducts as Product[]
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://reviewcartdeals.com'
+  const siteUrl = getSiteUrl()
   const productUrl = `${siteUrl}/product/${product.slug}`
   const whatsappMessage = `Hello,\n\nI am interested in this product:\n\nProduct Name: ${product.title}\nProduct URL: ${productUrl}\n\nPlease share more details.`
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
+  const whatsappLink = getWhatsAppUrl(whatsappMessage) ?? '#'
 
   const brandTitle =
     typeof product.brand === 'object' && product.brand !== null
@@ -82,13 +104,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
             Home
           </Link>
           <ChevronRight className="h-3 w-3 flex-shrink-0" />
-          <Link
-            href={`/category/${category.slug}`}
-            className="hover:text-primary transition-colors flex-shrink-0"
-          >
-            {category.title}
-          </Link>
-          <ChevronRight className="h-3 w-3 flex-shrink-0" />
+          {category ? (
+            <>
+              <Link
+                href={`/category/${category.slug}`}
+                className="hover:text-primary transition-colors flex-shrink-0"
+              >
+                {category.title}
+              </Link>
+              <ChevronRight className="h-3 w-3 flex-shrink-0" />
+            </>
+          ) : (
+            <>
+              <Link href="/search" className="hover:text-primary transition-colors flex-shrink-0">
+                Catalog
+              </Link>
+              <ChevronRight className="h-3 w-3 flex-shrink-0" />
+            </>
+          )}
           <span className="text-foreground line-clamp-1">{product.title}</span>
         </div>
       </nav>

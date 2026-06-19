@@ -1,13 +1,17 @@
 import type { BasePayload, Where } from 'payload'
 
 import { getBrandIdsByTitlesCached, getCategoryIdsBySlugCached } from '@/lib/cachedLookups'
+import { type CatalogSort, parseCatalogSort } from '@/lib/catalogUrl'
 import { withPublishedOnly } from '@/lib/publishedOnly'
+
+export type { CatalogSort }
 
 export interface CatalogQueryOptions {
   categorySlug?: string
   featured?: boolean
   search?: string
   brand?: string
+  sort?: CatalogSort | string
   page?: number
   limit?: number
 }
@@ -23,9 +27,23 @@ const CATALOG_CARD_SELECT = {
   featured: true,
   limitedEdition: true,
   enableVariants: true,
+  averageRating: true,
+  reviewCount: true,
   createdAt: true,
   updatedAt: true,
 } as const
+
+export function resolveCatalogSort(sort?: CatalogSort | string): string {
+  switch (parseCatalogSort(typeof sort === 'string' ? sort : sort)) {
+    case 'newest':
+      return '-createdAt'
+    case 'rating':
+      return '-averageRating,-reviewCount,-createdAt'
+    case 'popular':
+    default:
+      return '-featured,-createdAt'
+  }
+}
 
 const IMPOSSIBLE_ID = -1
 
@@ -127,7 +145,7 @@ async function findProductIdsByFullTextSearch(
 }
 
 export async function findCatalogProducts(payload: BasePayload, options: CatalogQueryOptions = {}) {
-  const { page = 1, limit = 12 } = options
+  const { page = 1, limit = 12, sort } = options
   const where = await buildProductsWhere(options, payload)
 
   return payload.find({
@@ -136,7 +154,7 @@ export async function findCatalogProducts(payload: BasePayload, options: Catalog
     page,
     limit,
     depth: 1,
-    sort: '-createdAt',
+    sort: resolveCatalogSort(sort),
     select: CATALOG_CARD_SELECT,
   })
 }

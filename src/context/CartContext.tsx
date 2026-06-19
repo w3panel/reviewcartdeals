@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
 import type { Product, ProductVariant } from '@/payload-types'
 import { getCartItemKey } from '@/lib/productVariants'
 import {
@@ -10,18 +10,23 @@ import {
   toDisplayVariant,
   toStoredProductSummary,
   toStoredVariantSummary,
+  type DisplayProduct,
+  type DisplayVariant,
   type StoredCartItem,
 } from '@/lib/clientStorage'
 
 type CartItem = {
-  product: Product
-  variant?: ProductVariant | null
+  product: DisplayProduct
+  variant?: DisplayVariant | null
   quantity: number
 }
 
 type CartContextType = {
   items: CartItem[]
-  addItem: (product: Product, variant?: ProductVariant | null) => void
+  addItem: (
+    product: Product | DisplayProduct,
+    variant?: ProductVariant | DisplayVariant | null,
+  ) => void
   removeItem: (productId: string | number, variantId?: string | null) => void
   updateQuantity: (productId: string | number, quantity: number, variantId?: string | null) => void
   clearCart: () => void
@@ -41,13 +46,15 @@ function hydrateCartItems(stored: StoredCartItem[]): CartItem[] {
 
 function serializeCartItems(items: CartItem[]): StoredCartItem[] {
   return items.map((item) => ({
-    product: toStoredProductSummary(item.product),
-    variant: toStoredVariantSummary(item.variant),
+    product: toStoredProductSummary(item.product as Product),
+    variant: toStoredVariantSummary(item.variant as ProductVariant | null),
     quantity: item.quantity,
   }))
 }
 
 function loadStoredCart(): StoredCartItem[] {
+  if (typeof window === 'undefined') return []
+
   try {
     const saved = localStorage.getItem(CART_STORAGE_KEY)
     if (saved) {
@@ -70,14 +77,32 @@ function loadStoredCart(): StoredCartItem[] {
   return []
 }
 
+function normalizeProduct(product: Product | DisplayProduct): DisplayProduct {
+  return 'category' in product
+    ? toDisplayProduct(toStoredProductSummary(product as Product))
+    : product
+}
+
+function normalizeVariant(
+  variant: ProductVariant | DisplayVariant | null | undefined,
+): DisplayVariant | null {
+  if (!variant) return null
+  return 'product' in variant
+    ? toDisplayVariant(toStoredVariantSummary(variant as ProductVariant))
+    : variant
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<CartItem[]>(() => hydrateCartItems(loadStoredCart()))
+  const hydratedRef = useRef(false)
 
   useEffect(() => {
-    setItems(hydrateCartItems(loadStoredCart()))
+    hydratedRef.current = true
   }, [])
 
   useEffect(() => {
+    if (!hydratedRef.current) return
+
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(serializeCartItems(items)))
     } catch (e) {
@@ -85,8 +110,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items])
 
-  const addItem = (product: Product, variant?: ProductVariant | null) => {
-    const itemKey = getCartItemKey(product.id, variant?.id)
+  const addItem = (
+    product: Product | DisplayProduct,
+    variant?: ProductVariant | DisplayVariant | null,
+  ) => {
+    const displayProduct = normalizeProduct(product)
+    const displayVariant = normalizeVariant(variant)
+    const itemKey = getCartItemKey(displayProduct.id, displayVariant?.id)
 
     setItems((prev) => {
       const existing = prev.find(
@@ -99,7 +129,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             : item,
         )
       }
-      return [...prev, { product, variant: variant ?? null, quantity: 1 }]
+      return [...prev, { product: displayProduct, variant: displayVariant, quantity: 1 }]
     })
   }
 

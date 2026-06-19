@@ -1,64 +1,59 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useSearchParams } from 'next/navigation'
 import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import type { Product, Category, Brand } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 import { FormSelect } from '@/components/FormSelect'
 
-interface SearchCatalogProps {
-  categories: Category[]
-  brands: string[]
-}
-
-interface CatalogResponse {
-  docs: Product[]
+export interface SearchCatalogData {
+  products: Product[]
   totalDocs: number
   totalPages: number
   page: number
 }
 
-export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
-  const searchParams = useSearchParams()
-  const q = searchParams.get('q') || ''
-  const category = searchParams.get('category') || ''
-  const brand = searchParams.get('brand') || ''
-  const page = searchParams.get('page') || '1'
+export interface SearchCatalogParams {
+  q: string
+  category: string
+  brand: string
+  sort: CatalogSort
+  page: number
+}
 
-  const [data, setData] = useState<CatalogResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+interface SearchCatalogProps {
+  categories: Category[]
+  brands: string[]
+  catalog: SearchCatalogData
+  params: SearchCatalogParams
+}
 
-  useEffect(() => {
-    const params = new URLSearchParams()
-    if (q) params.set('q', q)
-    if (category && category !== 'ALL') params.set('category', category)
-    if (brand && brand !== 'ALL') params.set('brand', brand)
-    if (page) params.set('page', page)
+function buildPageHref(params: SearchCatalogParams, page: number): string {
+  return buildCatalogSearchUrl({
+    q: params.q || undefined,
+    category: params.category || null,
+    brand: params.brand || null,
+    sort: params.sort,
+    page,
+  })
+}
 
-    setLoading(true)
-    fetch(`/api/products/catalog?${params.toString()}`)
-      .then((res) => res.json() as Promise<CatalogResponse>)
-      .then((result) => {
-        setData(result)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [q, category, brand, page])
-
-  const products = data?.docs ?? []
-  const totalDocs = data?.totalDocs ?? 0
-  const totalPages = data?.totalPages ?? 1
-  const currentPage = Number(page) || 1
+export function SearchCatalog({ categories, brands, catalog, params }: SearchCatalogProps) {
+  const { products, totalDocs, totalPages, page: currentPage } = catalog
+  const { q, category, brand, sort } = params
 
   const categoryOptions = categories
     .filter((cat) => cat.slug)
     .map((cat) => ({ value: cat.slug as string, label: cat.title }))
 
   const brandOptions = brands.map((b) => ({ value: b, label: b }))
+
+  const sortOptions = (['popular', 'newest', 'rating'] as CatalogSort[]).map((value) => ({
+    value,
+    label: catalogSortToLabel(value),
+  }))
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
@@ -71,7 +66,7 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
             </h2>
           </div>
 
-          <form method="GET" className="flex flex-col gap-6">
+          <form method="GET" action="/search" className="flex flex-col gap-6">
             <div>
               <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                 Search Text
@@ -104,6 +99,15 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
               options={brandOptions}
             />
 
+            <FormSelect
+              name="sort"
+              defaultValue={sort}
+              label="Sort By"
+              placeholder="Popular"
+              options={sortOptions}
+              emptyValue="popular"
+            />
+
             <button
               type="submit"
               className="w-full rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary-hover"
@@ -115,7 +119,7 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
       </div>
 
       <div className="lg:col-span-3">
-        <form method="GET" className="mb-6 flex flex-col gap-3 lg:hidden">
+        <form method="GET" action="/search" className="mb-6 flex flex-col gap-3 lg:hidden">
           <div className="relative">
             <input
               type="text"
@@ -140,6 +144,13 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
               options={brandOptions}
             />
           </div>
+          <FormSelect
+            name="sort"
+            defaultValue={sort}
+            placeholder="Popular"
+            options={sortOptions}
+            emptyValue="popular"
+          />
           <button
             type="submit"
             className="rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground"
@@ -150,9 +161,9 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
 
         <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {loading ? 'Searching...' : `Found ${totalDocs} Products`}
+            Found {totalDocs} Products · {catalogSortToLabel(sort)}
           </span>
-          {(q || category || brand) && (
+          {(q || category || brand || sort !== 'popular') && (
             <Link
               href="/search"
               className="text-xs font-semibold uppercase tracking-widest text-primary transition-colors hover:text-foreground"
@@ -162,9 +173,7 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
           )}
         </div>
 
-        {loading ? (
-          <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <div className="rounded-xl border border-border bg-card py-20 text-center">
             <p className="text-lg text-muted-foreground">
               No products found matching your filters.
@@ -220,7 +229,7 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
               <div className="mt-16 flex items-center justify-center gap-4">
                 {currentPage > 1 ? (
                   <Link
-                    href={`/search?q=${q}&category=${category}&brand=${brand}&page=${currentPage - 1}`}
+                    href={buildPageHref(params, currentPage - 1)}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -237,7 +246,7 @@ export function SearchCatalog({ categories, brands }: SearchCatalogProps) {
 
                 {currentPage < totalPages ? (
                   <Link
-                    href={`/search?q=${q}&category=${category}&brand=${brand}&page=${currentPage + 1}`}
+                    href={buildPageHref(params, currentPage + 1)}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronRight className="h-5 w-5" />

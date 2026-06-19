@@ -1,11 +1,11 @@
 {
   "name": "reviewcartdeals",
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "description": "Luxury product showcase and WhatsApp enquiry storefront powered by Payload CMS and Next.js",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "migrate:production": "NODE_ENV=production PAYLOAD_SECRET=${PAYLOAD_SECRET:-ignore} payload migrate",
+    "migrate:production": "NODE_ENV=production payload migrate",
     "prebuild": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts",
     "prebuild:with-migrate": "bun run migrate:production && bun run prebuild",
     "analyze": "NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/write-build-slugs.ts && cross-env ANALYZE=true NODE_ENV=production NEXT_PHASE=phase-production-build NODE_OPTIONS=--no-deprecation next build --webpack && NODE_OPTIONS=--no-deprecation bunx tsx src/scripts/strip-vercel-og-trace.ts",

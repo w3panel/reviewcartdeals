@@ -55,7 +55,7 @@ async function fetchBuildSlugs(): Promise<BuildSlugs> {
 
 /**
  * Slugs for generateStaticParams. During `next build`, reads a file written
- * by the prebuild script so parallel workers do not hammer D1 concurrently.
+ * by the prebuild script so parallel workers do not hammer Postgres concurrently.
  */
 export async function getBuildSlugs(): Promise<BuildSlugs> {
   if (process.env.NEXT_PHASE === 'phase-production-build') {

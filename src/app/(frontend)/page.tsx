@@ -19,8 +19,8 @@ const FrontPageCatalog = dynamic(
   },
 )
 
-const HomeFilterHost = dynamic(() =>
-  import('@/components/HomeFilterHost').then((mod) => ({ default: mod.HomeFilterHost })),
+const CatalogFilterHost = dynamic(() =>
+  import('@/components/CatalogFilterHost').then((mod) => ({ default: mod.CatalogFilterHost })),
 )
 
 export const revalidate = 120
@@ -55,15 +55,10 @@ export default async function HomePage() {
       <CategoryScroller categories={categories} />
       <FeaturedReviews products={productsWithStats} />
       <div className="hidden md:block">
-        <FrontPageCatalog
-          categories={categories}
-          brands={brands}
-          initialProducts={productsWithStats}
-          initialTotalDocs={totalDocs}
-        />
+        <FrontPageCatalog initialProducts={productsWithStats} initialTotalDocs={totalDocs} />
       </div>
       <ValuePropositions />
-      <HomeFilterHost categories={categories} brands={brands} initialTotalDocs={totalDocs} />
+      <CatalogFilterHost categories={categories} brands={brands} initialTotalDocs={totalDocs} />
     </div>
   )
 }

@@ -1,119 +1,102 @@
-# Payload Cloudflare Template
+# ReviewCartDeals
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/payloadcms/payload/tree/main/templates/with-cloudflare-d1)
+Luxury product showcase and WhatsApp enquiry storefront built with **Next.js 16**, **Payload CMS 3**, **PostgreSQL**, and **Cloudflare R2** media storage. Deployed on **Vercel**.
 
-**This can only be deployed on Paid Workers right now due to size limits.** This template comes configured with the bare minimum to get started on anything you need.
+## Stack
+
+- **Frontend:** Next.js App Router, React 19, Tailwind CSS 4
+- **CMS:** Payload 3 with draft/publish workflow
+- **Database:** PostgreSQL (local Docker or Neon on Vercel)
+- **Media:** R2 via `@payloadcms/storage-s3`
+- **Enquiry flow:** Client-side cart → WhatsApp message (no checkout)
 
 ## Quick start
 
-This template can be deployed directly to Cloudflare Workers by clicking the button to take you to the setup screen.
+### 1. Prerequisites
 
-From there you can connect your code to a git provider such Github or Gitlab, name your Workers, D1 Database and R2 Bucket as well as attach any additional environment variables or services you need.
+- Node.js 22+
+- [Bun](https://bun.sh)
+- Docker (for local Postgres)
 
-## Quick Start - local setup
-
-To spin up this template locally, follow these steps:
-
-### Clone
-
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. Cloudflare will connect your app to a git provider such as Github and you can access your code from there.
-
-### Local Development
-
-## How it works
-
-Out of the box, using [`Wrangler`](https://developers.cloudflare.com/workers/wrangler/) will automatically create local bindings for you to connect to the remote services and it can even create a local mock of the services you're using with Cloudflare.
-
-We've pre-configured Payload for you with the following:
-
-### Collections
-
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
-
-- #### Users (Authentication)
-
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection.
-
-### Image Storage (R2)
-
-Images will be served from an R2 bucket which you can then further configure to use a CDN to serve for your frontend directly.
-
-### D1 Database
-
-The Worker will have direct access to a D1 SQLite database which Wrangler can connect locally to, just note that you won't have a connection string as you would typically with other providers.
-
-You can enable read replicas by adding `readReplicas: 'first-primary'` in the DB adapter and then enabling it on your D1 Cloudflare dashboard. Read more about this feature on [our docs](https://payloadcms.com/docs/database/sqlite#d1-read-replicas).
-
-## Working with Cloudflare
-
-Firstly, after installing dependencies locally you need to authenticate with Wrangler by running:
+### 2. Environment
 
 ```bash
-pnpm wrangler login
+cp .env.example .env
 ```
 
-This will take you to Cloudflare to login and then you can use the Wrangler CLI locally for anything, use `pnpm wrangler help` to see all available options.
+Edit `.env` with your database URL, `PAYLOAD_SECRET`, and optional R2 credentials.
 
-Wrangler is pretty smart so it will automatically bind your services for local development just by running `pnpm dev`.
-
-## Deployments
-
-When you're ready to deploy, first make sure you have created your migrations:
+### 3. Database
 
 ```bash
-pnpm payload migrate:create
+bun run db:up
 ```
 
-Then run the following command:
+Or use the SQL helper as a superuser:
 
 ```bash
-pnpm run deploy
+psql -U postgres -f scripts/setup-postgres.sql
 ```
 
-This will spin up Wrangler in `production` mode, run any created migrations, build the app and then deploy the bundle up to Cloudflare.
+### 4. Install & run
 
-That's it! You can if you wish move these steps into your CI pipeline as well.
+```bash
+bun install
+bun run dev
+```
 
-## Enabling logs
+- Storefront: [http://localhost:3000](http://localhost:3000)
+- Admin: [http://localhost:3000/admin](http://localhost:3000/admin)
 
-By default logs are not enabled for your API, we've made this decision because it does run against your quota so we've left it opt-in. But you can easily enable logs in one click in the Cloudflare panel, [see docs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs).
+`predev` runs Payload migrations automatically.
 
-### Logger Configuration
+## Scripts
 
-This template includes a custom console-based logger compatible with Cloudflare Workers. Payload's default logger uses `pino-pretty`, which relies on Node.js APIs not available in Workers and would cause `fs.write is not implemented` errors.
+| Command                     | Description                         |
+| --------------------------- | ----------------------------------- |
+| `bun run dev`               | Migrate + start dev server          |
+| `bun run build`             | Prebuild slugs + production build   |
+| `bun run check`             | Format, lint, typecheck, unit tests |
+| `bun run test:e2e`          | Playwright E2E tests                |
+| `bun run migrate`           | Run Payload migrations              |
+| `bun run seed`              | Seed sample data                    |
+| `bun run db:up` / `db:down` | Start/stop local Postgres           |
 
-The custom logger in `payload.config.ts`:
+## Deployment (Vercel)
 
-- Routes logs through `console.*` methods which Workers handles correctly
-- Outputs JSON-formatted logs for Cloudflare observability
-- Only active in production (development uses the default `pino-pretty` for better DX)
+1. Connect the repo to Vercel
+2. Set environment variables from `.env.example`
+3. Use a **pooled** Postgres URL for `DATABASE_URI` and a **direct** URL for `DATABASE_URL_DIRECT`
+4. Configure R2 credentials for media uploads
+5. Deploy — `vercel.json` runs migrations before build
 
-You can control the log level via the `PAYLOAD_LOG_LEVEL` environment variable (e.g., `debug`, `info`, `warn`, `error`).
+## Catalog & filters
 
-### Diagnostic Channel Errors
+Filtered and sorted catalog views live at `/search`. Query params:
 
-If you see "Failed to publish diagnostic channel message" errors in your observability logs, these typically come from the `undici` HTTP client library. The template includes `skipSafeFetch: true` in the Media collection to use native fetch instead of undici for file uploads, which helps reduce these errors.
+- `q` — full-text search
+- `category` — category slug
+- `brand` — brand title (comma-separated for multiple)
+- `sort` — `popular` | `newest` | `rating`
+- `page` — pagination
 
-Cloudflare Workers runs in an [isolated environment that cannot access private IP ranges](https://developers.cloudflare.com/workers-vpc/examples/route-across-private-services/) by default, providing built-in SSRF protection. This makes `skipSafeFetch` safe to use.
+Home page filters navigate to `/search` with the selected params.
 
-## Known issues
+## Collections
 
-### GraphQL
+- Users, Media, Categories, Brands, Tags
+- Products, Product Variants, Reviews
+- Variant Groups, Variant Values, Nav Items
 
-We are currently waiting on some issues with GraphQL to be [fixed upstream in Workers](https://github.com/cloudflare/workerd/issues/5175) so full support for GraphQL is not currently guaranteed when deployed.
+See [docs/variants.md](docs/variants.md) for the variant system overview.
 
-### Worker size limits
+## Testing
 
-We currently recommend deploying this template to the Paid Workers plan due to bundle [size limits](https://developers.cloudflare.com/workers/platform/limits/#worker-size) of 3mb. We're actively trying to reduce our bundle footprint over time to better meet this metric.
+```bash
+bun run check          # unit + lint + typecheck
+bun run test:e2e       # Playwright (requires running app or CI setup)
+```
 
-This also applies to your own code, in the case of importing a lot of libraries you may find yourself limited by the bundle.
+## License
 
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+MIT

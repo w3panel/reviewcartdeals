@@ -7,15 +7,17 @@ import { ArrowLeft, Trash2, Send } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import { getWhatsAppUrl } from '@/lib/siteConfig'
 import {
   formatVariantEnquiryDetails,
   formatVariantLabel,
   getCartItemKey,
 } from '@/lib/productVariants'
-import type { Product } from '@/payload-types'
+import type { DisplayProduct } from '@/lib/clientStorage'
+import type { Product, ProductVariant } from '@/payload-types'
 
 type ItemToRemove = {
-  product: Product
+  product: DisplayProduct
   variantId?: string | null
 }
 
@@ -41,17 +43,18 @@ export default function CartPage() {
       .map((item) => {
         const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
         if (item.variant) {
-          lines.push(`  ${formatVariantEnquiryDetails(item.variant).replace(/\n/g, '\n  ')}`)
+          lines.push(
+            `  ${formatVariantEnquiryDetails(item.variant as ProductVariant).replace(/\n/g, '\n  ')}`,
+          )
         }
         return lines.join('\n')
       })
       .join('\n')
-    const waText = encodeURIComponent(
-      `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`,
-    )
+    const message = `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`
+    const whatsappUrl = getWhatsAppUrl(message)
+    if (!whatsappUrl) return
 
-    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
-    window.open(`https://wa.me/${whatsappNumber}?text=${waText}`, '_blank')
+    window.open(whatsappUrl, '_blank')
     clearCart()
   }
 
@@ -98,9 +101,9 @@ export default function CartPage() {
                 className="flex gap-4 p-4 relative group"
               >
                 <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
-                  {getProductMainImage(item.product) ? (
+                  {getProductMainImage(item.product as Product) ? (
                     <Image
-                      src={getImageUrl(getProductMainImage(item.product), 'thumbnail')}
+                      src={getImageUrl(getProductMainImage(item.product as Product), 'thumbnail')}
                       alt={item.product.title}
                       fill
                       className="object-contain p-2"
@@ -116,7 +119,7 @@ export default function CartPage() {
                   </h3>
                   {item.variant && (
                     <p className="text-xs text-primary mt-2 leading-relaxed">
-                      {formatVariantLabel(item.variant)}
+                      {formatVariantLabel(item.variant as ProductVariant)}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">

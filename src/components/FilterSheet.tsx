@@ -2,10 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { FilterSelectField } from '@/components/FilterSelectField'
 import type { Category } from '@/payload-types'
+import { buildCatalogSearchUrl } from '@/lib/catalogUrl'
+import { getWhatsAppUrl } from '@/lib/siteConfig'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
 interface FilterSheetProps {
@@ -33,9 +36,10 @@ export function FilterSheet({
   handleClearAll,
   totalDocs,
 }: FilterSheetProps) {
+  const router = useRouter()
   const { isOpen, closeFilter } = useFilterSheet()
   const [openField, setOpenField] = useState<OpenField>(null)
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
+  const whatsappUrl = getWhatsAppUrl()
 
   const categoryOptions = useMemo(
     () =>
@@ -62,6 +66,15 @@ export function FilterSheet({
 
   const toggleField = (field: Exclude<OpenField, null>) => {
     setOpenField((current) => (current === field ? null : field))
+  }
+
+  const handleApplyFilters = () => {
+    const href = buildCatalogSearchUrl({
+      category: selectedCategory,
+      brand: selectedBrands,
+    })
+    closeFilter()
+    router.push(href)
   }
 
   if (!isOpen) return null
@@ -143,20 +156,22 @@ export function FilterSheet({
         <div className="mx-auto flex max-w-2xl overflow-hidden rounded-xl bg-primary shadow-[0_-8px_32px_rgba(212,175,55,0.12)]">
           <button
             type="button"
-            onClick={closeFilter}
+            onClick={handleApplyFilters}
             className="flex-1 px-4 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             Apply Filters ({totalDocs.toLocaleString()})
           </button>
-          <Link
-            href={`https://wa.me/${whatsappNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-14 items-center justify-center border-l border-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-hover"
-            aria-label="Contact on WhatsApp"
-          >
-            <WhatsAppIcon className="h-5 w-5" />
-          </Link>
+          {whatsappUrl ? (
+            <Link
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-14 items-center justify-center border-l border-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-hover"
+              aria-label="Contact on WhatsApp"
+            >
+              <WhatsAppIcon className="h-5 w-5" />
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>

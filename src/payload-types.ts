@@ -335,6 +335,14 @@ export interface Product {
     | null;
   category: number | Category;
   featured?: boolean | null;
+  /**
+   * Auto-calculated from published reviews.
+   */
+  averageRating?: number | null;
+  /**
+   * Auto-calculated from published reviews.
+   */
+  reviewCount?: number | null;
   limitedEdition?: boolean | null;
   /**
    * Turn on when this product has selectable options (e.g. color or size). Configure groups and values below, then generate combinations.
@@ -750,6 +758,8 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   category?: T;
   featured?: T;
+  averageRating?: T;
+  reviewCount?: T;
   limitedEdition?: T;
   enableVariants?: T;
   variantGroupSettings?:
