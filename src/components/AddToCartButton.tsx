@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { ClipboardList } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import type { Product, ProductVariant } from '@/payload-types'
@@ -18,29 +18,22 @@ export function AddToCartButton({
   variant = null,
   disabled = false,
 }: AddToCartButtonProps) {
+  const router = useRouter()
   const { addItem } = useCart()
-  const productHasVariants = Boolean(product.enableVariants)
 
-  if (productHasVariants && !variant) {
-    return (
-      <Link
-        href={`/product/${product.slug}`}
-        className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3 text-xs font-bold text-primary-foreground uppercase tracking-widest bg-primary transition-colors duration-300 rounded-lg hover:bg-primary-hover"
-      >
-        Select Options
-      </Link>
-    )
-  }
-
-  const handleAdd = (e: React.MouseEvent) => {
+  const handleAddToEnquiry = (e: React.MouseEvent) => {
     e.preventDefault()
-    addItem(product, variant)
+    e.stopPropagation()
+    if (disabled) return
+
+    addItem(product, variant ?? null)
+    router.push('/cart')
   }
 
   return (
     <button
       type="button"
-      onClick={handleAdd}
+      onClick={handleAddToEnquiry}
       disabled={disabled}
       className="flex flex-1 items-center justify-center w-full gap-2 px-4 py-3 text-xs font-bold text-primary-foreground uppercase tracking-widest bg-primary transition-colors duration-300 rounded-lg hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
     >
