@@ -128,8 +128,10 @@ export const Products: CollectionConfig = {
       name: 'brand',
       type: 'relationship',
       relationTo: 'brands',
-      required: true,
       index: true,
+      admin: {
+        description: 'Optional. Leave empty if the product has no brand.',
+      },
     },
     {
       name: 'description',

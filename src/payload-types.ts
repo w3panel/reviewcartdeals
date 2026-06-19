@@ -319,7 +319,10 @@ export interface Product {
    * Auto-generated from title when empty. Edit to override.
    */
   slug: string;
-  brand: number | Brand;
+  /**
+   * Optional. Leave empty if the product has no brand.
+   */
+  brand?: (number | null) | Brand;
   /**
    * Product description shown on listings and the product page.
    */
