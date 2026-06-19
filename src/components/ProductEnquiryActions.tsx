@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { ShoppingBag } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import type { Product, ProductVariant } from '@/payload-types'
 import {
@@ -9,7 +10,8 @@ import {
   getVariantOptionTypes,
   type SelectedVariantOptions,
 } from '@/lib/productVariants'
-import { AddToCartButton } from '@/components/AddToCartButton'
+import { useCart } from '@/context/CartContext'
+import { useRouter } from 'next/navigation'
 import { VariantSelector } from '@/components/VariantSelector'
 
 type ProductEnquiryActionsProps = {
@@ -33,6 +35,10 @@ export function ProductEnquiryActions({
   showVariantSelector,
   requireVariantSelection,
 }: ProductEnquiryActionsProps) {
+  const router = useRouter()
+  const { addItem } = useCart()
+  const hasSpecifications = Boolean(product.specifications && product.specifications.length > 0)
+
   const enquiryWhatsappLink = useMemo(() => {
     const url = new URL(whatsappLink)
     const message = decodeURIComponent(url.searchParams.get('text') ?? '')
@@ -55,6 +61,12 @@ export function ProductEnquiryActions({
 
   const selectionIncomplete = requireVariantSelection && !selectedVariant
 
+  const handleAddToEnquiry = () => {
+    if (selectionIncomplete) return
+    addItem(product, selectedVariant ?? null)
+    router.push('/cart')
+  }
+
   return (
     <>
       {showVariantSelector && (
@@ -63,15 +75,16 @@ export function ProductEnquiryActions({
           variants={variants}
           selectedOptions={selectedOptions}
           onSelectOptions={onSelectOptions}
+          showSizeChartLink={hasSpecifications}
         />
       )}
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-8 flex flex-col gap-3">
         <a
           href={enquiryWhatsappLink}
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-lg bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
             selectionIncomplete ? 'pointer-events-none opacity-50' : ''
           }`}
           aria-disabled={selectionIncomplete}
@@ -80,11 +93,15 @@ export function ProductEnquiryActions({
           <WhatsAppIcon className="h-5 w-5" />
           Enquire via WhatsApp
         </a>
-        <AddToCartButton
-          product={product}
-          variant={selectedVariant}
+        <button
+          type="button"
+          onClick={handleAddToEnquiry}
           disabled={selectionIncomplete}
-        />
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+        >
+          <ShoppingBag className="h-5 w-5" />
+          Add to Enquiry
+        </button>
       </div>
     </>
   )
