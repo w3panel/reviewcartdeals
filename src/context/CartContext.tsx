@@ -47,7 +47,7 @@ function hydrateCartItems(stored: StoredCartItem[]): CartItem[] {
 function serializeCartItems(items: CartItem[]): StoredCartItem[] {
   return items.map((item) => ({
     product: toStoredProductSummary(item.product as Product),
-    variant: toStoredVariantSummary(item.variant as ProductVariant | null),
+    variant: toStoredVariantSummary(item.variant),
     quantity: item.quantity,
   }))
 }

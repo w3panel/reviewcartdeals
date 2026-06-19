@@ -14,7 +14,7 @@ import {
   getCartItemKey,
 } from '@/lib/productVariants'
 import type { DisplayProduct } from '@/lib/clientStorage'
-import type { Product, ProductVariant } from '@/payload-types'
+import type { Product } from '@/payload-types'
 
 type ItemToRemove = {
   product: DisplayProduct
@@ -43,9 +43,10 @@ export default function CartPage() {
       .map((item) => {
         const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
         if (item.variant) {
-          lines.push(
-            `  ${formatVariantEnquiryDetails(item.variant as ProductVariant).replace(/\n/g, '\n  ')}`,
-          )
+          const variantDetails = formatVariantEnquiryDetails(item.variant)
+          if (variantDetails) {
+            lines.push(`  ${variantDetails.replace(/\n/g, '\n  ')}`)
+          }
         }
         return lines.join('\n')
       })
@@ -119,7 +120,7 @@ export default function CartPage() {
                   </h3>
                   {item.variant && (
                     <p className="text-xs text-primary mt-2 leading-relaxed">
-                      {formatVariantLabel(item.variant as ProductVariant)}
+                      {formatVariantLabel(item.variant)}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">

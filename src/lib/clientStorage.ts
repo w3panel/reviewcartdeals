@@ -1,4 +1,8 @@
 import type { Brand, Media, Product, ProductVariant } from '@/payload-types'
+import {
+  variantOptionSummariesFromProductVariant,
+  type VariantOptionSummary,
+} from '@/lib/productVariants'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 
 export const CART_STORAGE_KEY = 'reviewcartdeals_cart_v4'
@@ -17,6 +21,7 @@ export type StoredProductSummary = {
 export type StoredVariantSummary = {
   id: number | string
   title?: string | null
+  options?: VariantOptionSummary[]
 }
 
 export type StoredCartItem = {
@@ -42,6 +47,7 @@ export type DisplayProduct = {
 export type DisplayVariant = {
   id: number | string
   title?: string | null
+  options?: VariantOptionSummary[]
   updatedAt: string
   createdAt: string
 }
@@ -68,14 +74,27 @@ export function toStoredProductSummary(product: Product | DisplayProduct): Store
   }
 }
 
+function resolveStoredVariantOptions(
+  variant: ProductVariant | DisplayVariant,
+): VariantOptionSummary[] | undefined {
+  const firstOption = variant.options?.[0]
+  if (firstOption && 'groupLabel' in firstOption && 'valueLabel' in firstOption) {
+    return variant.options as VariantOptionSummary[]
+  }
+
+  const options = variantOptionSummariesFromProductVariant(variant as ProductVariant)
+  return options.length > 0 ? options : undefined
+}
+
 export function toStoredVariantSummary(
-  variant: ProductVariant | null | undefined,
+  variant: ProductVariant | DisplayVariant | null | undefined,
 ): StoredVariantSummary | null {
   if (!variant) return null
 
   return {
     id: variant.id,
     title: variant.title,
+    options: resolveStoredVariantOptions(variant),
   }
 }
 
@@ -115,6 +134,7 @@ export function toDisplayVariant(
   return {
     id: summary.id,
     title: summary.title ?? undefined,
+    options: summary.options,
     updatedAt: '',
     createdAt: '',
   }
