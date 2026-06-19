@@ -54,10 +54,12 @@ export async function getBrandIdsByTitlesCached(
   return titles.map((title) => titleToId[title]).filter((id): id is string => Boolean(id))
 }
 
-export async function getCategoryIdsBySlugCached(
-  slug: string,
+export async function getCategoryIdsBySlugsCached(
+  slugs: string[],
   _payload?: BasePayload,
 ): Promise<string[]> {
+  if (slugs.length === 0) return []
+
   void _payload
 
   const slugToId = await unstable_cache(
@@ -69,8 +71,15 @@ export async function getCategoryIdsBySlugCached(
     { tags: [CACHE_TAGS.categories, CACHE_TAGS.lookups], revalidate: LOOKUP_REVALIDATE_SECONDS },
   )()
 
-  const id = slugToId[slug]
-  return id ? [id] : []
+  return slugs.map((slug) => slugToId[slug]).filter((id): id is string => Boolean(id))
+}
+
+/** @deprecated Use getCategoryIdsBySlugsCached with a single-item array. */
+export async function getCategoryIdsBySlugCached(
+  slug: string,
+  payload?: BasePayload,
+): Promise<string[]> {
+  return getCategoryIdsBySlugsCached([slug], payload)
 }
 
 export async function getAllBrandTitlesCached(payload?: BasePayload): Promise<string[]> {

@@ -1,11 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { Category } from '@/payload-types'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
-import { buildSearchPathFromSnapshot } from '@/lib/catalogFilterParams'
+import { buildSearchPathFromSnapshot, snapshotFromSearchParams } from '@/lib/catalogFilterParams'
 import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
@@ -13,32 +13,55 @@ const FilterSheet = dynamic(() =>
   import('@/components/FilterSheet').then((mod) => ({ default: mod.FilterSheet })),
 )
 
-type HomeFilterHostProps = {
+type SearchFilterHostProps = {
   categories: Category[]
   brands: string[]
   filterOptions: CatalogFilterOptions
   initialTotalDocs: number
 }
 
-export function HomeFilterHost({
+function scrollToCatalogResults() {
+  requestAnimationFrame(() => {
+    document
+      .getElementById('catalog-results')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
+}
+
+export function SearchFilterHost({
   categories,
   brands,
   filterOptions,
   initialTotalDocs,
-}: HomeFilterHostProps) {
+}: SearchFilterHostProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { closeFilter } = useFilterSheet()
-  const filters = useCatalogFilterState({ initialTotalDocs })
+
+  const appliedFilters = useMemo(() => snapshotFromSearchParams(searchParams), [searchParams])
+
+  const filters = useCatalogFilterState({
+    initialTotalDocs,
+    initialFilters: appliedFilters,
+  })
+
+  const { applyFilterSnapshot } = filters
+
+  useEffect(() => {
+    applyFilterSnapshot(appliedFilters)
+  }, [appliedFilters, applyFilterSnapshot])
 
   const handleApply = () => {
     router.push(buildSearchPathFromSnapshot(filters.getFilterSnapshot()))
     closeFilter()
+    scrollToCatalogResults()
   }
 
   const handleClearAll = () => {
     filters.handleClearAll()
     router.push('/search')
     closeFilter()
+    scrollToCatalogResults()
   }
 
   return (
