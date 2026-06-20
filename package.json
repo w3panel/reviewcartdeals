@@ -82,6 +82,6 @@
     "*.{js,jsx,ts,tsx,mts,cts}": "oxlint"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   }
 }
