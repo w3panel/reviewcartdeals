@@ -89,7 +89,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const siteUrl = getSiteUrl()
   const productUrl = `${siteUrl}/product/${product.slug}`
   const whatsappMessage = `Hello,\n\nI am interested in this product:\n\nProduct Name: ${product.title}\nProduct URL: ${productUrl}\n\nPlease share more details.`
-  const whatsappLink = getWhatsAppUrl(whatsappMessage) ?? '#'
+  const whatsappLink = getWhatsAppUrl(whatsappMessage)
 
   const brandTitle =
     typeof product.brand === 'object' && product.brand !== null
@@ -252,10 +252,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
           <a
-            href={whatsappLink}
+            href={whatsappLink ?? undefined}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg bg-whatsapp px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white flex-shrink-0"
+            className={`flex items-center gap-1.5 rounded-lg bg-whatsapp px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white flex-shrink-0 ${
+              whatsappLink ? '' : 'pointer-events-none opacity-50'
+            }`}
+            aria-disabled={!whatsappLink}
+            tabIndex={whatsappLink ? undefined : -1}
           >
             <WhatsAppIcon className="h-4 w-4" />
             Enquire

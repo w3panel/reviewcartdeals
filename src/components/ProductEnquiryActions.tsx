@@ -15,7 +15,7 @@ import { VariantSelector } from '@/components/VariantSelector'
 type ProductEnquiryActionsProps = {
   product: Product
   variants: ProductVariant[]
-  whatsappLink: string
+  whatsappLink: string | null
   selectedOptions: SelectedVariantOptions
   onSelectOptions: (selectedOptions: SelectedVariantOptions) => void
   selectedVariant: ProductVariant | null
@@ -34,26 +34,33 @@ export function ProductEnquiryActions({
   requireVariantSelection,
 }: ProductEnquiryActionsProps) {
   const enquiryWhatsappLink = useMemo(() => {
-    const url = new URL(whatsappLink)
-    const message = decodeURIComponent(url.searchParams.get('text') ?? '')
-    const variantDetails = selectedVariant
-      ? formatVariantEnquiryDetails(selectedVariant)
-      : formatSelectedOptionsDetails(
-          product,
-          variants,
-          selectedOptions,
-          getVariantOptionTypes(product, variants),
-        )
-    const extraDetails = variantDetails ? `\n${variantDetails}` : ''
+    if (!whatsappLink) return null
 
-    if (extraDetails) {
-      url.searchParams.set('text', `${message}${extraDetails}`)
+    try {
+      const url = new URL(whatsappLink)
+      const message = decodeURIComponent(url.searchParams.get('text') ?? '')
+      const variantDetails = selectedVariant
+        ? formatVariantEnquiryDetails(selectedVariant)
+        : formatSelectedOptionsDetails(
+            product,
+            variants,
+            selectedOptions,
+            getVariantOptionTypes(product, variants),
+          )
+      const extraDetails = variantDetails ? `\n${variantDetails}` : ''
+
+      if (extraDetails) {
+        url.searchParams.set('text', `${message}${extraDetails}`)
+      }
+
+      return url.toString()
+    } catch {
+      return null
     }
-
-    return url.toString()
   }, [whatsappLink, selectedVariant, product, variants, selectedOptions])
 
   const selectionIncomplete = requireVariantSelection && !selectedVariant
+  const whatsappDisabled = selectionIncomplete || !enquiryWhatsappLink
 
   return (
     <>
@@ -68,14 +75,14 @@ export function ProductEnquiryActions({
 
       <div className="mt-6 flex flex-col gap-3">
         <a
-          href={enquiryWhatsappLink}
+          href={enquiryWhatsappLink ?? undefined}
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
-            selectionIncomplete ? 'pointer-events-none opacity-50' : ''
+            whatsappDisabled ? 'pointer-events-none opacity-50' : ''
           }`}
-          aria-disabled={selectionIncomplete}
-          tabIndex={selectionIncomplete ? -1 : undefined}
+          aria-disabled={whatsappDisabled}
+          tabIndex={whatsappDisabled ? -1 : undefined}
         >
           <WhatsAppIcon className="h-5 w-5" />
           Enquire via WhatsApp
