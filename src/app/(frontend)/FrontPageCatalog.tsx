@@ -7,7 +7,8 @@ import dynamic from 'next/dynamic'
 import { ChevronDown } from 'lucide-react'
 import type { Category } from '@/payload-types'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
-import { ProductReviewCard, type ProductWithStats } from '@/components/ProductReviewCard'
+import { ProductCard, type ProductWithStats } from '@/components/ProductCard'
+import { ProductCardGrid } from '@/components/ProductCardGrid'
 import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
 import { useFilterSheet } from '@/context/FilterSheetContext'
@@ -47,7 +48,7 @@ export function FrontPageCatalog({
 
   return (
     <>
-      <section className="px-4 pb-20 pt-2 md:pb-12">
+      <section className="px-4 pb-20 pt-6 md:pb-12 md:pt-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex items-center justify-between border-t border-border pt-6">
             <div>
@@ -68,7 +69,7 @@ export function FrontPageCatalog({
             </button>
           </div>
 
-          <p className="mb-4 text-sm text-muted-foreground">
+          <p className="mb-6 text-sm text-muted-foreground">
             {filters.isLoading ? 'Loading...' : `${filters.totalDocs.toLocaleString()} products`}
           </p>
 
@@ -77,15 +78,15 @@ export function FrontPageCatalog({
               <p className="text-muted-foreground">No products found matching your filters.</p>
             </div>
           ) : (
-            <div
-              className={`grid grid-cols-1 gap-4 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${
-                filters.isLoading ? 'pointer-events-none opacity-50' : ''
-              }`}
+            <ProductCardGrid
+              className={
+                filters.isLoading ? 'pointer-events-none opacity-50 transition-opacity' : ''
+              }
             >
               {products.map((product) => (
-                <ProductReviewCard key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} />
               ))}
-            </div>
+            </ProductCardGrid>
           )}
         </div>
       </section>
