@@ -3,17 +3,23 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getProductVariants, getRelatedProducts } from '@/services/products'
-import { getProductReviews } from '@/services/reviews'
+import {
+  getProductReviews,
+  emptyProductReviewStats,
+  getProductReviewStatsBatch,
+  type ProductReviewStats,
+} from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
-import { ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
+import { ChevronRight, ListCollapse, Award } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
 import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
-import type { Category, Product, Brand } from '@/payload-types'
-import { AddToCartButton } from '@/components/AddToCartButton'
+import type { Category, Product } from '@/payload-types'
 import { ProductDetailGrid } from '@/components/ProductDetailGrid'
+import { ProductCard, type ProductWithStats } from '@/components/ProductCard'
+import { ProductCardGrid } from '@/components/ProductCardGrid'
 
 const ProductReviews = dynamic(
   () => import('@/components/ProductReviews').then((mod) => ({ default: mod.ProductReviews })),
@@ -81,10 +87,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
     related = []
   }
 
-  const [{ reviews, stats }, variants] = await Promise.all([
+  const [{ reviews, stats }, variants, relatedStats] = await Promise.all([
     getProductReviews(product.id),
     product.enableVariants ? getProductVariants(product.id) : Promise.resolve([]),
+    related.length > 0
+      ? getProductReviewStatsBatch(related.map((prod) => prod.id))
+      : Promise.resolve(new Map<string | number, ProductReviewStats>()),
   ])
+
+  const relatedWithStats: ProductWithStats[] = related.map((prod) => ({
+    ...prod,
+    stats: relatedStats.get(prod.id) ?? emptyProductReviewStats(),
+  }))
 
   const siteUrl = getSiteUrl()
   const productUrl = `${siteUrl}/product/${product.slug}`
@@ -189,53 +203,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductReviews reviews={reviews} stats={stats} />
       </section>
 
-      {related.length > 0 && (
-        <section className="border-t border-border bg-card py-10 sm:py-14 mt-8">
+      {relatedWithStats.length > 0 ? (
+        <section className="mt-8 border-t border-border bg-card py-10 sm:py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h3 className="text-lg sm:text-xl font-semibold tracking-widest text-foreground uppercase mb-6 sm:mb-8">
+            <h3 className="mb-6 font-serif text-xl text-white sm:mb-8 sm:text-2xl">
               Related Products
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {related.map((prod) => (
-                <div
-                  key={prod.id}
-                  className="flex flex-col p-3 sm:p-5 border border-border rounded-2xl bg-background hover:border-primary transition-colors group"
-                >
-                  <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-3">
-                    <div className="relative aspect-square bg-card rounded-xl overflow-hidden">
-                      <SafeImage
-                        src={getImageUrl(getProductMainImage(prod), 'card')}
-                        alt={prod.title}
-                        fill
-                        sizes="(max-width: 1024px) 50vw, 25vw"
-                        className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div>
-                      {getProductBrandTitle(prod) ? (
-                        <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-wider">
-                          {getProductBrandTitle(prod)}
-                          {typeof prod.brand === 'object' &&
-                            prod.brand !== null &&
-                            (prod.brand as Brand).verified && (
-                              <BadgeCheck className="w-3.5 h-3.5" />
-                            )}
-                        </div>
-                      ) : null}
-                      <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight mt-1 line-clamp-2">
-                        {prod.title}
-                      </h3>
-                    </div>
-                  </Link>
-                  <div className="mt-3">
-                    <AddToCartButton product={prod} />
-                  </div>
-                </div>
+            <ProductCardGrid>
+              {relatedWithStats.map((prod) => (
+                <ProductCard key={prod.id} product={prod} />
               ))}
-            </div>
+            </ProductCardGrid>
           </div>
         </section>
-      )}
+      ) : null}
 
       <div className="fixed bottom-16 left-0 right-0 z-40 md:hidden border-t border-border bg-background/95 backdrop-blur px-4 py-3 pb-safe">
         <div className="flex items-center justify-between gap-3">
