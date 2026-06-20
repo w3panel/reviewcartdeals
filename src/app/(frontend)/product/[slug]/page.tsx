@@ -1,13 +1,13 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { getProductBySlug, getProductVariants, getRelatedProducts } from '@/services/products'
 import { getProductReviews } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { ChevronRight, ListCollapse, Award, BadgeCheck } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
+import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
 import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
@@ -203,7 +203,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 >
                   <Link href={`/product/${prod.slug}`} className="flex flex-col flex-grow gap-3">
                     <div className="relative aspect-square bg-card rounded-xl overflow-hidden">
-                      <Image
+                      <SafeImage
                         src={getImageUrl(getProductMainImage(prod), 'card')}
                         alt={prod.title}
                         fill
@@ -241,7 +241,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-card border border-border">
-              <Image
+              <SafeImage
                 src={getImageUrl(getProductMainImage(product), 'thumbnail')}
                 alt={product.title}
                 width={44}

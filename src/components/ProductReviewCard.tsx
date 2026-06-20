@@ -2,9 +2,9 @@
 
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Star } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
+import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 import { getWhatsAppUrl } from '@/lib/siteConfig'
 import type { Brand, Product } from '@/payload-types'
@@ -47,7 +47,7 @@ export function ProductReviewCard({
         href={`/product/${product.slug}`}
         className={`relative bg-black ${isFeatured ? 'aspect-[3/4]' : 'aspect-[4/3]'}`}
       >
-        <Image
+        <SafeImage
           src={getImageUrl(getProductMainImage(product), 'card')}
           alt={product.title}
           fill

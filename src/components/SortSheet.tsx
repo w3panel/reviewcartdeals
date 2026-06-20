@@ -3,12 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Check } from 'lucide-react'
-import {
-  buildCatalogSearchUrl,
-  catalogSortToLabel,
-  labelToCatalogSort,
-  type CatalogSort,
-} from '@/lib/catalogUrl'
+import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 
 interface SortSheetProps {
   isOpen: boolean

@@ -2,8 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowLeft, Heart } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 import { useLiked } from '@/context/LikedContext'
 import type { Product } from '@/payload-types'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
@@ -62,7 +62,7 @@ export default function LikedPage() {
               </button>
               <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
                 <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-background">
-                  <Image
+                  <SafeImage
                     src={getImageUrl(getProductMainImage(prod as Product), 'card')}
                     alt={prod.title}
                     fill

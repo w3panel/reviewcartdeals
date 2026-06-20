@@ -1,4 +1,5 @@
 import type { Media, Product } from '@/payload-types'
+import { FALLBACK_IMAGE_SRC } from '@/lib/imageFallback'
 
 type MediaWithSizes = Media & {
   sizes?: {
@@ -28,7 +29,7 @@ export function getImageUrl(
     }
   }
 
-  return '/placeholder.webp'
+  return FALLBACK_IMAGE_SRC
 }
 
 type GalleryRow = NonNullable<Product['gallery']>[number]

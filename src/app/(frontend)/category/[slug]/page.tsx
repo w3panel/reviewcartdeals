@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { SafeImage } from '@/components/SafeImage'
 import { getCategoryBySlug } from '@/services/categories'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { ChevronLeft } from 'lucide-react'
@@ -41,7 +41,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   return (
     <div className="w-full min-h-screen bg-background pb-20 md:pb-12">
       <section className="relative h-[30vh] sm:h-[40vh] w-full overflow-hidden border-b border-border">
-        <Image
+        <SafeImage
           src={bannerImageUrl}
           alt={category.title}
           fill

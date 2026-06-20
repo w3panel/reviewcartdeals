@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import Image from 'next/image'
+import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl } from '@/lib/utils'
 import type { Media } from '@/payload-types'
 
@@ -31,7 +31,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-background border border-border flex items-center justify-center p-4 sm:p-6">
-        <Image
+        <SafeImage
           src={getImageUrl(activeImage)}
           alt={activeImage.alt || title}
           fill
@@ -54,7 +54,7 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
                   : 'border-border hover:border-muted-foreground'
               }`}
             >
-              <Image
+              <SafeImage
                 src={getImageUrl(img)}
                 alt={img.alt || 'Thumbnail'}
                 fill

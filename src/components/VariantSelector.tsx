@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
 import { Check } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 import type { Media, Product, ProductVariant } from '@/payload-types'
 import {
   getPrimaryVisualType,
@@ -84,7 +84,7 @@ export function VariantSelector({
                       }`}
                     >
                       {thumb ? (
-                        <Image
+                        <SafeImage
                           src={getImageUrl(thumb, 'thumbnail')}
                           alt={choice.label}
                           fill

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 import { CatalogFilterFields } from '@/components/CatalogFilterFields'
 import { FilterActiveChips } from '@/components/FilterActiveChips'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
@@ -222,7 +222,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
                   >
                     <Link href={`/product/${prod.slug}`} className="flex h-full flex-col">
                       <div className="relative flex aspect-square w-full items-center justify-center bg-black p-3 sm:p-4">
-                        <Image
+                        <SafeImage
                           src={imageUrl}
                           alt={prod.title}
                           fill
