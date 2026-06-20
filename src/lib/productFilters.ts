@@ -1,12 +1,8 @@
 import type { BasePayload, Where } from 'payload'
 
-<<<<<<< HEAD
-import { getBrandIdsByTitlesCached, getCategoryIdsBySlugCached } from '@/lib/cachedLookups'
-import { type CatalogSort, parseCatalogSort } from '@/lib/catalogUrl'
-=======
 import { parseListParam, parseVariantsParam } from '@/lib/catalogFilterParams'
+import { type CatalogSort, parseCatalogSort } from '@/lib/catalogUrl'
 import { getBrandIdsByTitlesCached, getCategoryIdsBySlugsCached } from '@/lib/cachedLookups'
->>>>>>> 8ddc32c (enhanced filteres option)
 import { withPublishedOnly } from '@/lib/publishedOnly'
 import { findProductIdsByVariantFilters } from '@/lib/variantFilterLookups'
 
@@ -17,12 +13,9 @@ export interface CatalogQueryOptions {
   featured?: boolean
   search?: string
   brand?: string
-<<<<<<< HEAD
   sort?: CatalogSort | string
-=======
   spec?: string
   variants?: string
->>>>>>> 8ddc32c (enhanced filteres option)
   page?: number
   limit?: number
 }

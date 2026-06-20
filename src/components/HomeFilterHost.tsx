@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-export { CatalogFilterHost, HomeFilterHost } from '@/components/CatalogFilterHost'
-=======
 'use client'
 
 import React from 'react'
@@ -67,4 +64,3 @@ export function HomeFilterHost({
     />
   )
 }
->>>>>>> 8ddc32c (enhanced filteres option)

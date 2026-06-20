@@ -40,12 +40,9 @@ export const Products: CollectionConfig = {
         const q = searchParams.get('q') || undefined
         const category = searchParams.get('category') || undefined
         const brand = searchParams.get('brand') || undefined
-<<<<<<< HEAD
         const sort = searchParams.get('sort') || undefined
-=======
         const spec = searchParams.get('spec') || undefined
         const variants = searchParams.get('variants') || undefined
->>>>>>> 8ddc32c (enhanced filteres option)
         const page = Number(searchParams.get('page') || '1') || 1
 
         const allowedSorts = new Set(['popular', 'newest', 'rating'])
@@ -56,12 +53,9 @@ export const Products: CollectionConfig = {
           search: q,
           categorySlug: category === 'ALL' || !category ? undefined : category,
           brand: brand === 'ALL' || !brand ? undefined : brand,
-<<<<<<< HEAD
           sort: normalizedSort,
-=======
           spec: spec || undefined,
           variants: variants || undefined,
->>>>>>> 8ddc32c (enhanced filteres option)
           page,
           limit: 12,
         })

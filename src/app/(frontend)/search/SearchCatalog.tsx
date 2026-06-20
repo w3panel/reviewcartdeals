@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import React from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Search, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
-=======
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -21,16 +15,11 @@ import {
   hasActiveCatalogFilters,
   snapshotFromSearchParams,
 } from '@/lib/catalogFilterParams'
->>>>>>> 8ddc32c (enhanced filteres option)
+import { catalogSortToLabel, parseCatalogSort } from '@/lib/catalogUrl'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
-import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import type { Product, Category } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
 
-<<<<<<< HEAD
-export interface SearchCatalogData {
-  products: Product[]
-=======
 interface SearchCatalogProps {
   categories: Category[]
   brands: string[]
@@ -39,56 +28,27 @@ interface SearchCatalogProps {
 
 interface CatalogResponse {
   docs: Product[]
->>>>>>> 8ddc32c (enhanced filteres option)
   totalDocs: number
   totalPages: number
   page: number
 }
 
-<<<<<<< HEAD
-export interface SearchCatalogParams {
-  q: string
-  category: string
-  brand: string
-  sort: CatalogSort
-  page: number
-}
-=======
 export function SearchCatalog({ categories, brands, filterOptions }: SearchCatalogProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const appliedFilters = useMemo(() => snapshotFromSearchParams(searchParams), [searchParams])
+  const sort = parseCatalogSort(searchParams.get('sort'))
 
   const [searchQuery, setSearchQuery] = useState(appliedFilters.q)
   const [selectedCategories, setSelectedCategories] = useState(appliedFilters.categories)
   const [selectedBrands, setSelectedBrands] = useState(appliedFilters.brands)
   const [selectedSpecs, setSelectedSpecs] = useState(appliedFilters.specs)
   const [selectedVariants, setSelectedVariants] = useState(appliedFilters.variants)
->>>>>>> 8ddc32c (enhanced filteres option)
 
-interface SearchCatalogProps {
-  categories: Category[]
-  brands: string[]
-  catalog: SearchCatalogData
-  params: SearchCatalogParams
-}
+  const [data, setData] = useState<CatalogResponse | null>(null)
+  const [loading, setLoading] = useState(true)
 
-<<<<<<< HEAD
-function buildPageHref(params: SearchCatalogParams, page: number): string {
-  return buildCatalogSearchUrl({
-    q: params.q || undefined,
-    category: params.category || null,
-    brand: params.brand || null,
-    sort: params.sort,
-    page,
-  })
-}
-
-export function SearchCatalog({ categories, brands, catalog, params }: SearchCatalogProps) {
-  const { products, totalDocs, totalPages, page: currentPage } = catalog
-  const { q, category, brand, sort } = params
-=======
   useEffect(() => {
     setSearchQuery(appliedFilters.q)
     setSelectedCategories(appliedFilters.categories)
@@ -104,6 +64,7 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
       brands: appliedFilters.brands,
       specs: appliedFilters.specs,
       variants: appliedFilters.variants,
+      sort,
       page: searchParams.get('page') || '1',
     })
 
@@ -115,13 +76,12 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [appliedFilters, searchParams])
+  }, [appliedFilters, searchParams, sort])
 
   const products = data?.docs ?? []
   const totalDocs = data?.totalDocs ?? 0
   const totalPages = data?.totalPages ?? 1
   const currentPage = Number(searchParams.get('page') || '1') || 1
->>>>>>> 8ddc32c (enhanced filteres option)
 
   const hasFilters = hasActiveCatalogFilters({
     q: appliedFilters.q,
@@ -154,6 +114,7 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
       brands: appliedFilters.brands,
       specs: appliedFilters.specs,
       variants: appliedFilters.variants,
+      sort,
       page,
     })
     return buildSearchPath(params)
@@ -165,109 +126,10 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
     )
   }
 
-  const sortOptions = (['popular', 'newest', 'rating'] as CatalogSort[]).map((value) => ({
-    value,
-    label: catalogSortToLabel(value),
-  }))
-
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       <div className="hidden lg:col-span-1 lg:block">
         <div className="sticky top-28 rounded-xl border border-border bg-card p-6">
-<<<<<<< HEAD
-          <div className="mb-6 flex items-center gap-2 border-b border-border pb-4">
-            <SlidersHorizontal className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-white">
-              Filters
-            </h2>
-          </div>
-
-          <form method="GET" action="/search" className="flex flex-col gap-6">
-            <div>
-              <label className="mb-2 block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
-                Search Text
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="q"
-                  defaultValue={q}
-                  placeholder="Keyword..."
-                  className="w-full rounded-2xl border border-border bg-surface py-3 pl-9 pr-3 text-sm text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              </div>
-            </div>
-
-            <FormSelect
-              name="category"
-              defaultValue={category || 'ALL'}
-              label="Category"
-              placeholder="All Categories"
-              options={categoryOptions}
-            />
-
-            <FormSelect
-              name="brand"
-              defaultValue={brand || 'ALL'}
-              label="Brand"
-              placeholder="All Brands"
-              options={brandOptions}
-            />
-
-            <FormSelect
-              name="sort"
-              defaultValue={sort}
-              label="Sort By"
-              placeholder="Popular"
-              options={sortOptions}
-              emptyValue="popular"
-            />
-
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary-hover"
-            >
-              Apply Filters
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div className="lg:col-span-3">
-        <form method="GET" action="/search" className="mb-6 flex flex-col gap-3 lg:hidden">
-          <div className="relative">
-            <input
-              type="text"
-              name="q"
-              defaultValue={q}
-              placeholder="Search products..."
-              className="w-full rounded-2xl border border-border bg-surface py-3 pl-10 pr-3 text-sm text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-            />
-            <Search className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <FormSelect
-              name="category"
-              defaultValue={category || 'ALL'}
-              placeholder="All Categories"
-              options={categoryOptions}
-            />
-            <FormSelect
-              name="brand"
-              defaultValue={brand || 'ALL'}
-              placeholder="All Brands"
-              options={brandOptions}
-            />
-          </div>
-          <FormSelect
-            name="sort"
-            defaultValue={sort}
-            placeholder="Popular"
-            options={sortOptions}
-            emptyValue="popular"
-          />
-=======
           <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4 text-primary" />
@@ -302,7 +164,6 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
             setSelectedVariants={setSelectedVariants}
           />
 
->>>>>>> 8ddc32c (enhanced filteres option)
           <button
             type="button"
             onClick={applySidebarFilters}
@@ -322,13 +183,9 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
 
         <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Found {totalDocs} Products · {catalogSortToLabel(sort)}
+            {loading ? 'Searching...' : `Found ${totalDocs} Products · ${catalogSortToLabel(sort)}`}
           </span>
-<<<<<<< HEAD
-          {(q || category || brand || sort !== 'popular') && (
-=======
-          {hasFilters ? (
->>>>>>> 8ddc32c (enhanced filteres option)
+          {hasFilters || sort !== 'popular' ? (
             <Link
               href="/search"
               className="text-xs font-semibold uppercase tracking-widest text-primary transition-colors hover:text-foreground"
@@ -338,7 +195,9 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
           ) : null}
         </div>
 
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
+        ) : products.length === 0 ? (
           <div className="rounded-xl border border-border bg-card py-20 text-center">
             <p className="text-lg text-muted-foreground">
               No products found matching your filters.
@@ -395,11 +254,7 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
               <div className="mt-16 flex items-center justify-center gap-4">
                 {currentPage > 1 ? (
                   <Link
-<<<<<<< HEAD
-                    href={buildPageHref(params, currentPage - 1)}
-=======
                     href={buildPageHref(currentPage - 1)}
->>>>>>> 8ddc32c (enhanced filteres option)
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -416,11 +271,7 @@ export function SearchCatalog({ categories, brands, catalog, params }: SearchCat
 
                 {currentPage < totalPages ? (
                   <Link
-<<<<<<< HEAD
-                    href={buildPageHref(params, currentPage + 1)}
-=======
                     href={buildPageHref(currentPage + 1)}
->>>>>>> 8ddc32c (enhanced filteres option)
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
                   >
                     <ChevronRight className="h-5 w-5" />

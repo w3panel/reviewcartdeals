@@ -2,14 +2,12 @@
 
 import React, { useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { CatalogFilterFields, countCatalogFilterSelections } from '@/components/CatalogFilterFields'
 import type { CatalogFilterOptions, SelectedVariantFilters } from '@/lib/catalogFilterTypes'
 import { toggleVariantValue } from '@/lib/catalogFilterParams'
 import type { Category } from '@/payload-types'
-import { buildCatalogSearchUrl } from '@/lib/catalogUrl'
 import { getWhatsAppUrl } from '@/lib/siteConfig'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
@@ -54,14 +52,8 @@ export function FilterSheet({
   onApply,
   totalDocs,
 }: FilterSheetProps) {
-  const router = useRouter()
   const { isOpen, closeFilter } = useFilterSheet()
-<<<<<<< HEAD
-  const [openField, setOpenField] = useState<OpenField>(null)
   const whatsappUrl = getWhatsAppUrl()
-=======
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
->>>>>>> 8ddc32c (enhanced filteres option)
 
   const activeFilterCount = countCatalogFilterSelections({
     searchQuery,
@@ -90,15 +82,6 @@ export function FilterSheet({
     }
     return map
   }, [filterOptions.variantGroups])
-
-  const handleApplyFilters = () => {
-    const href = buildCatalogSearchUrl({
-      category: selectedCategory,
-      brand: selectedBrands,
-    })
-    closeFilter()
-    router.push(href)
-  }
 
   if (!isOpen) return null
 
@@ -209,14 +192,10 @@ export function FilterSheet({
         <div className="mx-auto flex max-w-2xl overflow-hidden rounded-xl bg-primary shadow-[0_-8px_32px_rgba(212,175,55,0.12)]">
           <button
             type="button"
-<<<<<<< HEAD
-            onClick={handleApplyFilters}
-=======
             onClick={() => {
               onApply?.()
               closeFilter()
             }}
->>>>>>> 8ddc32c (enhanced filteres option)
             className="flex-1 px-4 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
           >
             Apply Filters ({totalDocs.toLocaleString()})

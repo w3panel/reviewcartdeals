@@ -1,46 +1,32 @@
 'use client'
 
-<<<<<<< HEAD
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
-import { ChevronDown } from 'lucide-react'
-import type { ProductWithStats } from '@/components/ProductReviewCard'
-import { ProductReviewCard } from '@/components/ProductReviewCard'
-import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
-=======
-import React from 'react'
 import dynamic from 'next/dynamic'
 import { ChevronDown } from 'lucide-react'
 import type { Category } from '@/payload-types'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
 import { ProductReviewCard, type ProductWithStats } from '@/components/ProductReviewCard'
+import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
 import { useFilterSheet } from '@/context/FilterSheetContext'
->>>>>>> 8ddc32c (enhanced filteres option)
 
+const FilterSheet = dynamic(() =>
+  import('@/components/FilterSheet').then((mod) => ({ default: mod.FilterSheet })),
+)
 const SortSheet = dynamic(() =>
   import('@/components/SortSheet').then((mod) => ({ default: mod.SortSheet })),
 )
 
 interface FrontPageCatalogProps {
-<<<<<<< HEAD
-=======
   categories: Category[]
   brands: string[]
   filterOptions: CatalogFilterOptions
->>>>>>> 8ddc32c (enhanced filteres option)
   initialProducts: ProductWithStats[]
   initialTotalDocs: number
 }
 
-<<<<<<< HEAD
-export function FrontPageCatalog({ initialProducts, initialTotalDocs }: FrontPageCatalogProps) {
-  const router = useRouter()
-  const [isSortOpen, setIsSortOpen] = useState(false)
-  const [selectedSort, setSelectedSort] = useState<CatalogSort>('popular')
-=======
 export function FrontPageCatalog({
   categories,
   brands,
@@ -48,7 +34,9 @@ export function FrontPageCatalog({
   initialProducts,
   initialTotalDocs,
 }: FrontPageCatalogProps) {
+  const router = useRouter()
   const [isSortOpen, setIsSortOpen] = React.useState(false)
+  const [selectedSort, setSelectedSort] = React.useState<CatalogSort>('popular')
   const { closeFilter } = useFilterSheet()
   const filters = useCatalogFilterState({
     initialTotalDocs,
@@ -56,7 +44,6 @@ export function FrontPageCatalog({
   })
 
   const products = filters.docs ?? initialProducts
->>>>>>> 8ddc32c (enhanced filteres option)
 
   return (
     <>
@@ -82,31 +69,6 @@ export function FrontPageCatalog({
           </div>
 
           <p className="mb-4 text-sm text-muted-foreground">
-<<<<<<< HEAD
-            {initialTotalDocs.toLocaleString()} products
-          </p>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {initialProducts.map((product) => (
-              <ProductReviewCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {isSortOpen ? (
-        <SortSheet
-          isOpen={isSortOpen}
-          value={selectedSort}
-          onClose={() => setIsSortOpen(false)}
-          onApply={(sort) => {
-            setSelectedSort(sort)
-            setIsSortOpen(false)
-            router.push(buildCatalogSearchUrl({ sort }))
-          }}
-        />
-      ) : null}
-=======
             {filters.isLoading ? 'Loading...' : `${filters.totalDocs.toLocaleString()} products`}
           </p>
 
@@ -149,8 +111,18 @@ export function FrontPageCatalog({
         totalDocs={filters.totalDocs}
       />
 
-      {isSortOpen && <SortSheet isOpen={isSortOpen} onClose={() => setIsSortOpen(false)} />}
->>>>>>> 8ddc32c (enhanced filteres option)
+      {isSortOpen ? (
+        <SortSheet
+          isOpen={isSortOpen}
+          value={selectedSort}
+          onClose={() => setIsSortOpen(false)}
+          onApply={(sort) => {
+            setSelectedSort(sort)
+            setIsSortOpen(false)
+            router.push(buildCatalogSearchUrl({ sort }))
+          }}
+        />
+      ) : null}
     </>
   )
 }

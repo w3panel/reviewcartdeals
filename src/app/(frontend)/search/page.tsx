@@ -1,40 +1,3 @@
-<<<<<<< HEAD
-import React from 'react'
-import { getCategories } from '@/services/categories'
-import { getAllBrands, getProducts } from '@/services/products'
-import { parseCatalogSort } from '@/lib/catalogUrl'
-import { SearchCatalog } from './SearchCatalog'
-
-interface SearchPageProps {
-  searchParams: Promise<{
-    q?: string
-    category?: string
-    brand?: string
-    sort?: string
-    page?: string
-  }>
-}
-
-export default async function SearchPage({ searchParams }: SearchPageProps) {
-  const params = await searchParams
-  const q = params.q?.trim() ?? ''
-  const category = params.category ?? ''
-  const brand = params.brand ?? ''
-  const sort = parseCatalogSort(params.sort)
-  const page = Number(params.page) || 1
-
-  const [categories, brands, catalogResult] = await Promise.all([
-    getCategories(),
-    getAllBrands(),
-    getProducts({
-      search: q || undefined,
-      categorySlug: category && category !== 'ALL' ? category : undefined,
-      brand: brand && brand !== 'ALL' ? brand : undefined,
-      sort,
-      page,
-      limit: 12,
-    }),
-=======
 import React, { Suspense } from 'react'
 import dynamic from 'next/dynamic'
 import { getCategories } from '@/services/categories'
@@ -52,7 +15,6 @@ export default async function SearchPage() {
     getAllBrands(),
     getCatalogFilterOptions(),
     getProducts({ limit: 1 }),
->>>>>>> 8ddc32c (enhanced filteres option)
   ])
 
   return (
@@ -67,19 +29,6 @@ export default async function SearchPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-<<<<<<< HEAD
-        <SearchCatalog
-          categories={categories}
-          brands={brands}
-          catalog={{
-            products: catalogResult.products,
-            totalDocs: catalogResult.totalDocs,
-            totalPages: catalogResult.totalPages,
-            page: catalogResult.page ?? page,
-          }}
-          params={{ q, category, brand, sort, page }}
-        />
-=======
         <Suspense
           fallback={
             <div className="py-20 text-center text-muted-foreground">Loading catalog...</div>
@@ -87,7 +36,6 @@ export default async function SearchPage() {
         >
           <SearchCatalog categories={categories} brands={brands} filterOptions={filterOptions} />
         </Suspense>
->>>>>>> 8ddc32c (enhanced filteres option)
       </section>
 
       <Suspense fallback={null}>
