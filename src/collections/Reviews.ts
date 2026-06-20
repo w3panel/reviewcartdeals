@@ -1,6 +1,23 @@
-import type { CollectionConfig } from 'payload'
+import type {
+  CollectionAfterChangeHook,
+  CollectionAfterDeleteHook,
+  CollectionConfig,
+} from 'payload'
 
 import { revalidateAfterReviewChange, revalidateAfterReviewDelete } from '@/lib/revalidateContent'
+import { syncProductRatingSummaryFromReview } from '@/lib/syncProductRatingSummary'
+
+const syncRatingAfterReviewChange: CollectionAfterChangeHook = async ({ doc, req }) => {
+  await syncProductRatingSummaryFromReview(doc.product, req.payload)
+  return doc
+}
+
+const syncRatingAfterReviewDelete: CollectionAfterDeleteHook = async ({ doc, req }) => {
+  if (doc?.product) {
+    await syncProductRatingSummaryFromReview(doc.product, req.payload)
+  }
+  return doc
+}
 
 export const Reviews: CollectionConfig = {
   slug: 'reviews',
@@ -12,8 +29,8 @@ export const Reviews: CollectionConfig = {
     read: () => true,
   },
   hooks: {
-    afterChange: [revalidateAfterReviewChange],
-    afterDelete: [revalidateAfterReviewDelete],
+    afterChange: [syncRatingAfterReviewChange, revalidateAfterReviewChange],
+    afterDelete: [syncRatingAfterReviewDelete, revalidateAfterReviewDelete],
   },
   fields: [
     {

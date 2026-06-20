@@ -2,6 +2,7 @@ import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 
 import { CACHE_TAGS } from '@/lib/cacheTags'
+import { type CatalogSort } from '@/lib/catalogUrl'
 import { getPayloadClient } from '@/lib/payload'
 import { withPublishedOnly } from '@/lib/publishedOnly'
 import { findCatalogProducts, type CatalogQueryOptions } from '@/lib/productFilters'
@@ -11,7 +12,9 @@ import type { ProductVariant } from '@/payload-types'
 
 const DATA_REVALIDATE_SECONDS = 120
 
-export type GetProductsOptions = CatalogQueryOptions
+export type GetProductsOptions = CatalogQueryOptions & {
+  sort?: CatalogSort | string
+}
 
 async function fetchProductBySlug(slug: string) {
   const payload = await getPayloadClient()

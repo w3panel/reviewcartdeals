@@ -40,14 +40,20 @@ export const Products: CollectionConfig = {
         const q = searchParams.get('q') || undefined
         const category = searchParams.get('category') || undefined
         const brand = searchParams.get('brand') || undefined
+        const sort = searchParams.get('sort') || undefined
         const spec = searchParams.get('spec') || undefined
         const variants = searchParams.get('variants') || undefined
         const page = Number(searchParams.get('page') || '1') || 1
+
+        const allowedSorts = new Set(['popular', 'newest', 'rating'])
+        const normalizedSort =
+          sort && allowedSorts.has(sort) ? (sort as 'popular' | 'newest' | 'rating') : 'popular'
 
         const result = await findCatalogProducts(req.payload, {
           search: q,
           categorySlug: category === 'ALL' || !category ? undefined : category,
           brand: brand === 'ALL' || !brand ? undefined : brand,
+          sort: normalizedSort,
           spec: spec || undefined,
           variants: variants || undefined,
           page,
@@ -180,6 +186,31 @@ export const Products: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       index: true,
+    },
+    {
+      name: 'averageRating',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      max: 5,
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Auto-calculated from published reviews.',
+      },
+    },
+    {
+      name: 'reviewCount',
+      type: 'number',
+      defaultValue: 0,
+      min: 0,
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Auto-calculated from published reviews.',
+      },
     },
     {
       name: 'limitedEdition',

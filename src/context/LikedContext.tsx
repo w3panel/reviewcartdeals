@@ -1,18 +1,19 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
 import type { Product } from '@/payload-types'
 import {
   LIKED_STORAGE_KEY,
   migrateLegacyLiked,
   toDisplayProduct,
   toStoredProductSummary,
+  type DisplayProduct,
   type StoredProductSummary,
 } from '@/lib/clientStorage'
 
 type LikedContextType = {
-  likedItems: Product[]
-  toggleLike: (product: Product) => void
+  likedItems: DisplayProduct[]
+  toggleLike: (product: Product | DisplayProduct) => void
   removeLike: (productId: string | number) => void
   isLiked: (productId: string | number) => boolean
   clearLiked: () => void
@@ -22,11 +23,13 @@ type LikedContextType = {
 const LikedContext = createContext<LikedContextType | undefined>(undefined)
 const LEGACY_LIKED_STORAGE_KEY = 'reviewcartdeals_liked'
 
-function hydrateLikedItems(stored: StoredProductSummary[]): Product[] {
+function hydrateLikedItems(stored: StoredProductSummary[]): DisplayProduct[] {
   return stored.map((item) => toDisplayProduct(item))
 }
 
 function loadStoredLiked(): StoredProductSummary[] {
+  if (typeof window === 'undefined') return []
+
   try {
     const saved = localStorage.getItem(LIKED_STORAGE_KEY)
     if (saved) {
@@ -49,29 +52,41 @@ function loadStoredLiked(): StoredProductSummary[] {
   return []
 }
 
+function normalizeLikedProduct(product: Product | DisplayProduct): DisplayProduct {
+  return 'category' in product
+    ? toDisplayProduct(toStoredProductSummary(product as Product))
+    : product
+}
+
 export function LikedProvider({ children }: { children: React.ReactNode }) {
-  const [likedItems, setLikedItems] = useState<Product[]>([])
+  const [likedItems, setLikedItems] = useState<DisplayProduct[]>(() =>
+    hydrateLikedItems(loadStoredLiked()),
+  )
+  const hydratedRef = useRef(false)
 
   useEffect(() => {
-    setLikedItems(hydrateLikedItems(loadStoredLiked()))
+    hydratedRef.current = true
   }, [])
 
   useEffect(() => {
+    if (!hydratedRef.current) return
+
     try {
-      const stored = likedItems.map((product) => toStoredProductSummary(product))
+      const stored = likedItems.map((product) => toStoredProductSummary(product as Product))
       localStorage.setItem(LIKED_STORAGE_KEY, JSON.stringify(stored))
     } catch (e) {
       console.error('Failed to save liked items', e)
     }
   }, [likedItems])
 
-  const toggleLike = (product: Product) => {
+  const toggleLike = (product: Product | DisplayProduct) => {
+    const displayProduct = normalizeLikedProduct(product)
     setLikedItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id)
+      const existing = prev.find((item) => item.id === displayProduct.id)
       if (existing) {
-        return prev.filter((item) => item.id !== product.id)
+        return prev.filter((item) => item.id !== displayProduct.id)
       }
-      return [...prev, product]
+      return [...prev, displayProduct]
     })
   }
 

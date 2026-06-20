@@ -357,24 +357,21 @@ export function formatSelectedOptionsDetails(
   return lines.join('\n')
 }
 
-export function formatVariantLabel(variant: ProductVariant): string {
-  if (variant.title) return variant.title
-
-  const labels = (variant.options ?? [])
-    .map((option) => {
-      const value = option.value
-      if (typeof value === 'object' && value !== null && 'label' in value) {
-        return String((value as VariantValue).label)
-      }
-      return null
-    })
-    .filter((label): label is string => Boolean(label))
-
-  return labels.join(' / ') || 'Variant'
+export type VariantOptionSummary = {
+  groupLabel: string
+  valueLabel: string
 }
 
-export function formatVariantEnquiryDetails(variant: ProductVariant): string {
-  const lines = (variant.options ?? []).map((option) => {
+/** Minimal variant shape for cart storage and enquiry formatting */
+export type VariantDisplayInfo = {
+  title?: string | null
+  options?: VariantOptionSummary[]
+}
+
+export function variantOptionSummariesFromProductVariant(
+  variant: ProductVariant,
+): VariantOptionSummary[] {
+  return (variant.options ?? []).flatMap((option) => {
     const groupLabel =
       typeof option.group === 'object' && option.group !== null
         ? (option.group as VariantGroup).label
@@ -382,11 +379,41 @@ export function formatVariantEnquiryDetails(variant: ProductVariant): string {
     const valueLabel =
       typeof option.value === 'object' && option.value !== null
         ? (option.value as VariantValue).label
-        : String(option.value)
-    return `${groupLabel}: ${valueLabel}`
-  })
+        : option.value != null
+          ? String(option.value)
+          : null
 
-  return lines.join('\n')
+    return valueLabel ? [{ groupLabel, valueLabel }] : []
+  })
+}
+
+function toVariantDisplayInfo(variant: ProductVariant | VariantDisplayInfo): VariantDisplayInfo {
+  const firstOption = variant.options?.[0]
+  if (firstOption && 'groupLabel' in firstOption && 'valueLabel' in firstOption) {
+    return variant as VariantDisplayInfo
+  }
+
+  return {
+    title: variant.title,
+    options: variantOptionSummariesFromProductVariant(variant as ProductVariant),
+  }
+}
+
+export function formatVariantLabel(variant: ProductVariant | VariantDisplayInfo): string {
+  const info = toVariantDisplayInfo(variant)
+  if (info.title) return info.title
+
+  const labels = (info.options ?? []).map((option) => option.valueLabel).filter(Boolean)
+
+  return labels.join(' / ') || 'Variant'
+}
+
+export function formatVariantEnquiryDetails(variant: ProductVariant | VariantDisplayInfo): string {
+  const info = toVariantDisplayInfo(variant)
+
+  return (info.options ?? [])
+    .map((option) => `${option.groupLabel}: ${option.valueLabel}`)
+    .join('\n')
 }
 
 export function getCombinationKeyFromVariant(variant: ProductVariant): string {

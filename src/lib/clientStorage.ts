@@ -1,4 +1,8 @@
 import type { Brand, Media, Product, ProductVariant } from '@/payload-types'
+import {
+  variantOptionSummariesFromProductVariant,
+  type VariantOptionSummary,
+} from '@/lib/productVariants'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 
 export const CART_STORAGE_KEY = 'reviewcartdeals_cart_v4'
@@ -17,6 +21,7 @@ export type StoredProductSummary = {
 export type StoredVariantSummary = {
   id: number | string
   title?: string | null
+  options?: VariantOptionSummary[]
 }
 
 export type StoredCartItem = {
@@ -25,7 +30,29 @@ export type StoredCartItem = {
   quantity: number
 }
 
-function resolveBrandTitle(product: Product): string | undefined {
+/** Minimal product shape restored from localStorage for cart/liked UI */
+export type DisplayProduct = {
+  id: number | string
+  title: string
+  slug: string
+  description?: string
+  enableVariants?: boolean
+  brand?: Brand | string | number | null
+  gallery?: Product['gallery']
+  updatedAt: string
+  createdAt: string
+}
+
+/** Minimal variant shape restored from localStorage for cart UI */
+export type DisplayVariant = {
+  id: number | string
+  title?: string | null
+  options?: VariantOptionSummary[]
+  updatedAt: string
+  createdAt: string
+}
+
+function resolveBrandTitle(product: Product | DisplayProduct): string | undefined {
   if (typeof product.brand === 'object' && product.brand !== null) {
     return (product.brand as Brand).title
   }
@@ -35,30 +62,43 @@ function resolveBrandTitle(product: Product): string | undefined {
   return undefined
 }
 
-export function toStoredProductSummary(product: Product): StoredProductSummary {
+export function toStoredProductSummary(product: Product | DisplayProduct): StoredProductSummary {
   return {
     id: product.id,
     title: product.title,
     slug: product.slug,
     description: product.description ?? undefined,
     enableVariants: product.enableVariants ?? undefined,
-    imageUrl: getImageUrl(getProductMainImage(product)),
+    imageUrl: getImageUrl(getProductMainImage(product as Product)),
     brandTitle: resolveBrandTitle(product),
   }
 }
 
+function resolveStoredVariantOptions(
+  variant: ProductVariant | DisplayVariant,
+): VariantOptionSummary[] | undefined {
+  const firstOption = variant.options?.[0]
+  if (firstOption && 'groupLabel' in firstOption && 'valueLabel' in firstOption) {
+    return variant.options as VariantOptionSummary[]
+  }
+
+  const options = variantOptionSummariesFromProductVariant(variant as ProductVariant)
+  return options.length > 0 ? options : undefined
+}
+
 export function toStoredVariantSummary(
-  variant: ProductVariant | null | undefined,
+  variant: ProductVariant | DisplayVariant | null | undefined,
 ): StoredVariantSummary | null {
   if (!variant) return null
 
   return {
     id: variant.id,
     title: variant.title,
+    options: resolveStoredVariantOptions(variant),
   }
 }
 
-export function toDisplayProduct(summary: StoredProductSummary): Product {
+export function toDisplayProduct(summary: StoredProductSummary): DisplayProduct {
   const brand = summary.brandTitle
     ? ({ id: summary.brandTitle, title: summary.brandTitle } as unknown as Brand)
     : summary.brandTitle
@@ -83,20 +123,21 @@ export function toDisplayProduct(summary: StoredProductSummary): Product {
     gallery: galleryImage ? [{ image: galleryImage }] : undefined,
     updatedAt: '',
     createdAt: '',
-  } as Product
+  } as DisplayProduct
 }
 
 export function toDisplayVariant(
   summary: StoredVariantSummary | null | undefined,
-): ProductVariant | null {
+): DisplayVariant | null {
   if (!summary) return null
 
   return {
     id: summary.id,
     title: summary.title ?? undefined,
+    options: summary.options,
     updatedAt: '',
     createdAt: '',
-  } as ProductVariant
+  }
 }
 
 export function migrateLegacyCart(raw: unknown): StoredCartItem[] {

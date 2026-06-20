@@ -1,11 +1,14 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ChevronDown } from 'lucide-react'
 import type { Category } from '@/payload-types'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
 import { ProductReviewCard, type ProductWithStats } from '@/components/ProductReviewCard'
+import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
@@ -31,7 +34,9 @@ export function FrontPageCatalog({
   initialProducts,
   initialTotalDocs,
 }: FrontPageCatalogProps) {
+  const router = useRouter()
   const [isSortOpen, setIsSortOpen] = React.useState(false)
+  const [selectedSort, setSelectedSort] = React.useState<CatalogSort>('popular')
   const { closeFilter } = useFilterSheet()
   const filters = useCatalogFilterState({
     initialTotalDocs,
@@ -45,13 +50,21 @@ export function FrontPageCatalog({
       <section className="px-4 pb-20 pt-2 md:pb-12">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex items-center justify-between border-t border-border pt-6">
-            <h2 className="font-serif text-xl text-white sm:text-2xl">All Products</h2>
+            <div>
+              <h2 className="font-serif text-xl text-white sm:text-2xl">All Products</h2>
+              <Link
+                href={buildCatalogSearchUrl()}
+                className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4"
+              >
+                Browse / Filter Catalog
+              </Link>
+            </div>
             <button
               type="button"
               onClick={() => setIsSortOpen(true)}
               className="flex items-center gap-1 text-sm font-medium text-muted-foreground"
             >
-              Sort by: Popular <ChevronDown className="h-4 w-4" />
+              Sort by: {catalogSortToLabel(selectedSort)} <ChevronDown className="h-4 w-4" />
             </button>
           </div>
 
@@ -98,7 +111,18 @@ export function FrontPageCatalog({
         totalDocs={filters.totalDocs}
       />
 
-      {isSortOpen && <SortSheet isOpen={isSortOpen} onClose={() => setIsSortOpen(false)} />}
+      {isSortOpen ? (
+        <SortSheet
+          isOpen={isSortOpen}
+          value={selectedSort}
+          onClose={() => setIsSortOpen(false)}
+          onApply={(sort) => {
+            setSelectedSort(sort)
+            setIsSortOpen(false)
+            router.push(buildCatalogSearchUrl({ sort }))
+          }}
+        />
+      ) : null}
     </>
   )
 }

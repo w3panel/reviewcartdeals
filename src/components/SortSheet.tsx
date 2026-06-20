@@ -1,19 +1,43 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import { X, Check } from 'lucide-react'
+import {
+  buildCatalogSearchUrl,
+  catalogSortToLabel,
+  labelToCatalogSort,
+  type CatalogSort,
+} from '@/lib/catalogUrl'
 
 interface SortSheetProps {
   isOpen: boolean
+  value?: CatalogSort
   onClose: () => void
+  onApply?: (sort: CatalogSort) => void
 }
 
-export function SortSheet({ isOpen, onClose }: SortSheetProps) {
-  const [selectedSort, setSelectedSort] = React.useState('Popular')
+const SORT_OPTIONS: CatalogSort[] = ['popular', 'newest', 'rating']
+
+export function SortSheet({ isOpen, value = 'popular', onClose, onApply }: SortSheetProps) {
+  const router = useRouter()
+  const [selectedSort, setSelectedSort] = React.useState<CatalogSort>(value)
+
+  React.useEffect(() => {
+    setSelectedSort(value)
+  }, [value])
 
   if (!isOpen) return null
 
-  const sortOptions = ['Popular', 'Newest', 'Rating']
+  const handleApply = () => {
+    if (onApply) {
+      onApply(selectedSort)
+      return
+    }
+
+    router.push(buildCatalogSearchUrl({ sort: selectedSort }))
+    onClose()
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col justify-end">
@@ -37,18 +61,19 @@ export function SortSheet({ isOpen, onClose }: SortSheetProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pb-24 no-scrollbar">
-          {sortOptions.map((option, idx) => {
+          {SORT_OPTIONS.map((option, idx) => {
             const isSelected = selectedSort === option
+            const label = catalogSortToLabel(option)
             return (
               <button
                 key={option}
                 type="button"
                 onClick={() => setSelectedSort(option)}
                 className={`flex items-center justify-between w-full py-5 text-base font-medium ${
-                  idx !== sortOptions.length - 1 ? 'border-b border-border/50' : ''
+                  idx !== SORT_OPTIONS.length - 1 ? 'border-b border-border/50' : ''
                 } ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}
               >
-                {option}
+                {label}
                 {isSelected && (
                   <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground">
                     <Check className="w-4 h-4" strokeWidth={3} />
@@ -62,7 +87,7 @@ export function SortSheet({ isOpen, onClose }: SortSheetProps) {
         <div className="absolute bottom-0 left-0 w-full p-4 bg-background pb-safe">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleApply}
             className="w-full py-4 rounded-xl bg-primary text-primary-foreground text-base font-bold"
           >
             Apply Sort

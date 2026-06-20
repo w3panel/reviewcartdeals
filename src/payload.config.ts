@@ -40,6 +40,15 @@ const isCLI = process.argv.some((value) => {
 })
 const isProduction = process.env.NODE_ENV === 'production'
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
+const allowInsecureSecret = process.env.ALLOW_INSECURE_PAYLOAD_SECRET === '1'
+
+if (isProduction && !allowInsecureSecret && !process.env.PAYLOAD_SECRET?.trim()) {
+  throw new Error(
+    'PAYLOAD_SECRET is required in production. Set ALLOW_INSECURE_PAYLOAD_SECRET=1 to bypass locally only.',
+  )
+}
+
+const payloadSecret = process.env.PAYLOAD_SECRET?.trim() || (isProduction ? '' : 'dev-secret')
 
 const databaseUri = resolveRuntimeDatabaseUrl()
 const migrationDatabaseUri = resolveMigrationDatabaseUrl()
@@ -104,7 +113,7 @@ export default buildConfig({
     Reviews,
     NavItems,
   ],
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

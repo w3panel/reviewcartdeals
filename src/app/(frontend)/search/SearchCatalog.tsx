@@ -15,6 +15,7 @@ import {
   hasActiveCatalogFilters,
   snapshotFromSearchParams,
 } from '@/lib/catalogFilterParams'
+import { catalogSortToLabel, parseCatalogSort } from '@/lib/catalogUrl'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import type { Product, Category } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
@@ -37,6 +38,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
   const searchParams = useSearchParams()
 
   const appliedFilters = useMemo(() => snapshotFromSearchParams(searchParams), [searchParams])
+  const sort = parseCatalogSort(searchParams.get('sort'))
 
   const [searchQuery, setSearchQuery] = useState(appliedFilters.q)
   const [selectedCategories, setSelectedCategories] = useState(appliedFilters.categories)
@@ -62,6 +64,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
       brands: appliedFilters.brands,
       specs: appliedFilters.specs,
       variants: appliedFilters.variants,
+      sort,
       page: searchParams.get('page') || '1',
     })
 
@@ -73,7 +76,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [appliedFilters, searchParams])
+  }, [appliedFilters, searchParams, sort])
 
   const products = data?.docs ?? []
   const totalDocs = data?.totalDocs ?? 0
@@ -111,6 +114,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
       brands: appliedFilters.brands,
       specs: appliedFilters.specs,
       variants: appliedFilters.variants,
+      sort,
       page,
     })
     return buildSearchPath(params)
@@ -179,9 +183,9 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
 
         <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {loading ? 'Searching...' : `Found ${totalDocs} Products`}
+            {loading ? 'Searching...' : `Found ${totalDocs} Products · ${catalogSortToLabel(sort)}`}
           </span>
-          {hasFilters ? (
+          {hasFilters || sort !== 'popular' ? (
             <Link
               href="/search"
               className="text-xs font-semibold uppercase tracking-widest text-primary transition-colors hover:text-foreground"

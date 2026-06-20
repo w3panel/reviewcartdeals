@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Star } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
+import { getWhatsAppUrl } from '@/lib/siteConfig'
 import type { Brand, Product } from '@/payload-types'
 
 export type ProductWithStats = Product & {
@@ -26,14 +27,15 @@ export function ProductReviewCard({
   className = '',
   variant = 'default',
 }: ProductReviewCardProps) {
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
+  const whatsappHref = getWhatsAppUrl(
+    `Hello, I am interested in ${product.title}. Can you share more details?`,
+  )
   const brandTitle =
     typeof product.brand === 'object' && product.brand !== null
       ? (product.brand as Brand).title
       : String(product.brand)
   const rating = product.stats?.averageRating
   const reviewCount = product.stats?.totalReviews ?? 0
-  const whatsappMessage = `Hello, I am interested in ${product.title}. Can you share more details?`
 
   const isFeatured = variant === 'featured'
 
@@ -89,15 +91,17 @@ export function ProductReviewCard({
           >
             Review
           </Link>
-          <a
-            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
-            aria-label={`WhatsApp enquiry for ${product.title}`}
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-          </a>
+          {whatsappHref ? (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
+              aria-label={`WhatsApp enquiry for ${product.title}`}
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+            </a>
+          ) : null}
         </div>
       </div>
     </article>

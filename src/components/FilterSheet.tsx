@@ -8,6 +8,7 @@ import { CatalogFilterFields, countCatalogFilterSelections } from '@/components/
 import type { CatalogFilterOptions, SelectedVariantFilters } from '@/lib/catalogFilterTypes'
 import { toggleVariantValue } from '@/lib/catalogFilterParams'
 import type { Category } from '@/payload-types'
+import { getWhatsAppUrl } from '@/lib/siteConfig'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
 interface FilterSheetProps {
@@ -52,7 +53,7 @@ export function FilterSheet({
   totalDocs,
 }: FilterSheetProps) {
   const { isOpen, closeFilter } = useFilterSheet()
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '1234567890'
+  const whatsappUrl = getWhatsAppUrl()
 
   const activeFilterCount = countCatalogFilterSelections({
     searchQuery,
@@ -199,15 +200,17 @@ export function FilterSheet({
           >
             Apply Filters ({totalDocs.toLocaleString()})
           </button>
-          <Link
-            href={`https://wa.me/${whatsappNumber}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-14 items-center justify-center border-l border-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-hover"
-            aria-label="Contact on WhatsApp"
-          >
-            <WhatsAppIcon className="h-5 w-5" />
-          </Link>
+          {whatsappUrl ? (
+            <Link
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-14 items-center justify-center border-l border-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-hover"
+              aria-label="Contact on WhatsApp"
+            >
+              <WhatsAppIcon className="h-5 w-5" />
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>

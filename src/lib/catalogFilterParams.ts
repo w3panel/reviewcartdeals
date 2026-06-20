@@ -72,6 +72,7 @@ export function appendCatalogFiltersToParams(
     brands?: string[]
     specs?: string[]
     variants?: SelectedVariantFilters
+    sort?: string
     page?: string | number
   },
 ): URLSearchParams {
@@ -100,6 +101,12 @@ export function appendCatalogFiltersToParams(
     params.set('variants', variantsParam)
   } else {
     params.delete('variants')
+  }
+
+  if (options.sort && options.sort !== 'popular') {
+    params.set('sort', options.sort)
+  } else {
+    params.delete('sort')
   }
 
   if (options.page !== undefined && String(options.page) !== '1') {

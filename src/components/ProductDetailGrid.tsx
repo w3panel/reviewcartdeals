@@ -20,7 +20,7 @@ import { ProductEnquiryActions } from '@/components/ProductEnquiryActions'
 type ProductDetailGridProps = {
   product: Product
   variants: ProductVariant[]
-  whatsappLink: string
+  whatsappLink: string | null
   beforeActions: React.ReactNode
   afterActions?: React.ReactNode
 }

@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import { ClipboardList } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import type { Product, ProductVariant } from '@/payload-types'
+import type { DisplayProduct, DisplayVariant } from '@/lib/clientStorage'
 
 type AddToCartButtonProps = {
-  product: Product
-  variant?: ProductVariant | null
+  product: Product | DisplayProduct
+  variant?: ProductVariant | DisplayVariant | null
   disabled?: boolean
 }
 
