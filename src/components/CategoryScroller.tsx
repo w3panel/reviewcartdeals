@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl } from '@/lib/utils'
 import type { Category } from '@/payload-types'
 
@@ -42,7 +42,7 @@ export function CategoryScroller({
                   }`}
                 >
                   {category.image ? (
-                    <Image
+                    <SafeImage
                       src={getImageUrl(category.image, 'thumbnail')}
                       alt={category.title}
                       fill

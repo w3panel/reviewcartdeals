@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 import {
   getPostgresPoolOptions,
   instrumentPayloadPostgresPool,
+  redactedPostgresTarget,
   resolveMigrationDatabaseUrl,
   resolveRuntimeDatabaseUrl,
 } from './lib/database'
@@ -42,6 +43,17 @@ const isProduction = process.env.NODE_ENV === 'production'
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 const allowInsecureSecret = process.env.ALLOW_INSECURE_PAYLOAD_SECRET === '1'
 
+function isLocalDatabaseUri(uri: string): boolean {
+  try {
+    const url = new URL(uri.replace(/^postgresql:/i, 'http:'))
+    return (
+      url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === 'postgres'
+    )
+  } catch {
+    return false
+  }
+}
+
 if (isProduction && !allowInsecureSecret && !process.env.PAYLOAD_SECRET?.trim()) {
   throw new Error(
     'PAYLOAD_SECRET is required in production. Set ALLOW_INSECURE_PAYLOAD_SECRET=1 to bypass locally only.',
@@ -67,6 +79,12 @@ const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY
 const r2Endpoint = process.env.R2_ENDPOINT
 
 const r2StorageEnabled = Boolean(r2Bucket && r2AccessKeyId && r2SecretAccessKey && r2Endpoint)
+
+if (!isProduction && databaseUri && !isLocalDatabaseUri(databaseUri) && !r2StorageEnabled) {
+  throw new Error(
+    `Remote database ${redactedPostgresTarget(databaseUri)} is configured, but R2 storage env vars are missing. Add R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, and R2_ENDPOINT locally, or switch DATABASE_URI/DATABASE_URL to local Postgres.`,
+  )
+}
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {

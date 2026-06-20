@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { SafeImage } from '@/components/SafeImage'
 import { getProducts, getAllBrands } from '@/services/products'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
@@ -83,7 +83,7 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
                 >
                   <Link href={`/product/${prod.slug}`} className="flex h-full flex-col">
                     <div className="relative flex aspect-square w-full items-center justify-center bg-black p-3 sm:p-4">
-                      <Image
+                      <SafeImage
                         src={imageUrl}
                         alt={prod.title}
                         fill

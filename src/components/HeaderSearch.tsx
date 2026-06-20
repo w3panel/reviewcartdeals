@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Search } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 import type { Brand, Product } from '@/payload-types'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 
@@ -189,7 +189,7 @@ export function HeaderSearch({ variant = 'desktop', className = '' }: HeaderSear
                       className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface"
                     >
                       <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-black">
-                        <Image
+                        <SafeImage
                           src={imageUrl}
                           alt=""
                           fill

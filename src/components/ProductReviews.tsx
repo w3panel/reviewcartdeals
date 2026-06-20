@@ -1,5 +1,4 @@
 import React from 'react'
-import Image from 'next/image'
 import {
   Star,
   CheckCircle,
@@ -9,6 +8,7 @@ import {
   Activity,
   BadgeCheck,
 } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { getImageUrl } from '@/lib/utils'
 import type { Review, Media } from '@/payload-types'
@@ -226,7 +226,7 @@ export function ProductReviews({ reviews, stats }: ProductReviewsProps) {
                           key={idx}
                           className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-muted flex-shrink-0 cursor-pointer hover:border-primary transition-colors"
                         >
-                          <Image
+                          <SafeImage
                             src={getImageUrl(media)}
                             alt="Review image"
                             fill

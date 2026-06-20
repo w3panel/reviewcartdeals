@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowRight } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 
 const slides = [
   {
@@ -66,7 +66,7 @@ export function HomeHero() {
   return (
     <section className="px-4 pt-4 md:pt-6">
       <div className="relative mx-auto max-w-7xl overflow-hidden rounded-2xl border border-border bg-card min-h-[280px] sm:min-h-[300px] md:min-h-[320px] lg:min-h-[380px] md:rounded-3xl">
-        <Image
+        <SafeImage
           src={slide.image}
           alt=""
           fill

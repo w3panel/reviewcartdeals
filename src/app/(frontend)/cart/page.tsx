@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { ArrowLeft, Trash2, Send } from 'lucide-react'
+import { SafeImage } from '@/components/SafeImage'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
@@ -103,7 +103,7 @@ export default function CartPage() {
               >
                 <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
                   {getProductMainImage(item.product as Product) ? (
-                    <Image
+                    <SafeImage
                       src={getImageUrl(getProductMainImage(item.product as Product), 'thumbnail')}
                       alt={item.product.title}
                       fill
