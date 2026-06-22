@@ -34,7 +34,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 
   return (
     <article
-      className={`group relative flex w-full flex-col overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#111] shadow-[0_8px_30px_rgba(0,0,0,0.35),inset_0_1px_0_0_rgba(255,255,255,0.06)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_16px_44px_rgba(0,0,0,0.52),inset_0_1px_0_0_rgba(255,255,255,0.08)] ${className}`}
+      className={`group relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#111] shadow-[0_8px_30px_rgba(0,0,0,0.35),inset_0_1px_0_0_rgba(255,255,255,0.06)] transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_16px_44px_rgba(0,0,0,0.52),inset_0_1px_0_0_rgba(255,255,255,0.08)] sm:rounded-[20px] ${className}`}
     >
       <Link
         href={`/product/${product.slug}`}
@@ -44,12 +44,12 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           src={getImageUrl(getProductMainImage(product), 'card')}
           alt={product.title}
           fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
+          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 50vw, 280px"
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
       </Link>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:gap-3 sm:p-5">
         {brandTitle ? (
           <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
             {brandTitle}
@@ -58,7 +58,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 
         <Link
           href={`/product/${product.slug}`}
-          className="line-clamp-2 min-h-[3rem] text-base font-semibold leading-snug text-white transition-colors hover:text-primary"
+          className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-white transition-colors hover:text-primary sm:min-h-[3rem] sm:text-base"
         >
           {product.title}
         </Link>
@@ -88,10 +88,10 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           </div>
         ) : null}
 
-        <div className="mt-auto flex gap-3 pt-1">
+        <div className="mt-auto flex gap-2 pt-1 sm:gap-3">
           <Link
             href={`/product/${product.slug}`}
-            className="flex h-11 flex-1 items-center justify-center rounded-[14px] bg-primary px-3 text-xs font-bold text-primary-foreground transition-colors duration-200 hover:bg-primary-hover"
+            className="flex h-9 flex-1 items-center justify-center rounded-xl bg-primary px-2 text-[10px] font-bold text-primary-foreground transition-colors duration-200 hover:bg-primary-hover sm:h-11 sm:rounded-[14px] sm:px-3 sm:text-xs"
           >
             Review
           </Link>
@@ -100,7 +100,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[14px] bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary-hover"
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary-hover sm:h-11 sm:w-11 sm:rounded-[14px]"
               aria-label={`WhatsApp enquiry for ${product.title}`}
             >
               <WhatsAppIcon className="h-4 w-4" />
