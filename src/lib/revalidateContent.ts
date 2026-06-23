@@ -81,6 +81,7 @@ export const revalidateAfterCategoryChange: CollectionAfterChangeHook = ({ doc, 
     revalidatePath(`/category/${doc.slug}`)
   }
 
+  revalidatePath('/category')
   revalidateFrontendPaths(['/'])
   return doc
 }
@@ -96,6 +97,7 @@ export const revalidateAfterCategoryDelete: CollectionAfterDeleteHook = ({ doc, 
     revalidatePath(`/category/${doc.slug}`)
   }
 
+  revalidatePath('/category')
   revalidateFrontendPaths(['/'])
   return doc
 }

@@ -13,15 +13,9 @@ const FrontPageCatalog = dynamic(
   () => import('./FrontPageCatalog').then((mod) => ({ default: mod.FrontPageCatalog })),
   {
     loading: () => (
-      <div className="hidden px-4 py-12 text-center text-sm text-muted-foreground md:block">
-        Loading catalog...
-      </div>
+      <div className="px-4 py-12 text-center text-sm text-muted-foreground">Loading catalog...</div>
     ),
   },
-)
-
-const HomeFilterHost = dynamic(() =>
-  import('@/components/HomeFilterHost').then((mod) => ({ default: mod.HomeFilterHost })),
 )
 
 export const revalidate = 120
@@ -30,7 +24,7 @@ export default async function HomePage() {
   const [categories, { products: allProducts, totalDocs }, brands, filterOptions] =
     await Promise.all([
       getCategories(),
-      getProducts({ limit: 12 }),
+      getProducts({ limit: 10 }),
       getAllBrands(),
       getCatalogFilterOptions(),
     ])
@@ -57,22 +51,14 @@ export default async function HomePage() {
       <HomeHero />
       <CategoryScroller categories={categories} />
       <FeaturedReviews products={productsWithStats} />
-      <div className="hidden md:block">
-        <FrontPageCatalog
-          categories={categories}
-          brands={brands}
-          filterOptions={filterOptions}
-          initialProducts={productsWithStats}
-          initialTotalDocs={totalDocs}
-        />
-      </div>
-      <ValuePropositions />
-      <HomeFilterHost
+      <FrontPageCatalog
         categories={categories}
         brands={brands}
         filterOptions={filterOptions}
+        initialProducts={productsWithStats}
         initialTotalDocs={totalDocs}
       />
+      <ValuePropositions />
     </div>
   )
 }

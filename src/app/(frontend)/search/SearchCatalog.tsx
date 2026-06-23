@@ -1,16 +1,16 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 import { SafeImage } from '@/components/SafeImage'
 import { CatalogFilterFields } from '@/components/CatalogFilterFields'
 import { FilterActiveChips } from '@/components/FilterActiveChips'
+import { CatalogLoadMore } from '@/components/CatalogLoadMore'
+import { InfiniteScrollSentinel } from '@/components/InfiniteScrollSentinel'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
 import {
-  appendCatalogFiltersToParams,
-  buildSearchPath,
   buildSearchPathFromSnapshot,
   hasActiveCatalogFilters,
   snapshotFromSearchParams,
@@ -19,18 +19,12 @@ import { catalogSortToLabel, parseCatalogSort } from '@/lib/catalogUrl'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import type { Product, Category } from '@/payload-types'
 import { AddToCartButton } from '@/components/AddToCartButton'
+import { useInfiniteCatalog } from '@/hooks/useInfiniteCatalog'
 
 interface SearchCatalogProps {
   categories: Category[]
   brands: string[]
   filterOptions: CatalogFilterOptions
-}
-
-interface CatalogResponse {
-  docs: Product[]
-  totalDocs: number
-  totalPages: number
-  page: number
 }
 
 export function SearchCatalog({ categories, brands, filterOptions }: SearchCatalogProps) {
@@ -40,16 +34,13 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
   const appliedFilters = useMemo(() => snapshotFromSearchParams(searchParams), [searchParams])
   const sort = parseCatalogSort(searchParams.get('sort'))
 
-  const [searchQuery, setSearchQuery] = useState(appliedFilters.q)
-  const [selectedCategories, setSelectedCategories] = useState(appliedFilters.categories)
-  const [selectedBrands, setSelectedBrands] = useState(appliedFilters.brands)
-  const [selectedSpecs, setSelectedSpecs] = useState(appliedFilters.specs)
-  const [selectedVariants, setSelectedVariants] = useState(appliedFilters.variants)
+  const [searchQuery, setSearchQuery] = React.useState(appliedFilters.q)
+  const [selectedCategories, setSelectedCategories] = React.useState(appliedFilters.categories)
+  const [selectedBrands, setSelectedBrands] = React.useState(appliedFilters.brands)
+  const [selectedSpecs, setSelectedSpecs] = React.useState(appliedFilters.specs)
+  const [selectedVariants, setSelectedVariants] = React.useState(appliedFilters.variants)
 
-  const [data, setData] = useState<CatalogResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
+  React.useEffect(() => {
     setSearchQuery(appliedFilters.q)
     setSelectedCategories(appliedFilters.categories)
     setSelectedBrands(appliedFilters.brands)
@@ -57,31 +48,15 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
     setSelectedVariants(appliedFilters.variants)
   }, [appliedFilters])
 
-  useEffect(() => {
-    const params = appendCatalogFiltersToParams(new URLSearchParams(), {
-      q: appliedFilters.q,
-      categories: appliedFilters.categories,
-      brands: appliedFilters.brands,
-      specs: appliedFilters.specs,
-      variants: appliedFilters.variants,
-      sort,
-      page: searchParams.get('page') || '1',
-    })
+  const catalog = useInfiniteCatalog<Product>({
+    filters: appliedFilters,
+    sort,
+    initialTotalDocs: 0,
+  })
 
-    setLoading(true)
-    fetch(`/api/products/catalog?${params.toString()}`)
-      .then((res) => res.json() as Promise<CatalogResponse>)
-      .then((result) => {
-        setData(result)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [appliedFilters, searchParams, sort])
-
-  const products = data?.docs ?? []
-  const totalDocs = data?.totalDocs ?? 0
-  const totalPages = data?.totalPages ?? 1
-  const currentPage = Number(searchParams.get('page') || '1') || 1
+  const products = catalog.docs
+  const totalDocs = catalog.totalDocs
+  const loading = catalog.isInitialLoading
 
   const hasFilters = hasActiveCatalogFilters({
     q: appliedFilters.q,
@@ -105,19 +80,6 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
 
   const clearSidebarFilters = () => {
     router.push('/search')
-  }
-
-  const buildPageHref = (page: number) => {
-    const params = appendCatalogFiltersToParams(new URLSearchParams(), {
-      q: appliedFilters.q,
-      categories: appliedFilters.categories,
-      brands: appliedFilters.brands,
-      specs: appliedFilters.specs,
-      variants: appliedFilters.variants,
-      sort,
-      page,
-    })
-    return buildSearchPath(params)
   }
 
   const toggleSpec = (spec: string) => {
@@ -250,39 +212,11 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
               })}
             </div>
 
-            {totalPages > 1 ? (
-              <div className="mt-16 flex items-center justify-center gap-4">
-                {currentPage > 1 ? (
-                  <Link
-                    href={buildPageHref(currentPage - 1)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </Link>
-                ) : (
-                  <div className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-border/50 text-muted-foreground">
-                    <ChevronLeft className="h-5 w-5" />
-                  </div>
-                )}
-
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  PAGE {currentPage} OF {totalPages}
-                </span>
-
-                {currentPage < totalPages ? (
-                  <Link
-                    href={buildPageHref(currentPage + 1)}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-primary hover:text-primary"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </Link>
-                ) : (
-                  <div className="flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-border/50 text-muted-foreground">
-                    <ChevronRight className="h-5 w-5" />
-                  </div>
-                )}
-              </div>
-            ) : null}
+            <CatalogLoadMore isLoading={catalog.isLoadingMore} hasMore={catalog.hasMore} />
+            <InfiniteScrollSentinel
+              enabled={catalog.hasMore && !catalog.isInitialLoading && !catalog.isLoadingMore}
+              onIntersect={catalog.onIntersect}
+            />
           </div>
         )}
       </div>

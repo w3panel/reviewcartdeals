@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { SelectedVariantFilters } from '@/lib/catalogFilterTypes'
 import {
   appendCatalogFiltersToParams,
@@ -8,9 +8,9 @@ import {
   hasActiveCatalogFilters,
   toggleVariantValue,
 } from '@/lib/catalogFilterParams'
+import { CATALOG_API_PATH } from '@/lib/catalogConstants'
 
-type CatalogApiResponse<TDoc> = {
-  docs: TDoc[]
+type CatalogCountResponse = {
   totalDocs: number
 }
 
@@ -24,15 +24,12 @@ function emptySnapshot(): CatalogFilterSnapshot {
   }
 }
 
-export function useCatalogFilterState<TDoc>(options: {
+export function useCatalogFilterState(options: {
   initialTotalDocs: number
-  initialDocs?: TDoc[]
   initialFilters?: CatalogFilterSnapshot
   debounceMs?: number
 }) {
-  const { initialTotalDocs, initialDocs, initialFilters, debounceMs = 300 } = options
-  const initialDocsRef = useRef(initialDocs)
-  initialDocsRef.current = initialDocs
+  const { initialTotalDocs, initialFilters, debounceMs = 300 } = options
 
   const [searchQuery, setSearchQuery] = useState(initialFilters?.q ?? '')
   const [debouncedSearch, setDebouncedSearch] = useState(initialFilters?.q?.trim() ?? '')
@@ -45,8 +42,18 @@ export function useCatalogFilterState<TDoc>(options: {
     initialFilters?.variants ?? {},
   )
   const [totalDocs, setTotalDocs] = useState(initialTotalDocs)
-  const [docs, setDocs] = useState<TDoc[] | undefined>(initialDocs)
   const [isLoading, setIsLoading] = useState(false)
+
+  const appliedFilters = useMemo(
+    (): CatalogFilterSnapshot => ({
+      q: debouncedSearch,
+      categories: selectedCategories,
+      brands: selectedBrands,
+      specs: selectedSpecs,
+      variants: selectedVariants,
+    }),
+    [debouncedSearch, selectedCategories, selectedBrands, selectedSpecs, selectedVariants],
+  )
 
   const getFilterSnapshot = useCallback(
     (): CatalogFilterSnapshot => ({
@@ -74,54 +81,42 @@ export function useCatalogFilterState<TDoc>(options: {
   }, [searchQuery, debounceMs])
 
   useEffect(() => {
-    const hasFilters = hasActiveCatalogFilters({
-      q: debouncedSearch,
-      categories: selectedCategories,
-      brands: selectedBrands,
-      specs: selectedSpecs,
-      variants: selectedVariants,
-    })
+    const hasFilters = hasActiveCatalogFilters(appliedFilters)
 
     if (!hasFilters) {
       setTotalDocs(initialTotalDocs)
-      if (initialDocsRef.current !== undefined) setDocs(initialDocsRef.current)
       return
     }
 
-    const fetchFiltered = async () => {
-      if (initialDocsRef.current !== undefined) setIsLoading(true)
+    const controller = new AbortController()
 
-      const params = appendCatalogFiltersToParams(new URLSearchParams(), {
-        q: debouncedSearch,
-        categories: selectedCategories,
-        brands: selectedBrands,
-        specs: selectedSpecs,
-        variants: selectedVariants,
-      })
+    const fetchFilteredCount = async () => {
+      setIsLoading(true)
+
+      const params = appendCatalogFiltersToParams(new URLSearchParams(), appliedFilters)
+      params.set('limit', '1')
+      params.set('page', '1')
 
       try {
-        const res = await fetch(`/api/products/catalog?${params.toString()}`)
+        const res = await fetch(`${CATALOG_API_PATH}?${params.toString()}`, {
+          signal: controller.signal,
+        })
         if (res.ok) {
-          const data = (await res.json()) as CatalogApiResponse<TDoc>
+          const data = (await res.json()) as CatalogCountResponse
           setTotalDocs(data.totalDocs || 0)
-          if (initialDocsRef.current !== undefined) setDocs(data.docs || [])
         }
       } catch (err) {
-        console.error('Failed to fetch filtered catalog', err)
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        console.error('Failed to fetch filtered catalog count', err)
       } finally {
-        if (initialDocsRef.current !== undefined) setIsLoading(false)
+        setIsLoading(false)
       }
     }
 
-    fetchFiltered()
-  }, [
-    debouncedSearch,
-    selectedCategories,
-    selectedBrands,
-    selectedSpecs,
-    selectedVariants,
-    initialTotalDocs,
-  ])
+    void fetchFilteredCount()
+
+    return () => controller.abort()
+  }, [appliedFilters, initialTotalDocs])
 
   const toggleCategory = (slug: string) => {
     setSelectedCategories((prev) =>
@@ -163,8 +158,8 @@ export function useCatalogFilterState<TDoc>(options: {
     handleClearAll,
     getFilterSnapshot,
     applyFilterSnapshot,
+    appliedFilters,
     totalDocs,
-    docs,
     isLoading,
   }
 }

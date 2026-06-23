@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { headersWithCors } from 'payload'
 
 import { filterValuesByGroupId } from '@/collections/VariantValues'
+import { CATALOG_PAGE_SIZE } from '@/lib/catalogConstants'
 import { generateProductVariants } from '@/lib/generateProductVariants'
 import { findCatalogProducts } from '@/lib/productFilters'
 import { getRelationshipId, emptyRelationshipFilter } from '@/lib/relationships'
@@ -44,6 +45,10 @@ export const Products: CollectionConfig = {
         const spec = searchParams.get('spec') || undefined
         const variants = searchParams.get('variants') || undefined
         const page = Number(searchParams.get('page') || '1') || 1
+        const requestedLimit = Number(searchParams.get('limit') || String(CATALOG_PAGE_SIZE))
+        const limit = Number.isFinite(requestedLimit)
+          ? Math.min(Math.max(1, requestedLimit), 50)
+          : CATALOG_PAGE_SIZE
 
         const allowedSorts = new Set(['popular', 'newest', 'rating'])
         const normalizedSort =
@@ -57,7 +62,7 @@ export const Products: CollectionConfig = {
           spec: spec || undefined,
           variants: variants || undefined,
           page,
-          limit: 12,
+          limit,
         })
 
         const statsByProduct = await getProductReviewStatsBatch(

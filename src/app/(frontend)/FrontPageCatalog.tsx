@@ -9,8 +9,11 @@ import type { Category } from '@/payload-types'
 import type { CatalogFilterOptions } from '@/lib/catalogFilterTypes'
 import { ProductCard, type ProductWithStats } from '@/components/ProductCard'
 import { ProductCardGrid } from '@/components/ProductCardGrid'
+import { CatalogLoadMore } from '@/components/CatalogLoadMore'
+import { InfiniteScrollSentinel } from '@/components/InfiniteScrollSentinel'
 import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
 import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
+import { useInfiniteCatalog } from '@/hooks/useInfiniteCatalog'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
 const FilterSheet = dynamic(() =>
@@ -41,10 +44,17 @@ export function FrontPageCatalog({
   const { closeFilter } = useFilterSheet()
   const filters = useCatalogFilterState({
     initialTotalDocs,
-    initialDocs: initialProducts,
   })
 
-  const products = filters.docs ?? initialProducts
+  const catalog = useInfiniteCatalog<ProductWithStats>({
+    filters: filters.appliedFilters,
+    sort: selectedSort,
+    initialDocs: initialProducts,
+    initialTotalDocs,
+    seedFromInitialWhenUnfiltered: true,
+  })
+
+  const isCatalogLoading = catalog.isInitialLoading || filters.isLoading
 
   return (
     <>
@@ -70,23 +80,31 @@ export function FrontPageCatalog({
           </div>
 
           <p className="mb-6 text-sm text-muted-foreground">
-            {filters.isLoading ? 'Loading...' : `${filters.totalDocs.toLocaleString()} products`}
+            {isCatalogLoading ? 'Loading...' : `${catalog.totalDocs.toLocaleString()} products`}
           </p>
 
-          {products.length === 0 && !filters.isLoading ? (
+          {catalog.docs.length === 0 && !isCatalogLoading ? (
             <div className="rounded-2xl border border-border bg-card py-16 text-center">
               <p className="text-muted-foreground">No products found matching your filters.</p>
             </div>
           ) : (
-            <ProductCardGrid
-              className={
-                filters.isLoading ? 'pointer-events-none opacity-50 transition-opacity' : ''
-              }
-            >
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </ProductCardGrid>
+            <>
+              <ProductCardGrid
+                className={
+                  isCatalogLoading ? 'pointer-events-none opacity-50 transition-opacity' : ''
+                }
+              >
+                {catalog.docs.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </ProductCardGrid>
+
+              <CatalogLoadMore isLoading={catalog.isLoadingMore} hasMore={catalog.hasMore} />
+              <InfiniteScrollSentinel
+                enabled={catalog.hasMore && !catalog.isInitialLoading && !catalog.isLoadingMore}
+                onIntersect={catalog.onIntersect}
+              />
+            </>
           )}
         </div>
       </section>

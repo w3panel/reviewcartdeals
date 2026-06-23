@@ -1,6 +1,7 @@
 import type { BasePayload, Where } from 'payload'
 
 import { parseListParam, parseVariantsParam } from '@/lib/catalogFilterParams'
+import { CATALOG_PAGE_SIZE } from '@/lib/catalogConstants'
 import { type CatalogSort, parseCatalogSort } from '@/lib/catalogUrl'
 import { getBrandIdsByTitlesCached, getCategoryIdsBySlugsCached } from '@/lib/cachedLookups'
 import { withPublishedOnly } from '@/lib/publishedOnly'
@@ -235,7 +236,7 @@ async function findProductIdsByFullTextSearch(
 }
 
 export async function findCatalogProducts(payload: BasePayload, options: CatalogQueryOptions = {}) {
-  const { page = 1, limit = 12, sort } = options
+  const { page = 1, limit = CATALOG_PAGE_SIZE, sort } = options
   const where = await buildProductsWhere(options, payload)
 
   return payload.find({
