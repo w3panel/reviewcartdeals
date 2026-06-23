@@ -52,10 +52,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         <div className="absolute inset-0 bg-gradient-to-t from-background to-black/30" />
         <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-12 mx-auto max-w-7xl">
           <Link
-            href="/"
+            href="/category"
             className="flex items-center gap-1 text-xs font-semibold tracking-widest text-primary uppercase hover:text-foreground transition-colors mb-3 sm:mb-4"
           >
-            <ChevronLeft className="h-4 w-4" /> Back to catalog
+            <ChevronLeft className="h-4 w-4" /> Back to categories
           </Link>
           <h1 className="font-serif text-3xl text-white tracking-wide sm:text-4xl md:text-5xl">
             {category.title}

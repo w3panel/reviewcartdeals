@@ -25,7 +25,7 @@ export function CategoryScroller({
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-serif text-xl sm:text-2xl text-white">Categories</h2>
           {showViewAll && (
-            <Link href="/search" className="text-sm text-primary underline underline-offset-4">
+            <Link href="/category" className="text-sm text-primary underline underline-offset-4">
               View all
             </Link>
           )}
