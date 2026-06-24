@@ -2,6 +2,8 @@ import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
 
 import { CACHE_TAGS } from '@/lib/cacheTags'
+import { CATEGORY_PAGE_SIZE } from '@/lib/catalogConstants'
+import { findCatalogCategories } from '@/lib/categoryCatalog'
 import { getPayloadClient } from '@/lib/payload'
 import { withPublishedOnly } from '@/lib/publishedOnly'
 import { withQueryTiming } from '@/lib/observability'
@@ -58,6 +60,21 @@ export async function getCategories() {
   return unstable_cache(
     async () => withQueryTiming('getCategories', fetchCategories),
     ['categories-list'],
+    { tags: [CACHE_TAGS.categories], revalidate: DATA_REVALIDATE_SECONDS },
+  )()
+}
+
+export async function getCategoriesPage(options: { page?: number; limit?: number } = {}) {
+  const page = options.page ?? 1
+  const limit = options.limit ?? CATEGORY_PAGE_SIZE
+
+  return unstable_cache(
+    async () =>
+      withQueryTiming(`getCategoriesPage:${page}:${limit}`, async () => {
+        const payload = await getPayloadClient()
+        return findCatalogCategories(payload, { page, limit })
+      }),
+    ['categories-page', String(page), String(limit)],
     { tags: [CACHE_TAGS.categories], revalidate: DATA_REVALIDATE_SECONDS },
   )()
 }

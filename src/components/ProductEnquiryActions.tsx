@@ -91,7 +91,7 @@ export function ProductEnquiryActions({
           href={enquiryWhatsappLink ?? undefined}
           target="_blank"
           rel="noopener noreferrer"
-          className={`inline-flex w-full items-center justify-center gap-2 rounded-xl bg-whatsapp px-6 py-4 text-xs font-bold uppercase tracking-wider text-white transition-opacity hover:opacity-90 sm:gap-3 sm:text-sm ${
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border border-whatsapp bg-transparent px-6 py-4 text-xs font-bold uppercase tracking-wider text-whatsapp transition-colors hover:bg-whatsapp/10 sm:gap-3 sm:text-sm ${
             whatsappDisabled ? 'pointer-events-none opacity-50' : ''
           }`}
           aria-disabled={whatsappDisabled}
@@ -104,7 +104,7 @@ export function ProductEnquiryActions({
           type="button"
           onClick={handleAddToEnquiry}
           disabled={selectionIncomplete}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-transparent px-6 py-4 text-xs font-bold uppercase tracking-wider text-primary transition-colors hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
         >
           <ShoppingBag className="h-5 w-5" />
           Add to Enquiry

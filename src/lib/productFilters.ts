@@ -34,6 +34,7 @@ const CATALOG_CARD_SELECT = {
   enableVariants: true,
   averageRating: true,
   reviewCount: true,
+  specifications: true,
   createdAt: true,
   updatedAt: true,
 } as const

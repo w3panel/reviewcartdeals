@@ -23,7 +23,6 @@ type ItemToRemove = {
 
 export default function CartPage() {
   const { items: cartItems, removeItem: removeFromCart, clearCart } = useCart()
-  const [formData, setFormData] = useState({ name: '', phone: '', message: '' })
   const [itemToRemove, setItemToRemove] = useState<ItemToRemove | null>(null)
 
   const handleConfirmRemove = () => {
@@ -32,13 +31,7 @@ export default function CartPage() {
     setItemToRemove(null)
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSendWhatsApp = () => {
     const productList = cartItems
       .map((item) => {
         const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
@@ -51,7 +44,7 @@ export default function CartPage() {
         return lines.join('\n')
       })
       .join('\n')
-    const message = `Hello! I have an enquiry for the following items:\n\n${productList}\n\nName: ${formData.name}\nPhone: ${formData.phone}\nMessage: ${formData.message}`
+    const message = `Hello! I have an enquiry for the following items:\n\n${productList}`
     const whatsappUrl = getWhatsAppUrl(message)
     if (!whatsappUrl) return
 
@@ -149,80 +142,14 @@ export default function CartPage() {
         </section>
 
         <section>
-          <h2 className="text-sm font-medium text-primary mb-4 px-1">Client Details</h2>
-          <form
-            onSubmit={handleSubmit}
-            className="bg-card rounded-3xl p-6 shadow-lg border border-primary/20 space-y-5"
+          <button
+            type="button"
+            onClick={handleSendWhatsApp}
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-whatsapp bg-transparent py-4 text-sm font-bold uppercase tracking-wide text-whatsapp transition-colors hover:bg-whatsapp/10 active:scale-[0.98]"
           >
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2"
-              >
-                Full Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full bg-muted border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2"
-              >
-                Phone Number *
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                required
-                value={formData.phone}
-                onChange={handleInputChange}
-                className="w-full bg-muted border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
-                placeholder="+1 234 567 8900"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2"
-              >
-                Additional Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={3}
-                value={formData.message}
-                onChange={handleInputChange}
-                className="w-full bg-muted border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all resize-none placeholder:text-muted-foreground"
-                placeholder="Any specific requests or questions?"
-              />
-            </div>
-
-            <div className="pt-6 border-t border-primary/10">
-              <button
-                type="submit"
-                className="w-full bg-whatsapp text-white rounded-xl py-4 font-bold text-sm uppercase tracking-wide flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
-              >
-                <span>Send via WhatsApp</span>
-                <WhatsAppIcon className="w-5 h-5" />
-              </button>
-              <p className="text-center text-[11px] text-muted-foreground mt-4 tracking-wide">
-                By submitting this enquiry, you agree to be contacted via WhatsApp by our concierge.
-              </p>
-            </div>
-          </form>
+            <span>Send via WhatsApp</span>
+            <WhatsAppIcon className="h-5 w-5" />
+          </button>
         </section>
       </main>
 

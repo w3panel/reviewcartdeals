@@ -5,9 +5,14 @@ import { Loader2 } from 'lucide-react'
 type CatalogLoadMoreProps = {
   isLoading: boolean
   hasMore: boolean
+  label?: string
 }
 
-export function CatalogLoadMore({ isLoading, hasMore }: CatalogLoadMoreProps) {
+export function CatalogLoadMore({
+  isLoading,
+  hasMore,
+  label = 'Loading more products...',
+}: CatalogLoadMoreProps) {
   if (!isLoading || !hasMore) return null
 
   return (
@@ -17,7 +22,7 @@ export function CatalogLoadMore({ isLoading, hasMore }: CatalogLoadMoreProps) {
       aria-live="polite"
     >
       <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-      Loading more products...
+      {label}
     </div>
   )
 }

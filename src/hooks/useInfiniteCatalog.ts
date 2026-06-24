@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   appendCatalogFiltersToParams,
   hasActiveCatalogFilters,
+  serializeVariantsParam,
   type CatalogFilterSnapshot,
 } from '@/lib/catalogFilterParams'
 import { CATALOG_API_PATH, CATALOG_PAGE_SIZE } from '@/lib/catalogConstants'
@@ -60,6 +61,11 @@ export function useInfiniteCatalog<TDoc extends { id: string | number }>({
     variants: filters.variants,
   })
 
+  const variantsKey = serializeVariantsParam(filters.variants)
+  const categoriesKey = filters.categories.join(',')
+  const brandsKey = filters.brands.join(',')
+  const specsKey = filters.specs.join(',')
+
   const queryKey = useMemo(() => {
     const params = appendCatalogFiltersToParams(new URLSearchParams(), {
       q: filters.q,
@@ -72,7 +78,7 @@ export function useInfiniteCatalog<TDoc extends { id: string | number }>({
     })
     params.set('limit', String(CATALOG_PAGE_SIZE))
     return params.toString()
-  }, [filters, sort])
+  }, [filters.q, categoriesKey, brandsKey, specsKey, variantsKey, sort])
 
   const [docs, setDocs] = useState<TDoc[]>(initialDocs ?? [])
   const [totalDocs, setTotalDocs] = useState(initialTotalDocs)

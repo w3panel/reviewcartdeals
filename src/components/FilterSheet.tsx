@@ -1,14 +1,11 @@
 'use client'
 
 import React, { useMemo } from 'react'
-import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { CatalogFilterFields, countCatalogFilterSelections } from '@/components/CatalogFilterFields'
 import type { CatalogFilterOptions, SelectedVariantFilters } from '@/lib/catalogFilterTypes'
 import { toggleVariantValue } from '@/lib/catalogFilterParams'
 import type { Category } from '@/payload-types'
-import { getWhatsAppUrl } from '@/lib/siteConfig'
 import { useFilterSheet } from '@/context/FilterSheetContext'
 
 interface FilterSheetProps {
@@ -53,7 +50,6 @@ export function FilterSheet({
   totalDocs,
 }: FilterSheetProps) {
   const { isOpen, closeFilter } = useFilterSheet()
-  const whatsappUrl = getWhatsAppUrl()
 
   const activeFilterCount = countCatalogFilterSelections({
     searchQuery,
@@ -189,28 +185,16 @@ export function FilterSheet({
       </div>
 
       <div className="border-t border-border bg-black p-4 pb-safe">
-        <div className="mx-auto flex max-w-2xl overflow-hidden rounded-xl bg-primary shadow-[0_-8px_32px_rgba(212,175,55,0.12)]">
+        <div className="mx-auto max-w-2xl">
           <button
             type="button"
             onClick={() => {
               onApply?.()
-              closeFilter()
             }}
-            className="flex-1 px-4 py-3.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary-hover"
+            className="w-full rounded-full border border-primary bg-transparent px-4 py-3.5 text-xs font-bold uppercase tracking-widest text-primary transition-colors hover:bg-primary/10"
           >
             Apply Filters ({totalDocs.toLocaleString()})
           </button>
-          {whatsappUrl ? (
-            <Link
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-14 items-center justify-center border-l border-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-hover"
-              aria-label="Contact on WhatsApp"
-            >
-              <WhatsAppIcon className="h-5 w-5" />
-            </Link>
-          ) : null}
         </div>
       </div>
     </div>

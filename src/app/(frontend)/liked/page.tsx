@@ -3,12 +3,10 @@
 import React from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Heart } from 'lucide-react'
-import { SafeImage } from '@/components/SafeImage'
 import { useLiked } from '@/context/LikedContext'
 import type { Product } from '@/payload-types'
-import { getImageUrl, getProductMainImage } from '@/lib/utils'
-import { AddToCartButton } from '@/components/AddToCartButton'
-import type { Brand } from '@/payload-types'
+import { ProductCard } from '@/components/ProductCard'
+import { ProductCardGrid } from '@/components/ProductCardGrid'
 
 export default function LikedPage() {
   const { likedItems, removeLike } = useLiked()
@@ -45,46 +43,22 @@ export default function LikedPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {likedItems.map((prod) => (
-            <div
-              key={prod.id}
-              className="group relative flex flex-col rounded-2xl border border-border bg-card p-3 sm:p-4"
-            >
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <ProductCardGrid>
+          {likedItems.map((product) => (
+            <div key={product.id} className="relative">
+              <ProductCard product={product as Product} />
               <button
                 type="button"
-                onClick={() => removeLike(prod.id)}
-                className="absolute top-2 right-2 z-10 p-2 rounded-full text-primary"
+                onClick={() => removeLike(product.id)}
+                className="absolute right-2 top-2 z-10 rounded-full border border-primary/30 bg-black/70 p-2 text-primary backdrop-blur-sm transition-colors hover:bg-black"
                 aria-label="Remove from saved"
               >
-                <Heart className="w-5 h-5 fill-primary" />
+                <Heart className="h-4 w-4 fill-primary" />
               </button>
-              <Link href={`/product/${prod.slug}`} className="flex-grow flex flex-col">
-                <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-background">
-                  <SafeImage
-                    src={getImageUrl(getProductMainImage(prod as Product), 'card')}
-                    alt={prod.title}
-                    fill
-                    sizes="(max-width: 640px) 50vw, 320px"
-                    className="object-contain p-2 transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <p className="mt-3 text-[10px] font-bold text-primary uppercase tracking-wider">
-                  {typeof prod.brand === 'object' && prod.brand !== null
-                    ? (prod.brand as Brand).title
-                    : String(prod.brand)}
-                </p>
-                <h4 className="mt-1 text-sm font-medium text-foreground line-clamp-2">
-                  {prod.title}
-                </h4>
-              </Link>
-              <div className="mt-3 pt-3 border-t border-border">
-                <AddToCartButton product={prod} />
-              </div>
             </div>
           ))}
-        </div>
+        </ProductCardGrid>
       </main>
     </div>
   )

@@ -1,5 +1,5 @@
 import React from 'react'
-import { getCategories } from '@/services/categories'
+import { getCategoriesPage } from '@/services/categories'
 import { CategoryCatalog } from './CategoryCatalog'
 
 export const revalidate = 120
@@ -10,7 +10,7 @@ export const metadata = {
 }
 
 export default async function CategoriesPage() {
-  const categories = await getCategories()
+  const { docs: categories, totalDocs } = await getCategoriesPage()
 
   return (
     <div className="min-h-screen w-full bg-background pb-24 md:pb-12">
@@ -24,7 +24,7 @@ export default async function CategoriesPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <CategoryCatalog categories={categories} />
+        <CategoryCatalog initialCategories={categories} initialTotalDocs={totalDocs} />
       </section>
     </div>
   )

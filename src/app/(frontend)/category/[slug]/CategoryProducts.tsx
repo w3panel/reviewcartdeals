@@ -1,11 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
-import { SafeImage } from '@/components/SafeImage'
 import { getProducts, getAllBrands } from '@/services/products'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
-import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
-import type { Product } from '@/payload-types'
-import { AddToCartButton } from '@/components/AddToCartButton'
+import { ProductCard } from '@/components/ProductCard'
+import { ProductCardGrid } from '@/components/ProductCardGrid'
 import { CategoryProductsFilters } from '@/components/CategoryProductsFilters'
 
 interface CategoryProductsProps {
@@ -72,43 +70,11 @@ export async function CategoryProducts({ slug, searchParams }: CategoryProductsP
         </div>
       ) : (
         <div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-3">
-            {products.map((prod: Product) => {
-              const imageUrl = getImageUrl(getProductMainImage(prod), 'card')
-              const brandTitle = getProductBrandTitle(prod)
-              return (
-                <div
-                  key={prod.id}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary"
-                >
-                  <Link href={`/product/${prod.slug}`} className="flex h-full flex-col">
-                    <div className="relative flex aspect-square w-full items-center justify-center bg-black p-3 sm:p-4">
-                      <SafeImage
-                        src={imageUrl}
-                        alt={prod.title}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-                        className="object-contain transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="flex flex-grow flex-col p-3 sm:p-4">
-                      {brandTitle ? (
-                        <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                          {brandTitle}
-                        </span>
-                      ) : null}
-                      <h3 className="line-clamp-2 text-sm font-medium leading-snug text-white">
-                        {prod.title}
-                      </h3>
-                    </div>
-                  </Link>
-                  <div className="px-3 pb-3 sm:px-4 sm:pb-4">
-                    <AddToCartButton product={prod} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <ProductCardGrid>
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </ProductCardGrid>
 
           {totalPages > 1 && (
             <div className="mt-16 flex items-center justify-center gap-4">
