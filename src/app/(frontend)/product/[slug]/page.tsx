@@ -11,7 +11,6 @@ import {
 } from '@/services/reviews'
 import { getBuildSlugs } from '@/lib/buildSlugs'
 import { ChevronRight, ListCollapse, Award } from 'lucide-react'
-import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
@@ -108,7 +107,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const brandTitle = getProductBrandTitle(product)
 
   return (
-    <div className="w-full min-h-screen bg-background text-foreground pb-28 md:pb-12">
+    <div className="w-full min-h-screen bg-background text-foreground pb-12">
       <nav className="border-b border-border bg-card py-3 sm:py-4">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center gap-2 text-[10px] sm:text-xs font-semibold tracking-wider uppercase text-muted-foreground overflow-x-auto no-scrollbar">
           <Link href="/" className="hover:text-primary transition-colors flex-shrink-0">
@@ -217,43 +216,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         </section>
       ) : null}
-
-      <div className="fixed bottom-16 left-0 right-0 z-40 md:hidden border-t border-border bg-background/95 backdrop-blur px-4 py-3 pb-safe">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg bg-card border border-border">
-              <SafeImage
-                src={getImageUrl(getProductMainImage(product), 'thumbnail')}
-                alt={product.title}
-                width={44}
-                height={44}
-                className="object-contain"
-              />
-            </div>
-            <div className="min-w-0">
-              {brandTitle ? (
-                <p className="text-[10px] font-bold text-primary uppercase truncate">
-                  {brandTitle}
-                </p>
-              ) : null}
-              <p className="text-xs font-medium text-foreground truncate">{product.title}</p>
-            </div>
-          </div>
-          <a
-            href={whatsappLink ?? undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex items-center gap-1.5 rounded-lg bg-whatsapp px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider text-white flex-shrink-0 ${
-              whatsappLink ? '' : 'pointer-events-none opacity-50'
-            }`}
-            aria-disabled={!whatsappLink}
-            tabIndex={whatsappLink ? undefined : -1}
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-            Enquire
-          </a>
-        </div>
-      </div>
     </div>
   )
 }

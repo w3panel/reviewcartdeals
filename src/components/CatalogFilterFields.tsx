@@ -9,7 +9,7 @@ import type { CatalogFilterOptions, SelectedVariantFilters } from '@/lib/catalog
 import { toggleVariantValue } from '@/lib/catalogFilterParams'
 import type { Category } from '@/payload-types'
 
-type OpenField = 'category' | 'brand' | `variant-${number}` | null
+type OpenField = 'category' | 'brand' | null
 
 export type CatalogFilterFieldsProps = {
   categories: Category[]
@@ -105,7 +105,6 @@ export function CatalogFilterFields({
       />
 
       {filterOptions.variantGroups.map((group) => {
-        const fieldKey = `variant-${group.id}` as const
         const selectedValueIds = selectedVariants[group.id] ?? []
 
         return (
@@ -113,17 +112,6 @@ export function CatalogFilterFields({
             key={group.id}
             group={group}
             selectedValueIds={selectedValueIds}
-            isOpen={openField === fieldKey}
-            onToggle={() => toggleField(fieldKey)}
-            onChange={(valueIds) => {
-              const next = { ...selectedVariants }
-              if (valueIds.length === 0) {
-                delete next[group.id]
-              } else {
-                next[group.id] = valueIds
-              }
-              setSelectedVariants(next)
-            }}
             onToggleValue={(valueId) =>
               setSelectedVariants(toggleVariantValue(selectedVariants, group.id, valueId))
             }

@@ -168,3 +168,8 @@ export function snapshotFromSearchParams(searchParams: URLSearchParams): Catalog
     variants: parseVariantsParam(searchParams.get('variants')),
   }
 }
+
+/** Parse filters from `searchParams.toString()` without depending on a live URLSearchParams reference. */
+export function snapshotFromSearchParamsKey(searchParamsKey: string): CatalogFilterSnapshot {
+  return snapshotFromSearchParams(new URLSearchParams(searchParamsKey))
+}

@@ -1,13 +1,9 @@
 import React, { Suspense } from 'react'
-import dynamic from 'next/dynamic'
 import { getCategories } from '@/services/categories'
 import { getProducts, getAllBrands } from '@/services/products'
 import { getCatalogFilterOptions } from '@/services/catalogFilters'
 import { SearchCatalog } from './SearchCatalog'
-
-const SearchFilterHost = dynamic(() =>
-  import('@/components/SearchFilterHost').then((mod) => ({ default: mod.SearchFilterHost })),
-)
+import { SearchFilterHost } from '@/components/SearchFilterHost'
 
 export default async function SearchPage() {
   const [categories, brands, filterOptions, { totalDocs }] = await Promise.all([

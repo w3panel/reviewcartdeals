@@ -12,6 +12,7 @@ import { ProductCardGrid } from '@/components/ProductCardGrid'
 import { CatalogLoadMore } from '@/components/CatalogLoadMore'
 import { InfiniteScrollSentinel } from '@/components/InfiniteScrollSentinel'
 import { buildCatalogSearchUrl, catalogSortToLabel, type CatalogSort } from '@/lib/catalogUrl'
+import { buildSearchPathFromSnapshot } from '@/lib/catalogFilterParams'
 import { useCatalogFilterState } from '@/hooks/useCatalogFilterState'
 import { useInfiniteCatalog } from '@/hooks/useInfiniteCatalog'
 import { useFilterSheet } from '@/context/FilterSheetContext'
@@ -58,7 +59,7 @@ export function FrontPageCatalog({
 
   return (
     <>
-      <section className="px-4 pb-20 pt-6 md:pb-12 md:pt-8">
+      <section id="home-catalog-results" className="scroll-mt-24 px-4 pb-20 pt-6 md:pb-12 md:pt-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex items-center justify-between border-t border-border pt-6">
             <div>
@@ -125,8 +126,14 @@ export function FrontPageCatalog({
         toggleSpec={filters.toggleSpec}
         selectedVariants={filters.selectedVariants}
         setSelectedVariants={filters.setSelectedVariants}
-        handleClearAll={filters.handleClearAll}
-        onApply={() => closeFilter()}
+        handleClearAll={() => {
+          filters.handleClearAll()
+          closeFilter()
+        }}
+        onApply={() => {
+          closeFilter()
+          router.push(`${buildSearchPathFromSnapshot(filters.getFilterSnapshot())}#catalog-results`)
+        }}
         totalDocs={filters.totalDocs}
       />
 

@@ -67,6 +67,20 @@ export function getProductBrandTitle(product: Pick<Product, 'brand'>): string | 
   return null
 }
 
+/** Size-style label shown on the product card image when available. */
+export function getProductCardOverlayLabel(
+  product: Pick<Product, 'specifications'>,
+): string | null {
+  const specs = product.specifications
+  if (!specs?.length) return null
+
+  const sizeSpec = specs.find((spec) => /size/i.test(spec.key.trim()))
+  const value = sizeSpec?.value?.trim()
+  if (!value) return null
+
+  return value.toLowerCase()
+}
+
 /** First gallery image — used as listing thumbnail. */
 export function getProductMainImage(product: Product): number | Media | null | undefined {
   if (product.enableVariants) {

@@ -6,6 +6,9 @@ import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl } from '@/lib/utils'
 import type { Category } from '@/payload-types'
 
+const HOME_MOBILE_CATEGORY_LIMIT = 5
+const HOME_DESKTOP_CATEGORY_LIMIT = 10
+
 type CategoryScrollerProps = {
   categories: Category[]
   selectedCategory?: string | null
@@ -19,8 +22,8 @@ export function CategoryScroller({
   onSelectCategory,
   showViewAll = true,
 }: CategoryScrollerProps) {
-  const mobileCategories = categories.slice(0, 5)
-  const desktopCategories = categories.slice(0, 10)
+  const mobileCategories = categories.slice(0, HOME_MOBILE_CATEGORY_LIMIT)
+  const desktopCategories = categories.slice(0, HOME_DESKTOP_CATEGORY_LIMIT)
 
   const renderCategory = (category: Category) => {
     const isSelected = selectedCategory === category.slug
@@ -89,11 +92,11 @@ export function CategoryScroller({
           )}
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar sm:gap-4 md:hidden">
+        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar sm:gap-4 lg:hidden">
           {mobileCategories.map((category) => renderCategory(category))}
         </div>
 
-        <div className="hidden gap-4 md:grid md:grid-cols-5 md:justify-items-center lg:grid-cols-10">
+        <div className="hidden gap-4 lg:grid lg:grid-cols-5 lg:justify-items-center xl:grid-cols-10">
           {desktopCategories.map((category) => renderCategory(category))}
         </div>
       </div>
