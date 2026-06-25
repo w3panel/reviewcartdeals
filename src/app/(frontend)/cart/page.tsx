@@ -7,18 +7,18 @@ import { SafeImage } from '@/components/SafeImage'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import { useCart } from '@/context/CartContext'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
-import { getWhatsAppUrl } from '@/lib/siteConfig'
+import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
 import {
-  formatVariantEnquiryDetails,
+  buildCartEnquiryWhatsAppMessage,
   formatVariantLabel,
   getCartItemKey,
 } from '@/lib/productVariants'
-import type { DisplayProduct } from '@/lib/clientStorage'
+import type { DisplayProduct, DisplayVariant } from '@/lib/clientStorage'
 import type { Product } from '@/payload-types'
 
 type ItemToRemove = {
   product: DisplayProduct
-  variantId?: string | null
+  variant?: DisplayVariant | null
 }
 
 export default function CartPage() {
@@ -27,24 +27,12 @@ export default function CartPage() {
 
   const handleConfirmRemove = () => {
     if (!itemToRemove) return
-    removeFromCart(itemToRemove.product.id, itemToRemove.variantId)
+    removeFromCart(itemToRemove.product.id, itemToRemove.variant)
     setItemToRemove(null)
   }
 
   const handleSendWhatsApp = () => {
-    const productList = cartItems
-      .map((item) => {
-        const lines = [`- ${item.product.title} (Qty: ${item.quantity})`]
-        if (item.variant) {
-          const variantDetails = formatVariantEnquiryDetails(item.variant)
-          if (variantDetails) {
-            lines.push(`  ${variantDetails.replace(/\n/g, '\n  ')}`)
-          }
-        }
-        return lines.join('\n')
-      })
-      .join('\n')
-    const message = `Hello! I have an enquiry for the following items:\n\n${productList}`
+    const message = buildCartEnquiryWhatsAppMessage(cartItems, getSiteUrl())
     const whatsappUrl = getWhatsAppUrl(message)
     if (!whatsappUrl) return
 
@@ -90,45 +78,47 @@ export default function CartPage() {
           <h2 className="text-sm font-medium text-primary mb-4 px-1">Selected Pieces</h2>
           <div className="bg-card rounded-3xl p-2 shadow-lg border border-border divide-y divide-border">
             {cartItems.map((item) => (
-              <div
-                key={getCartItemKey(item.product.id, item.variant?.id)}
-                className="flex gap-4 p-4 relative group"
-              >
-                <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
-                  {getProductMainImage(item.product as Product) ? (
-                    <SafeImage
-                      src={getImageUrl(getProductMainImage(item.product as Product), 'thumbnail')}
-                      alt={item.product.title}
-                      fill
-                      className="object-contain p-2"
-                      sizes="96px"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-card" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 py-1">
-                  <h3 className="text-sm md:text-base font-sans font-medium text-foreground leading-tight pr-8 group-hover:text-primary transition-colors">
-                    {item.product.title}
-                  </h3>
-                  {item.variant && (
-                    <p className="text-xs text-primary mt-2 leading-relaxed">
-                      {formatVariantLabel(item.variant)}
+              <div key={getCartItemKey(item.product.id, item.variant)} className="relative group">
+                <Link
+                  href={`/product/${item.product.slug}`}
+                  className="flex gap-4 p-4 pr-14 transition-colors hover:bg-muted/40 rounded-2xl"
+                >
+                  <div className="w-24 h-24 bg-muted rounded-2xl flex-shrink-0 relative overflow-hidden flex items-center justify-center border border-border">
+                    {getProductMainImage(item.product as Product) ? (
+                      <SafeImage
+                        src={getImageUrl(getProductMainImage(item.product as Product), 'thumbnail')}
+                        alt={item.product.title}
+                        fill
+                        className="object-contain p-2"
+                        sizes="96px"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-card" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 py-1">
+                    <h3 className="text-sm md:text-base font-sans font-medium text-foreground leading-tight group-hover:text-primary transition-colors">
+                      {item.product.title}
+                    </h3>
+                    {item.variant && (
+                      <p className="text-xs text-primary mt-2 leading-relaxed">
+                        {formatVariantLabel(item.variant)}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+                      {item.product.description}
                     </p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
-                    {item.product.description}
-                  </p>
-                  <p className="text-xs font-bold text-primary mt-3 uppercase tracking-wider">
-                    Qty: {item.quantity}
-                  </p>
-                </div>
+                    <p className="text-xs font-bold text-primary mt-3 uppercase tracking-wider">
+                      Qty: {item.quantity}
+                    </p>
+                  </div>
+                </Link>
                 <button
                   type="button"
                   onClick={() =>
                     setItemToRemove({
                       product: item.product,
-                      variantId: item.variant?.id != null ? String(item.variant.id) : null,
+                      variant: item.variant ?? null,
                     })
                   }
                   className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-500 bg-muted hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"

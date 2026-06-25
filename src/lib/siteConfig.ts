@@ -3,7 +3,21 @@ const DEV_WHATSAPP_PLACEHOLDER = '1234567890'
 let warnedMissingWhatsApp = false
 
 export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://reviewcartdeals.com'
+  const fromPublicEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (fromPublicEnv) {
+    return fromPublicEnv.replace(/\/+$/, '')
+  }
+
+  const vercelHost = process.env.VERCEL_URL?.trim()
+  if (vercelHost) {
+    return `https://${vercelHost.replace(/\/+$/, '')}`
+  }
+
+  return 'https://reviewcartdeals.vercel.app'
+}
+
+export function buildFloatingWhatsAppMessage(siteUrl: string): string {
+  return `Hello,\n\nI am interested in browsing your luxury showcase. Can you help me find some premium products?\n\nWebsite:\n${siteUrl}`
 }
 
 export function getWhatsAppNumber(): string | null {

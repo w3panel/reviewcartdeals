@@ -2,10 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
 import type { Product, ProductVariant } from '@/payload-types'
-import { getCartItemKey } from '@/lib/productVariants'
+import { getCartItemKey, type VariantDisplayInfo } from '@/lib/productVariants'
 import {
   CART_STORAGE_KEY,
   migrateLegacyCart,
+  normalizeStoredCartItem,
+  PREVIOUS_CART_STORAGE_KEY,
   toDisplayProduct,
   toDisplayVariant,
   toStoredProductSummary,
@@ -25,10 +27,14 @@ type CartContextType = {
   items: CartItem[]
   addItem: (
     product: Product | DisplayProduct,
-    variant?: ProductVariant | DisplayVariant | null,
+    variant?: ProductVariant | DisplayVariant | VariantDisplayInfo | null,
   ) => void
-  removeItem: (productId: string | number, variantId?: string | null) => void
-  updateQuantity: (productId: string | number, quantity: number, variantId?: string | null) => void
+  removeItem: (productId: string | number, variant?: DisplayVariant | null) => void
+  updateQuantity: (
+    productId: string | number,
+    quantity: number,
+    variant?: DisplayVariant | null,
+  ) => void
   clearCart: () => void
   itemCount: number
 }
@@ -60,13 +66,22 @@ function loadStoredCart(): StoredCartItem[] {
     if (saved) {
       const parsed = JSON.parse(saved) as unknown
       if (Array.isArray(parsed)) {
-        return parsed as StoredCartItem[]
+        return parsed.map((item) => normalizeStoredCartItem(item as StoredCartItem))
+      }
+    }
+
+    const previous = localStorage.getItem(PREVIOUS_CART_STORAGE_KEY)
+    if (previous) {
+      const migrated = JSON.parse(previous) as unknown
+      if (Array.isArray(migrated)) {
+        localStorage.removeItem(PREVIOUS_CART_STORAGE_KEY)
+        return migrated.map((item) => normalizeStoredCartItem(item as StoredCartItem))
       }
     }
 
     const legacy = localStorage.getItem(LEGACY_CART_STORAGE_KEY)
     if (legacy) {
-      const migrated = migrateLegacyCart(JSON.parse(legacy))
+      const migrated = migrateLegacyCart(JSON.parse(legacy)).map(normalizeStoredCartItem)
       localStorage.removeItem(LEGACY_CART_STORAGE_KEY)
       return migrated
     }
@@ -84,12 +99,12 @@ function normalizeProduct(product: Product | DisplayProduct): DisplayProduct {
 }
 
 function normalizeVariant(
-  variant: ProductVariant | DisplayVariant | null | undefined,
+  variant: ProductVariant | DisplayVariant | VariantDisplayInfo | null | undefined,
 ): DisplayVariant | null {
   if (!variant) return null
-  return 'product' in variant
-    ? toDisplayVariant(toStoredVariantSummary(variant as ProductVariant))
-    : variant
+
+  const summary = toStoredVariantSummary(variant)
+  return summary ? toDisplayVariant(summary) : null
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
@@ -112,19 +127,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (
     product: Product | DisplayProduct,
-    variant?: ProductVariant | DisplayVariant | null,
+    variant?: ProductVariant | DisplayVariant | VariantDisplayInfo | null,
   ) => {
     const displayProduct = normalizeProduct(product)
     const displayVariant = normalizeVariant(variant)
-    const itemKey = getCartItemKey(displayProduct.id, displayVariant?.id)
+    const itemKey = getCartItemKey(displayProduct.id, displayVariant)
 
     setItems((prev) => {
       const existing = prev.find(
-        (item) => getCartItemKey(item.product.id, item.variant?.id) === itemKey,
+        (item) => getCartItemKey(item.product.id, item.variant) === itemKey,
       )
       if (existing) {
         return prev.map((item) =>
-          getCartItemKey(item.product.id, item.variant?.id) === itemKey
+          getCartItemKey(item.product.id, item.variant) === itemKey
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         )
@@ -133,24 +148,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  const removeItem = (productId: string | number, variantId?: string | null) => {
-    const itemKey = getCartItemKey(productId, variantId)
+  const removeItem = (productId: string | number, variant?: DisplayVariant | null) => {
+    const itemKey = getCartItemKey(productId, variant)
     setItems((prev) =>
-      prev.filter((item) => getCartItemKey(item.product.id, item.variant?.id) !== itemKey),
+      prev.filter((item) => getCartItemKey(item.product.id, item.variant) !== itemKey),
     )
   }
 
   const updateQuantity = (
     productId: string | number,
     quantity: number,
-    variantId?: string | null,
+    variant?: DisplayVariant | null,
   ) => {
-    const itemKey = getCartItemKey(productId, variantId)
+    const itemKey = getCartItemKey(productId, variant)
     setItems((prev) =>
       prev.map((item) =>
-        getCartItemKey(item.product.id, item.variant?.id) === itemKey
-          ? { ...item, quantity }
-          : item,
+        getCartItemKey(item.product.id, item.variant) === itemKey ? { ...item, quantity } : item,
       ),
     )
   }

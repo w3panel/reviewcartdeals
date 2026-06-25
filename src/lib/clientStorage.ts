@@ -1,11 +1,15 @@
 import type { Brand, Media, Product, ProductVariant } from '@/payload-types'
 import {
+  getCombinationKeyFromVariant,
+  getVariantCombinationKey,
   variantOptionSummariesFromProductVariant,
+  type VariantDisplayInfo,
   type VariantOptionSummary,
 } from '@/lib/productVariants'
 import { getImageUrl, getProductMainImage } from '@/lib/utils'
 
-export const CART_STORAGE_KEY = 'reviewcartdeals_cart_v4'
+export const CART_STORAGE_KEY = 'reviewcartdeals_cart_v5'
+export const PREVIOUS_CART_STORAGE_KEY = 'reviewcartdeals_cart_v4'
 export const LIKED_STORAGE_KEY = 'reviewcartdeals_liked_v2'
 
 export type StoredProductSummary = {
@@ -22,6 +26,7 @@ export type StoredVariantSummary = {
   id: number | string
   title?: string | null
   options?: VariantOptionSummary[]
+  combinationKey?: string
 }
 
 export type StoredCartItem = {
@@ -48,6 +53,7 @@ export type DisplayVariant = {
   id: number | string
   title?: string | null
   options?: VariantOptionSummary[]
+  combinationKey?: string
   updatedAt: string
   createdAt: string
 }
@@ -75,26 +81,44 @@ export function toStoredProductSummary(product: Product | DisplayProduct): Store
 }
 
 function resolveStoredVariantOptions(
-  variant: ProductVariant | DisplayVariant,
+  variant: ProductVariant | DisplayVariant | VariantDisplayInfo,
 ): VariantOptionSummary[] | undefined {
   const firstOption = variant.options?.[0]
-  if (firstOption && 'groupLabel' in firstOption && 'valueLabel' in firstOption) {
+  if (
+    firstOption &&
+    'groupLabel' in firstOption &&
+    'valueLabel' in firstOption &&
+    firstOption.valueLabel
+  ) {
     return variant.options as VariantOptionSummary[]
   }
 
-  const options = variantOptionSummariesFromProductVariant(variant as ProductVariant)
-  return options.length > 0 ? options : undefined
+  if ('product' in variant) {
+    const options = variantOptionSummariesFromProductVariant(variant as ProductVariant)
+    return options.length > 0 ? options : undefined
+  }
+
+  return undefined
 }
 
 export function toStoredVariantSummary(
-  variant: ProductVariant | DisplayVariant | null | undefined,
+  variant: ProductVariant | DisplayVariant | VariantDisplayInfo | null | undefined,
 ): StoredVariantSummary | null {
   if (!variant) return null
 
+  const options = resolveStoredVariantOptions(variant)
+  const storedCombinationKey = 'combinationKey' in variant ? variant.combinationKey : undefined
+  const combinationKey =
+    storedCombinationKey ??
+    ('product' in variant
+      ? getCombinationKeyFromVariant(variant as ProductVariant) || undefined
+      : (getVariantCombinationKey(variant) ?? undefined))
+
   return {
-    id: variant.id,
+    id: variant.id ?? combinationKey ?? String(variant.title ?? 'variant'),
     title: variant.title,
-    options: resolveStoredVariantOptions(variant),
+    options,
+    combinationKey,
   }
 }
 
@@ -135,8 +159,24 @@ export function toDisplayVariant(
     id: summary.id,
     title: summary.title ?? undefined,
     options: summary.options,
+    combinationKey: summary.combinationKey,
     updatedAt: '',
     createdAt: '',
+  }
+}
+
+export function normalizeStoredCartItem(item: StoredCartItem): StoredCartItem {
+  if (!item.variant || item.variant.combinationKey) return item
+
+  const combinationKey = getVariantCombinationKey(item.variant)
+  if (!combinationKey) return item
+
+  return {
+    ...item,
+    variant: {
+      ...item.variant,
+      combinationKey,
+    },
   }
 }
 
