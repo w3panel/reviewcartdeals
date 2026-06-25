@@ -20,9 +20,59 @@ export type VariantValueSummary = {
 
 export function getCartItemKey(
   productId: string | number,
-  variantId?: string | number | null,
+  variant?: ProductVariant | VariantDisplayInfo | null,
 ): string {
-  return variantId != null ? `${productId}:${variantId}` : String(productId)
+  const combinationKey = getVariantCombinationKey(variant)
+  return combinationKey ? `${productId}:${combinationKey}` : String(productId)
+}
+
+export function getVariantCombinationKey(
+  variant: ProductVariant | VariantDisplayInfo | null | undefined,
+): string | null {
+  if (!variant) return null
+
+  if ('combinationKey' in variant && variant.combinationKey) {
+    return variant.combinationKey
+  }
+
+  const firstOption = variant.options?.[0]
+  if (firstOption && 'group' in firstOption) {
+    const key = getCombinationKeyFromVariant(variant as ProductVariant)
+    return key || null
+  }
+
+  const idOptions = (variant.options ?? []).flatMap((option) => {
+    if (
+      'groupId' in option &&
+      'valueId' in option &&
+      option.groupId != null &&
+      option.valueId != null
+    ) {
+      return [{ groupId: option.groupId, valueId: option.valueId }]
+    }
+    return []
+  })
+
+  if (idOptions.length > 0) {
+    return buildCombinationKey(idOptions)
+  }
+
+  const labelKey = (variant.options ?? [])
+    .filter(
+      (option): option is VariantOptionSummary =>
+        'groupLabel' in option && 'valueLabel' in option && Boolean(option.valueLabel),
+    )
+    .sort((a, b) => a.groupLabel.localeCompare(b.groupLabel))
+    .map((option) => `${option.groupLabel}:${option.valueLabel}`)
+    .join('|')
+
+  if (labelKey) return labelKey
+
+  if ('id' in variant && variant.id != null) {
+    return `id:${variant.id}`
+  }
+
+  return null
 }
 
 export function hasVariants(product: Product, variants: ProductVariant[] = []): boolean {
@@ -358,20 +408,26 @@ export function formatSelectedOptionsDetails(
 }
 
 export type VariantOptionSummary = {
+  groupId?: number
+  valueId?: number
   groupLabel: string
   valueLabel: string
 }
 
 /** Minimal variant shape for cart storage and enquiry formatting */
 export type VariantDisplayInfo = {
+  id?: number | string
   title?: string | null
   options?: VariantOptionSummary[]
+  combinationKey?: string
 }
 
 export function variantOptionSummariesFromProductVariant(
   variant: ProductVariant,
 ): VariantOptionSummary[] {
   return (variant.options ?? []).flatMap((option) => {
+    const groupId = getRelationshipId(option.group)
+    const valueId = getRelationshipId(option.value)
     const groupLabel =
       typeof option.group === 'object' && option.group !== null
         ? (option.group as VariantGroup).label
@@ -383,7 +439,15 @@ export function variantOptionSummariesFromProductVariant(
           ? String(option.value)
           : null
 
-    return valueLabel ? [{ groupLabel, valueLabel }] : []
+    if (!valueLabel) return []
+
+    return [
+      {
+        ...(groupId !== null && valueId !== null ? { groupId, valueId } : {}),
+        groupLabel,
+        valueLabel,
+      },
+    ]
   })
 }
 
@@ -416,11 +480,144 @@ export function formatVariantEnquiryDetails(variant: ProductVariant | VariantDis
     .join('\n')
 }
 
-export function getCombinationKeyFromVariant(variant: ProductVariant): string {
-  return buildCombinationKey(
-    (variant.options ?? []).map((option) => ({
-      groupId: getRelationshipId(option.group)!,
-      valueId: getRelationshipId(option.value)!,
-    })),
+export function variantOptionsNeedDisplayEnrichment(options: VariantOptionSummary[]): boolean {
+  if (options.length === 0) return true
+
+  return options.every(
+    (option) =>
+      option.groupLabel === 'Option' || !option.valueLabel || /^\d+$/.test(option.valueLabel),
   )
+}
+
+export function buildVariantOptionSummariesFromSelection(
+  product: Product,
+  variants: ProductVariant[],
+  selectedOptions: SelectedVariantOptions,
+  groups: VariantGroupSummary[],
+): VariantOptionSummary[] {
+  return groups.flatMap((group) => {
+    const valueId = selectedOptions[String(group.id)]
+    if (valueId === undefined) return []
+
+    const choice = getSelectableOptionChoices(product, variants, group.id, selectedOptions).find(
+      (entry) => entry.id === valueId,
+    )
+
+    if (!choice) return []
+
+    return [
+      {
+        groupId: group.id,
+        groupLabel: group.label,
+        valueId: choice.id,
+        valueLabel: choice.label,
+      },
+    ]
+  })
+}
+
+export function buildCartVariantFromSelection(params: {
+  product: Product
+  variants: ProductVariant[]
+  selectedOptions: SelectedVariantOptions
+  selectedVariant: ProductVariant | null
+  groups: VariantGroupSummary[]
+}): VariantDisplayInfo | null {
+  const { product, variants, selectedOptions, selectedVariant, groups } = params
+  if (groups.length === 0) return null
+
+  const selectionOptions = buildVariantOptionSummariesFromSelection(
+    product,
+    variants,
+    selectedOptions,
+    groups,
+  )
+
+  if (selectionOptions.length === 0) return null
+
+  const variantOptions = selectedVariant
+    ? variantOptionSummariesFromProductVariant(selectedVariant)
+    : []
+
+  const options =
+    variantOptions.length > 0 && !variantOptionsNeedDisplayEnrichment(variantOptions)
+      ? variantOptions
+      : selectionOptions
+
+  const combinationKey =
+    (selectedVariant ? getCombinationKeyFromVariant(selectedVariant) : '') ||
+    buildCombinationKey(
+      options.flatMap((option) =>
+        option.groupId != null && option.valueId != null
+          ? [{ groupId: option.groupId, valueId: option.valueId }]
+          : [],
+      ),
+    )
+
+  if (!combinationKey) return null
+
+  return {
+    id: selectedVariant?.id ?? `selection-${combinationKey}`,
+    title: selectedVariant?.title ?? undefined,
+    options,
+    combinationKey,
+  }
+}
+
+export function hasCartItemVariantSelections(
+  variant: ProductVariant | VariantDisplayInfo | null | undefined,
+): boolean {
+  if (!variant) return false
+
+  const info = toVariantDisplayInfo(variant)
+  return (info.options ?? []).some((option) => Boolean(option.groupLabel && option.valueLabel))
+}
+
+export function formatCartVariantWhatsAppSection(
+  variant: ProductVariant | VariantDisplayInfo,
+): string | null {
+  const info = toVariantDisplayInfo(variant)
+  const lines = (info.options ?? [])
+    .filter((option) => option.groupLabel && option.valueLabel)
+    .map((option) => `• ${option.groupLabel}: ${option.valueLabel}`)
+
+  if (lines.length === 0) return null
+
+  return `Variant:\n${lines.join('\n')}`
+}
+
+export function buildCartEnquiryWhatsAppMessage(
+  items: Array<{
+    product: { title: string; slug: string }
+    variant?: VariantDisplayInfo | null
+    quantity: number
+  }>,
+  siteUrl: string,
+): string {
+  const productList = items
+    .map((item, index) => {
+      const sections = [`${index + 1}.`, `Product: ${item.product.title}`]
+      const variantSection = item.variant ? formatCartVariantWhatsAppSection(item.variant) : null
+
+      if (variantSection) {
+        sections.push(variantSection)
+      }
+
+      sections.push(`Link:\n${siteUrl}/product/${item.product.slug}`)
+      return sections.join('\n\n')
+    })
+    .join('\n\n')
+
+  return `Hello,\n\nI'm interested in the following products:\n\n${productList}\n\nPlease let me know the availability of these products.\n\nThank you.`
+}
+
+export function getCombinationKeyFromVariant(variant: ProductVariant): string {
+  const options = (variant.options ?? []).flatMap((option) => {
+    const groupId = getRelationshipId(option.group)
+    const valueId = getRelationshipId(option.value)
+    if (groupId === null || valueId === null) return []
+    return [{ groupId, valueId }]
+  })
+
+  return buildCombinationKey(options)
 }

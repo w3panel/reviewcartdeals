@@ -10,7 +10,7 @@ import {
   getProductCardOverlayLabel,
   getProductMainImage,
 } from '@/lib/utils'
-import { getWhatsAppUrl } from '@/lib/siteConfig'
+import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
 import type { Product } from '@/payload-types'
 
 export type ProductWithStats = Product & {
@@ -29,8 +29,9 @@ const outlineActionClassName =
   'flex items-center justify-center rounded-xl border border-primary bg-transparent text-primary transition-colors duration-200 hover:bg-primary/10'
 
 export function ProductCard({ product, className = '' }: ProductCardProps) {
+  const productUrl = `${getSiteUrl()}/product/${product.slug}`
   const whatsappHref = getWhatsAppUrl(
-    `Hello, I am interested in ${product.title}. Can you share more details?`,
+    `Hello,\n\nI am interested in this product:\n\nProduct Name: ${product.title}\nProduct URL: ${productUrl}\n\nPlease share more details.`,
   )
   const brandTitle = getProductBrandTitle(product)
   const overlayLabel = getProductCardOverlayLabel(product)

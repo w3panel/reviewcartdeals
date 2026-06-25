@@ -1,17 +1,27 @@
+'use client'
+
 import React from 'react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
-import { getWhatsAppUrl } from '@/lib/siteConfig'
+import { buildFloatingWhatsAppMessage, getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
 
 export function FloatingWhatsApp() {
-  const message =
-    'Hello, I am interested in browsing your luxury showcase. Can you help me find some premium products?'
-  const href = getWhatsAppUrl(message)
+  const fallbackHref = getWhatsAppUrl(buildFloatingWhatsAppMessage(getSiteUrl()))
 
-  if (!href) return null
+  if (!fallbackHref) return null
+
+  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    const siteUrl = window.location.origin || getSiteUrl()
+    const href = getWhatsAppUrl(buildFloatingWhatsAppMessage(siteUrl))
+    if (!href) return
+
+    event.preventDefault()
+    window.open(href, '_blank', 'noopener,noreferrer')
+  }
 
   return (
     <a
-      href={href}
+      href={fallbackHref}
+      onClick={handleClick}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-whatsapp text-white shadow-2xl transition-all duration-300 hover:scale-110 md:h-14 md:w-14 lg:bottom-8 lg:right-8"

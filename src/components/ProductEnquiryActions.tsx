@@ -5,9 +5,10 @@ import { ShoppingBag } from 'lucide-react'
 import { WhatsAppIcon } from '@/components/WhatsAppIcon'
 import type { Product, ProductVariant } from '@/payload-types'
 import {
+  buildCartVariantFromSelection,
+  getVariantOptionTypes,
   formatSelectedOptionsDetails,
   formatVariantEnquiryDetails,
-  getVariantOptionTypes,
   type SelectedVariantOptions,
 } from '@/lib/productVariants'
 import { useCart } from '@/context/CartContext'
@@ -70,7 +71,20 @@ export function ProductEnquiryActions({
 
   const handleAddToEnquiry = () => {
     if (selectionIncomplete) return
-    addItem(product, selectedVariant ?? null)
+
+    const variantGroups = getVariantOptionTypes(product, variants)
+    const cartVariant =
+      variantGroups.length > 0
+        ? buildCartVariantFromSelection({
+            product,
+            variants,
+            selectedOptions,
+            selectedVariant,
+            groups: variantGroups,
+          })
+        : null
+
+    addItem(product, cartVariant)
     router.push('/cart')
   }
 
