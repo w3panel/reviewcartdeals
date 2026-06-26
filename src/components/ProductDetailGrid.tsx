@@ -20,7 +20,6 @@ import { ProductEnquiryActions } from '@/components/ProductEnquiryActions'
 type ProductDetailGridProps = {
   product: Product
   variants: ProductVariant[]
-  whatsappLink: string | null
   beforeActions: React.ReactNode
   afterActions?: React.ReactNode
 }
@@ -28,7 +27,6 @@ type ProductDetailGridProps = {
 export function ProductDetailGrid({
   product,
   variants,
-  whatsappLink,
   beforeActions,
   afterActions,
 }: ProductDetailGridProps) {
@@ -66,7 +64,6 @@ export function ProductDetailGrid({
         <ProductEnquiryActions
           product={product}
           variants={variants}
-          whatsappLink={whatsappLink}
           selectedOptions={selectedOptions}
           onSelectOptions={setSelectedOptions}
           selectedVariant={selectedVariant}

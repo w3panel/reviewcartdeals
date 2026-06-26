@@ -14,7 +14,6 @@ import { ChevronRight, ListCollapse, Award } from 'lucide-react'
 import { SafeImage } from '@/components/SafeImage'
 import { getImageUrl, getProductBrandTitle, getProductMainImage } from '@/lib/utils'
 import { getCategoryId, resolveProductCategory } from '@/lib/productCategory'
-import { getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
 import type { Category, Product } from '@/payload-types'
 import { ProductDetailGrid } from '@/components/ProductDetailGrid'
 import { ProductCard, type ProductWithStats } from '@/components/ProductCard'
@@ -99,11 +98,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     stats: relatedStats.get(prod.id) ?? emptyProductReviewStats(),
   }))
 
-  const siteUrl = getSiteUrl()
-  const productUrl = `${siteUrl}/product/${product.slug}`
-  const whatsappMessage = `Hello,\n\nI am interested in this product:\n\nProduct Name: ${product.title}\nProduct URL: ${productUrl}\n\nPlease share more details.`
-  const whatsappLink = getWhatsAppUrl(whatsappMessage)
-
   const brandTitle = getProductBrandTitle(product)
 
   return (
@@ -140,7 +134,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductDetailGrid
           product={product}
           variants={variants}
-          whatsappLink={whatsappLink}
           beforeActions={
             <>
               {brandTitle ? (
