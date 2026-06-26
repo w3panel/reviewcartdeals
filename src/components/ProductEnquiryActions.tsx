@@ -14,11 +14,11 @@ import {
 import { useCart } from '@/context/CartContext'
 import { useRouter } from 'next/navigation'
 import { VariantSelector } from '@/components/VariantSelector'
+import { buildProductEnquiryWhatsAppMessage, getSiteUrl, getWhatsAppUrl } from '@/lib/siteConfig'
 
 type ProductEnquiryActionsProps = {
   product: Product
   variants: ProductVariant[]
-  whatsappLink: string | null
   selectedOptions: SelectedVariantOptions
   onSelectOptions: (selectedOptions: SelectedVariantOptions) => void
   selectedVariant: ProductVariant | null
@@ -29,7 +29,6 @@ type ProductEnquiryActionsProps = {
 export function ProductEnquiryActions({
   product,
   variants,
-  whatsappLink,
   selectedOptions,
   onSelectOptions,
   selectedVariant,
@@ -41,30 +40,22 @@ export function ProductEnquiryActions({
   const hasSpecifications = Boolean(product.specifications && product.specifications.length > 0)
 
   const enquiryWhatsappLink = useMemo(() => {
-    if (!whatsappLink) return null
+    let message = buildProductEnquiryWhatsAppMessage(product, getSiteUrl())
+    const variantDetails = selectedVariant
+      ? formatVariantEnquiryDetails(selectedVariant)
+      : formatSelectedOptionsDetails(
+          product,
+          variants,
+          selectedOptions,
+          getVariantOptionTypes(product, variants),
+        )
 
-    try {
-      const url = new URL(whatsappLink)
-      const message = decodeURIComponent(url.searchParams.get('text') ?? '')
-      const variantDetails = selectedVariant
-        ? formatVariantEnquiryDetails(selectedVariant)
-        : formatSelectedOptionsDetails(
-            product,
-            variants,
-            selectedOptions,
-            getVariantOptionTypes(product, variants),
-          )
-      const extraDetails = variantDetails ? `\n${variantDetails}` : ''
-
-      if (extraDetails) {
-        url.searchParams.set('text', `${message}${extraDetails}`)
-      }
-
-      return url.toString()
-    } catch {
-      return null
+    if (variantDetails) {
+      message = `${message}\n${variantDetails}`
     }
-  }, [whatsappLink, selectedVariant, product, variants, selectedOptions])
+
+    return getWhatsAppUrl(message)
+  }, [selectedVariant, product, variants, selectedOptions])
 
   const selectionIncomplete = requireVariantSelection && !selectedVariant
   const whatsappDisabled = selectionIncomplete || !enquiryWhatsappLink

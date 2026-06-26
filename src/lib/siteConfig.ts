@@ -20,6 +20,14 @@ export function buildFloatingWhatsAppMessage(siteUrl: string): string {
   return `Hello,\n\nI am interested in browsing your luxury showcase. Can you help me find some premium products?\n\nWebsite:\n${siteUrl}`
 }
 
+export function buildProductEnquiryWhatsAppMessage(
+  product: { title: string; slug: string },
+  siteUrl: string,
+): string {
+  const productUrl = `${siteUrl.replace(/\/+$/, '')}/product/${product.slug}`
+  return `Hello,\n\nI am interested in this product:\n\nProduct Name: ${product.title}\nProduct URL: ${productUrl}\n\nPlease share more details.`
+}
+
 export function getWhatsAppNumber(): string | null {
   const value = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.trim()
   if (value) return value
