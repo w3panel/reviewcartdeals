@@ -45,7 +45,7 @@ export async function Header({
   const headerItems = filterNavShell(navItems, 'header')
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-black/95 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md">
       <div className="relative mx-auto hidden h-16 max-w-7xl items-center justify-between gap-4 px-6 lg:flex lg:h-20 lg:px-8">
         {headerItems.length > 0 && (
           <nav className="flex min-w-0 flex-1 flex-wrap items-center gap-6">

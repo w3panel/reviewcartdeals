@@ -11,7 +11,7 @@ export function HeaderLikedIcon() {
   return (
     <Link
       href="/liked"
-      className="relative rounded-full p-2 text-[#F5B82A] hover:text-[#DCA54A] transition-colors"
+      className="relative rounded-full p-2 text-primary transition-colors hover:text-accent"
       aria-label="View Liked Products"
     >
       <Heart className="h-6 w-6" />

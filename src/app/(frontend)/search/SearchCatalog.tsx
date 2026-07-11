@@ -98,7 +98,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
           <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-white">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-foreground">
                 Filters
               </h2>
             </div>

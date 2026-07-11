@@ -137,12 +137,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           beforeActions={
             <>
               {brandTitle ? (
-                <span className="text-xs sm:text-sm font-semibold tracking-widest text-primary uppercase">
+                <span className="text-xs sm:text-sm font-semibold tracking-widest text-accent uppercase">
                   {brandTitle}
                 </span>
               ) : null}
               <h1
-                className={`font-serif text-2xl text-white leading-tight sm:text-3xl lg:text-4xl ${brandTitle ? 'mt-2' : ''}`}
+                className={`font-serif text-2xl text-foreground leading-tight sm:text-3xl lg:text-4xl ${brandTitle ? 'mt-2' : ''}`}
               >
                 {product.title}
               </h1>
@@ -198,7 +198,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {relatedWithStats.length > 0 ? (
         <section className="mt-8 border-t border-border bg-card py-10 sm:py-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h3 className="mb-6 font-serif text-xl text-white sm:mb-8 sm:text-2xl">
+            <h3 className="mb-6 font-serif text-xl text-foreground sm:mb-8 sm:text-2xl">
               Related Products
             </h3>
             <ProductCardGrid>

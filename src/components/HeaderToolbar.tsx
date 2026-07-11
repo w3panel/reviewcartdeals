@@ -30,7 +30,7 @@ export function HeaderToolbar({ navItems: _navItems }: HeaderToolbarProps) {
         <button
           type="button"
           onClick={openFilter}
-          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-primary bg-black text-primary transition-colors hover:bg-primary/10"
+          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
           aria-label="Open filters"
         >
           <SlidersHorizontal className="h-4 w-4" />
@@ -38,7 +38,7 @@ export function HeaderToolbar({ navItems: _navItems }: HeaderToolbarProps) {
       ) : (
         <Link
           href="/search"
-          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-primary bg-black text-primary transition-colors hover:bg-primary/10"
+          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground transition-colors hover:bg-primary-hover"
           aria-label="Browse catalog"
         >
           <SlidersHorizontal className="h-4 w-4" />

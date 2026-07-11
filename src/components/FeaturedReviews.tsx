@@ -14,10 +14,10 @@ export function FeaturedReviews({ products }: FeaturedReviewsProps) {
     <section className="hidden px-4 pb-10 pt-8 md:block md:pb-12 md:pt-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-serif text-xl text-white sm:text-2xl">Featured Reviews</h2>
+          <h2 className="font-serif text-xl text-foreground sm:text-2xl">Featured Reviews</h2>
           <Link
             href="/search"
-            className="text-sm font-medium text-primary transition-colors hover:text-primary-hover"
+            className="text-sm font-medium text-accent underline underline-offset-4 transition-colors hover:text-primary"
           >
             View all
           </Link>

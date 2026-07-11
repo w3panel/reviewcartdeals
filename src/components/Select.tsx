@@ -122,7 +122,7 @@ export function Select({
             : 'border-border bg-card hover:border-primary/35 hover:bg-surface/80'
         }`}
       >
-        <span className={hasValue ? 'font-medium text-white' : 'text-muted-foreground'}>
+        <span className={hasValue ? 'font-medium text-foreground' : 'text-muted-foreground'}>
           {selectedLabel}
         </span>
         <ChevronDown
@@ -144,7 +144,7 @@ export function Select({
           id={listboxId}
           role="listbox"
           aria-label={label ?? placeholder}
-          className="max-h-60 overflow-y-auto rounded-2xl border border-border/80 bg-[#0a0a0a]/95 p-1.5 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl no-scrollbar"
+          className="max-h-60 overflow-y-auto rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-[0_20px_60px_rgba(61,38,26,0.15)] backdrop-blur-xl no-scrollbar"
         >
           {allOptions.map((option) => {
             const isSelected = value === option.value
@@ -157,8 +157,8 @@ export function Select({
                   onClick={() => handleSelect(option.value)}
                   className={`flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-left text-sm transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40 ${
                     isSelected
-                      ? 'bg-primary/15 text-white'
-                      : 'text-muted-foreground hover:bg-surface hover:text-white'
+                      ? 'bg-primary/15 text-foreground'
+                      : 'text-muted-foreground hover:bg-surface hover:text-foreground'
                   }`}
                 >
                   <span className={isSelected ? 'font-medium' : undefined}>{option.label}</span>

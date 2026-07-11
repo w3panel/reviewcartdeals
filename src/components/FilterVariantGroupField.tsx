@@ -226,7 +226,7 @@ export function FilterVariantGroupField({
                   className={`flex-shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
                     isSelected
                       ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-white'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground'
                   }`}
                 >
                   {value.label}

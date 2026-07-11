@@ -151,7 +151,7 @@ export function HeaderSearch({ variant = 'desktop', className = '' }: HeaderSear
           aria-autocomplete="list"
           role="combobox"
           autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent text-sm text-white placeholder:text-muted-foreground focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
       </div>
 
@@ -188,7 +188,7 @@ export function HeaderSearch({ variant = 'desktop', className = '' }: HeaderSear
                       onClick={() => navigateToProduct(product.slug)}
                       className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface"
                     >
-                      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-black">
+                      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-surface">
                         <SafeImage
                           src={imageUrl}
                           alt=""
@@ -199,11 +199,11 @@ export function HeaderSearch({ variant = 'desktop', className = '' }: HeaderSear
                       </div>
                       <div className="min-w-0 flex-1">
                         {brandTitle ? (
-                          <p className="truncate text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
+                          <p className="truncate text-[10px] font-bold uppercase tracking-[0.16em] text-accent">
                             {brandTitle}
                           </p>
                         ) : null}
-                        <p className="line-clamp-2 text-sm font-medium leading-snug text-white">
+                        <p className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
                           {product.title}
                         </p>
                       </div>

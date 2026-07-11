@@ -18,6 +18,11 @@ export const metadata = {
     'Browse our curated collection of luxury watches, designer sunglasses, fine leather goods, and premium accessories. Inquire directly on WhatsApp.',
 }
 
+export const viewport = {
+  themeColor: '#f5eee6',
+  colorScheme: 'light',
+}
+
 export default async function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
   const navItems = await getNavigation()
@@ -25,14 +30,19 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${playfairDisplay.variable}`}
+      className={`light ${outfit.variable} ${playfairDisplay.variable}`}
       suppressHydrationWarning
     >
       <body
         className="min-h-screen flex flex-col bg-background text-foreground pb-[calc(4rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
         suppressHydrationWarning
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
+        >
           <CartProvider>
             <LikedProvider>
               <FilterSheetProvider>

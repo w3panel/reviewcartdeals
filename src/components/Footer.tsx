@@ -8,7 +8,7 @@ export async function Footer({ navItems }: { navItems: NavItem[] }) {
   const footerItems = filterNavShell(navItems, 'footer')
 
   return (
-    <footer className="hidden border-t border-border bg-black text-muted-foreground md:block">
+    <footer className="hidden border-t border-border bg-card text-muted-foreground md:block">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className={footerItems.length > 0 ? 'md:col-span-2' : 'md:col-span-4'}>
@@ -20,7 +20,7 @@ export async function Footer({ navItems }: { navItems: NavItem[] }) {
 
           {footerItems.length > 0 && (
             <div>
-              <h5 className="border-b border-border pb-2 text-xs font-semibold uppercase tracking-widest text-white">
+              <h5 className="border-b border-border pb-2 text-xs font-semibold uppercase tracking-widest text-foreground">
                 Links
               </h5>
               <ul className="mt-4 space-y-2 text-sm">

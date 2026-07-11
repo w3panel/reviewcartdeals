@@ -25,8 +25,11 @@ type ProductCardProps = {
   className?: string
 }
 
-const outlineActionClassName =
-  'flex items-center justify-center rounded-xl border border-primary bg-transparent text-primary transition-colors duration-200 hover:bg-primary/10'
+const reviewButtonClassName =
+  'flex items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary-hover'
+
+const whatsappButtonClassName =
+  'flex items-center justify-center rounded-xl border border-primary bg-surface text-primary transition-colors duration-200 hover:bg-card'
 
 export function ProductCard({ product, className = '' }: ProductCardProps) {
   const whatsappHref = getWhatsAppUrl(buildProductEnquiryWhatsAppMessage(product, getSiteUrl()))
@@ -35,11 +38,11 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
 
   return (
     <article
-      className={`group relative flex w-full flex-col overflow-hidden rounded-[20px] border border-white/10 bg-black transition-colors duration-300 hover:border-primary/40 ${className}`}
+      className={`group relative flex w-full flex-col overflow-hidden rounded-[20px] border border-border bg-card shadow-[0_4px_20px_rgba(45,36,30,0.06)] transition-colors duration-300 hover:border-primary/30 ${className}`}
     >
       <Link
         href={`/product/${product.slug}`}
-        className="relative block aspect-[4/5] overflow-hidden bg-black"
+        className="relative block aspect-[4/5] overflow-hidden bg-surface"
       >
         <SafeImage
           src={getImageUrl(getProductMainImage(product), 'card')}
@@ -49,22 +52,22 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
         />
         {overlayLabel ? (
-          <span className="absolute bottom-3 left-3 font-serif text-sm lowercase text-white/95 sm:bottom-4 sm:left-4 sm:text-base">
+          <span className="absolute bottom-3 left-3 font-serif text-sm lowercase text-primary-foreground sm:bottom-4 sm:left-4 sm:text-base">
             {overlayLabel}
           </span>
         ) : null}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-2 bg-black p-3 sm:gap-3 sm:p-4">
+      <div className="flex flex-1 flex-col gap-2 bg-card p-3 sm:gap-3 sm:p-4">
         {brandTitle ? (
-          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary sm:text-[10px] sm:tracking-[0.22em]">
+          <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground sm:text-[10px] sm:tracking-[0.22em]">
             {brandTitle}
           </span>
         ) : null}
 
         <Link
           href={`/product/${product.slug}`}
-          className="line-clamp-2 text-sm font-medium leading-snug text-white transition-colors hover:text-primary sm:text-[15px]"
+          className="line-clamp-2 text-sm font-medium leading-snug text-foreground transition-colors hover:text-accent sm:text-[15px]"
         >
           {product.title}
         </Link>
@@ -72,7 +75,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
         <div className="mt-auto flex gap-2 pt-1 sm:gap-3 sm:pt-2">
           <Link
             href={`/product/${product.slug}`}
-            className={`${outlineActionClassName} h-10 flex-1 text-[10px] font-semibold tracking-wide sm:h-11 sm:text-xs`}
+            className={`${reviewButtonClassName} h-10 flex-1 text-[10px] font-semibold tracking-wide sm:h-11 sm:text-xs`}
           >
             Review
           </Link>
@@ -81,7 +84,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${outlineActionClassName} h-10 w-10 flex-shrink-0 sm:h-11 sm:w-11`}
+              className={`${whatsappButtonClassName} h-10 w-10 flex-shrink-0 sm:h-11 sm:w-11`}
               aria-label={`WhatsApp enquiry for ${product.title}`}
             >
               <WhatsAppIcon className="h-4 w-4" />

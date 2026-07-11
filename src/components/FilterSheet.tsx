@@ -82,18 +82,18 @@ export function FilterSheet({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-background">
       <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={closeFilter}
-            className="rounded-full p-2 text-white transition-colors hover:bg-surface"
+            className="rounded-full p-2 text-foreground transition-colors hover:bg-surface"
             aria-label="Close filters"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h2 className="font-serif text-2xl text-white">Filters</h2>
+          <h2 className="font-serif text-2xl text-foreground">Filters</h2>
         </div>
         <button
           type="button"
@@ -184,7 +184,7 @@ export function FilterSheet({
         </div>
       </div>
 
-      <div className="border-t border-border bg-black p-4 pb-safe">
+      <div className="border-t border-border bg-background p-4 pb-safe">
         <div className="mx-auto max-w-2xl">
           <button
             type="button"

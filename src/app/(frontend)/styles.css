@@ -1,52 +1,60 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-background: #000000;
-  --color-foreground: #ffffff;
-  --color-card: #111111;
-  --color-surface: #141414;
-  --color-border: #1f1f1f;
-  --color-primary: #d4af37;
-  --color-primary-hover: #e6c76a;
-  --color-primary-foreground: #000000;
-  --color-muted: #141414;
-  --color-muted-foreground: #a1a1aa;
-  --color-whatsapp: #25d366;
+  --color-background: #f5eee6;
+  --color-foreground: #2d241e;
+  --color-card: #fdf8f3;
+  --color-surface: #ebe0d4;
+  --color-border: #e0d4c8;
+  --color-primary: #4a2c1a;
+  --color-primary-hover: #5a3a28;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #966b4b;
+  --color-muted: #f5ebe0;
+  --color-muted-foreground: #8b735b;
+  --color-whatsapp: #4a2c1a;
 
   --font-serif: var(--font-playfair), Georgia, serif;
   --font-sans: var(--font-outfit), 'Inter', system-ui, sans-serif;
 }
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #111111;
-  --surface: #141414;
-  --border: #1f1f1f;
-  --primary: #d4af37;
-  --primary-hover: #e6c76a;
-  --primary-foreground: #000000;
-  --muted: #141414;
-  --muted-foreground: #a1a1aa;
-  --whatsapp: #25d366;
+  color-scheme: light;
+  --background: #f5eee6;
+  --foreground: #2d241e;
+  --card: #fdf8f3;
+  --surface: #ebe0d4;
+  --border: #e0d4c8;
+  --primary: #4a2c1a;
+  --primary-hover: #5a3a28;
+  --primary-foreground: #ffffff;
+  --accent: #966b4b;
+  --muted: #f5ebe0;
+  --muted-foreground: #8b735b;
+  --whatsapp: #4a2c1a;
+}
+
+html {
+  color-scheme: light;
 }
 
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f1f1f;
+  background: var(--border);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4af37;
+  background: var(--accent);
 }
 
 body {
-  background-color: var(--background);
+  background: linear-gradient(180deg, #f5eee6 0%, #f2e7dc 45%, #f5eee6 100%);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
@@ -58,18 +66,18 @@ body {
 }
 
 .gold-gradient {
-  background: linear-gradient(135deg, #d4af37 0%, #e6c76a 100%);
+  background: linear-gradient(135deg, #4a2c1a 0%, #5a3a28 100%);
 }
 
 .gold-text-gradient {
-  background: linear-gradient(135deg, #d4af37 0%, #e6c76a 100%);
+  background: linear-gradient(135deg, #966b4b 0%, #a67a58 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .luxury-panel {
-  background: linear-gradient(180deg, rgba(20, 20, 20, 0.98) 0%, rgba(0, 0, 0, 1) 100%);
+  background: linear-gradient(180deg, rgba(253, 248, 243, 0.98) 0%, rgba(245, 238, 230, 1) 100%);
 }
 
 .no-scrollbar {

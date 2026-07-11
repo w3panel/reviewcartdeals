@@ -63,10 +63,10 @@ export function FrontPageCatalog({
         <div className="mx-auto max-w-7xl">
           <div className="mb-6 flex items-center justify-between border-t border-border pt-6">
             <div>
-              <h2 className="font-serif text-xl text-white sm:text-2xl">All Products</h2>
+              <h2 className="font-serif text-xl text-foreground sm:text-2xl">All Products</h2>
               <Link
                 href={buildCatalogSearchUrl()}
-                className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-4"
+                className="mt-2 inline-block text-sm font-medium text-accent underline underline-offset-4"
               >
                 Browse / Filter Catalog
               </Link>
