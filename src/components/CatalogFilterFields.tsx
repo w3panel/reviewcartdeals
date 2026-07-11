@@ -77,7 +77,7 @@ export function CatalogFilterFields({
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search products..."
-            className="w-full rounded-2xl border border-border bg-card py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-muted-foreground transition-colors focus:border-primary/70 focus:outline-none focus:ring-1 focus:ring-primary/25"
+            className="w-full rounded-2xl border border-border bg-card py-3.5 pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/70 focus:outline-none focus:ring-1 focus:ring-primary/25"
           />
         </div>
       </div>

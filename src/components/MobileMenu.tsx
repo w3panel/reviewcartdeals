@@ -97,15 +97,15 @@ export function MobileMenu() {
 
   const menuPanel =
     open && mounted ? (
-      <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl lg:hidden">
+      <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl lg:hidden">
         <div className="flex h-full flex-col p-6">
           <div className="mb-8 flex w-full flex-shrink-0 items-center justify-between">
-            <span className="font-serif text-2xl text-white">Menu</span>
+            <span className="font-serif text-2xl text-foreground">Menu</span>
             <button
               type="button"
               onClick={close}
               aria-label="Close menu"
-              className="rounded-full border border-border bg-surface p-2 text-primary transition-colors hover:text-white"
+              className="rounded-full border border-border bg-surface p-2 text-primary transition-colors hover:text-foreground"
             >
               <X className="h-5 w-5" />
             </button>

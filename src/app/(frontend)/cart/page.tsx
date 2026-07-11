@@ -53,7 +53,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/"
-          className="bg-primary text-background px-8 py-3.5 rounded-full font-bold uppercase tracking-wide hover:bg-primary-hover transition-colors shadow-lg text-sm"
+          className="bg-primary text-primary-foreground px-8 py-3.5 rounded-full font-bold uppercase tracking-wide hover:bg-primary-hover transition-colors shadow-lg text-sm"
         >
           Explore Collections
         </Link>
@@ -67,8 +67,8 @@ export default function CartPage() {
         <Link href="/" className="p-2 -ml-2 text-primary hover:text-foreground transition-colors">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="font-serif text-lg text-white ml-2 sm:text-xl">Your Enquiry</h1>
-        <div className="ml-auto bg-primary text-background text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+        <h1 className="font-serif text-lg text-foreground ml-2 sm:text-xl">Your Enquiry</h1>
+        <div className="ml-auto bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
           {cartItems.length} items
         </div>
       </header>
@@ -121,7 +121,7 @@ export default function CartPage() {
                       variant: item.variant ?? null,
                     })
                   }
-                  className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-500 bg-muted hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"
+                  className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-red-500 bg-muted hover:bg-red-500/10 rounded-full transition-colors border border-transparent hover:border-red-500/30"
                   aria-label="Remove item"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -147,7 +147,7 @@ export default function CartPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <button
             type="button"
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-foreground/40"
             onClick={() => setItemToRemove(null)}
             aria-label="Cancel removal"
           />

@@ -14,7 +14,7 @@ export function CartCountBadge({ count, className = '' }: CartCountBadgeProps) {
 
   return (
     <span
-      className={`absolute -top-1.5 -right-1.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-black bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ${className}`.trim()}
+      className={`absolute -top-1.5 -right-1.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border border-background bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ${className}`.trim()}
       aria-hidden
     >
       {label}

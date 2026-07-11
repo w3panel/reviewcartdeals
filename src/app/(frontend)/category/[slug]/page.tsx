@@ -49,7 +49,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           sizes="100vw"
           className="object-cover opacity-40 blur-[1px]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-foreground/10" />
         <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-12 mx-auto max-w-7xl">
           <Link
             href="/category"
@@ -57,7 +57,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           >
             <ChevronLeft className="h-4 w-4" /> Back to categories
           </Link>
-          <h1 className="font-serif text-3xl text-white tracking-wide sm:text-4xl md:text-5xl">
+          <h1 className="font-serif text-3xl text-foreground tracking-wide sm:text-4xl md:text-5xl">
             {category.title}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-2xl leading-relaxed">
@@ -68,7 +68,9 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <Suspense
-          fallback={<div className="py-20 text-center text-gray-500">Loading products...</div>}
+          fallback={
+            <div className="py-20 text-center text-muted-foreground">Loading products...</div>
+          }
         >
           <CategoryProducts slug={slug} searchParams={searchParams} />
         </Suspense>

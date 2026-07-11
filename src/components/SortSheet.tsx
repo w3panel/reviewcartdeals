@@ -36,7 +36,7 @@ export function SortSheet({ isOpen, value = 'popular', onClose, onApply }: SortS
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col justify-end">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-foreground/40" onClick={onClose} />
 
       <div className="relative bg-background w-full rounded-t-3xl shadow-xl flex flex-col max-h-[90vh]">
         <div className="w-full flex justify-center pt-3 pb-1">

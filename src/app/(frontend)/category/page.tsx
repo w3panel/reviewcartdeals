@@ -16,8 +16,10 @@ export default async function CategoriesPage() {
     <div className="min-h-screen w-full bg-background pb-24 md:pb-12">
       <section className="border-b border-border bg-card px-4 py-8 sm:py-10">
         <div className="mx-auto max-w-7xl text-center">
-          <h1 className="font-serif text-3xl text-white sm:text-4xl md:text-5xl">Categories</h1>
-          <p className="mt-2 text-xs uppercase tracking-[0.2em] text-primary sm:text-sm">
+          <h1 className="font-serif text-3xl text-foreground sm:text-4xl md:text-5xl">
+            Categories
+          </h1>
+          <p className="mt-2 text-xs uppercase tracking-[0.2em] text-muted-foreground sm:text-sm">
             Browse our collections
           </p>
         </div>

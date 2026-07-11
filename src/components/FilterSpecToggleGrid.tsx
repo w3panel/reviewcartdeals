@@ -35,7 +35,7 @@ export function FilterSpecToggleGrid({
               className={`rounded-xl border px-3 py-3 text-left text-xs font-medium leading-snug transition-colors ${
                 isSelected
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-white'
+                  : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground'
               }`}
             >
               {feature}

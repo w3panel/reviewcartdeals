@@ -89,7 +89,9 @@ export function FilterMultiSelectField({
             : 'border-border bg-card hover:border-primary/35 hover:bg-surface/80'
         }`}
       >
-        <span className={values.length > 0 ? 'font-medium text-white' : 'text-muted-foreground'}>
+        <span
+          className={values.length > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}
+        >
           {summary}
         </span>
         <ChevronDown
@@ -100,7 +102,7 @@ export function FilterMultiSelectField({
       </button>
 
       {isOpen ? (
-        <div className="mt-2 overflow-hidden rounded-2xl border border-border/80 bg-[#0a0a0a]/95 shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+        <div className="mt-2 overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-[0_20px_60px_rgba(61,38,26,0.15)] backdrop-blur-xl">
           <div className="border-b border-border/80 p-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -109,7 +111,7 @@ export function FilterMultiSelectField({
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
               />
             </div>
           </div>
@@ -134,8 +136,8 @@ export function FilterMultiSelectField({
                       onClick={() => toggleValue(option.value)}
                       className={`flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3.5 text-left text-sm transition-colors duration-150 ${
                         isSelected
-                          ? 'bg-primary/15 text-white'
-                          : 'text-muted-foreground hover:bg-surface hover:text-white'
+                          ? 'bg-primary/15 text-foreground'
+                          : 'text-muted-foreground hover:bg-surface hover:text-foreground'
                       }`}
                     >
                       <span className={isSelected ? 'font-medium' : undefined}>{option.label}</span>

@@ -57,7 +57,7 @@ export function CategoryCatalog({ initialCategories, initialTotalDocs }: Categor
               href={`/category/${category.slug}`}
               className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary sm:rounded-2xl"
             >
-              <div className="relative aspect-square w-full overflow-hidden bg-black">
+              <div className="relative aspect-square w-full overflow-hidden bg-surface">
                 {imageUrl ? (
                   <SafeImage
                     src={imageUrl}
@@ -71,11 +71,11 @@ export function CategoryCatalog({ initialCategories, initialTotalDocs }: Categor
                     {category.title.charAt(0)}
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent" />
               </div>
 
               <div className="flex flex-col p-2 sm:p-4">
-                <h2 className="line-clamp-2 text-xs font-medium leading-snug text-white sm:text-base">
+                <h2 className="line-clamp-2 text-xs font-medium leading-snug text-foreground sm:text-base">
                   {category.title}
                 </h2>
                 {category.featured ? (

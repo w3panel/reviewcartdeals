@@ -21,11 +21,11 @@ export function getNavButtonClasses(
 ): string {
   const base =
     styleVariant === 'whatsapp'
-      ? 'bg-whatsapp text-white hover:opacity-90'
+      ? 'bg-whatsapp text-primary-foreground hover:opacity-90'
       : styleVariant === 'primary'
         ? 'bg-primary text-primary-foreground hover:bg-primary-hover'
         : styleVariant === 'iconOnly'
-          ? 'border border-primary bg-black text-primary hover:bg-primary/10'
+          ? 'border border-primary bg-primary text-primary-foreground hover:bg-primary-hover'
           : 'text-muted-foreground hover:text-primary'
 
   return `${base} ${className}`.trim()

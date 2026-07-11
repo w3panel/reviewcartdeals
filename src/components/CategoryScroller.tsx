@@ -46,9 +46,9 @@ export function CategoryScroller({
               {category.title.charAt(0)}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent" />
         </div>
-        <span className="mt-2 block max-w-[88px] truncate text-center text-xs font-medium text-white sm:max-w-24">
+        <span className="mt-2 block max-w-[88px] truncate text-center text-xs font-medium text-foreground sm:max-w-24">
           {category.title}
         </span>
       </>
@@ -84,9 +84,9 @@ export function CategoryScroller({
     <section className="px-4 pt-8 md:pt-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-xl sm:text-2xl text-white">Categories</h2>
+          <h2 className="font-serif text-xl sm:text-2xl text-foreground">Categories</h2>
           {showViewAll && (
-            <Link href="/category" className="text-sm text-primary underline underline-offset-4">
+            <Link href="/category" className="text-sm text-accent underline underline-offset-4">
               View all
             </Link>
           )}

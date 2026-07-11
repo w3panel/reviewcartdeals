@@ -62,7 +62,7 @@ export function VariantSelector({
         if (isVisualGroup) {
           return (
             <div key={group.id}>
-              <p className="mb-4 text-sm font-bold uppercase tracking-wide text-white">
+              <p className="mb-4 text-sm font-bold uppercase tracking-wide text-foreground">
                 {group.label}
                 {selectedChoice ? `: ${selectedChoice.label}` : ''}
               </p>
@@ -112,7 +112,7 @@ export function VariantSelector({
         return (
           <div key={group.id}>
             <div className="mb-4 flex items-center justify-between gap-4">
-              <p className="text-sm font-bold uppercase tracking-wide text-white">
+              <p className="text-sm font-bold uppercase tracking-wide text-foreground">
                 Select {group.label}
               </p>
               {showSizeChartLink && group.label.toLowerCase().includes('size') ? (
@@ -136,8 +136,8 @@ export function VariantSelector({
                     aria-pressed={isSelected}
                     className={`min-w-[3.25rem] rounded-md border px-5 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors ${
                       isSelected
-                        ? 'border-primary bg-transparent text-white'
-                        : 'border-border/80 bg-transparent text-white/90 hover:border-primary/50'
+                        ? 'border-primary bg-transparent text-foreground'
+                        : 'border-border/80 bg-transparent text-foreground/90 hover:border-primary/50'
                     }`}
                   >
                     {choice.label}

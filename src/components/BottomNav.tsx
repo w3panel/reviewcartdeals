@@ -31,7 +31,7 @@ function BottomNavItem({
   const showCartCount = isCartNavItem(item)
   const itemClassName =
     `flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-0.5 py-2 transition-colors ${
-      isActive ? 'text-primary' : 'text-white/45'
+      isActive ? 'text-primary' : 'text-muted-foreground'
     }`.trim()
 
   const icon = (
@@ -81,7 +81,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className={`fixed bottom-0 left-0 z-50 flex h-16 w-full border-t border-white/10 bg-black pb-safe lg:hidden ${shellClasses}`}
+      className={`fixed bottom-0 left-0 z-50 flex h-16 w-full border-t border-border bg-background pb-safe lg:hidden ${shellClasses}`}
       aria-label="Mobile navigation"
     >
       <div className="flex h-full w-full items-stretch px-1">

@@ -26,7 +26,7 @@ export function LikeButton({ product, className = '', variant = 'default' }: Lik
     variant === 'overlay'
       ? liked
         ? 'fill-primary text-primary scale-110'
-        : 'text-white/90 group-hover:text-primary group-hover:scale-110'
+        : 'text-foreground/90 group-hover:text-primary group-hover:scale-110'
       : liked
         ? 'fill-primary text-primary scale-110'
         : 'text-primary/70 group-hover:text-primary group-hover:scale-110'

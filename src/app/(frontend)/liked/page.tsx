@@ -17,7 +17,7 @@ export default function LikedPage() {
         <div className="w-16 h-16 bg-card border border-border rounded-full flex items-center justify-center mb-6">
           <Heart className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="font-serif text-2xl text-white mb-2 sm:text-3xl">No Saved Items</h1>
+        <h1 className="font-serif text-2xl text-foreground mb-2 sm:text-3xl">No Saved Items</h1>
         <p className="text-muted-foreground text-center mb-8 max-w-sm text-sm">
           Browse our collections and tap the heart icon to save pieces you love.
         </p>
@@ -37,7 +37,7 @@ export default function LikedPage() {
         <Link href="/" className="p-2 -ml-2 text-primary">
           <ArrowLeft className="w-6 h-6" />
         </Link>
-        <h1 className="font-serif text-lg text-white ml-2 sm:text-xl">Saved Items</h1>
+        <h1 className="font-serif text-lg text-foreground ml-2 sm:text-xl">Saved Items</h1>
         <div className="ml-auto bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
           {likedItems.length}
         </div>
@@ -51,7 +51,7 @@ export default function LikedPage() {
               <button
                 type="button"
                 onClick={() => removeLike(product.id)}
-                className="absolute right-2 top-2 z-10 rounded-full border border-primary/30 bg-black/70 p-2 text-primary backdrop-blur-sm transition-colors hover:bg-black"
+                className="absolute right-2 top-2 z-10 rounded-full border border-primary/30 bg-background/80 p-2 text-primary backdrop-blur-sm transition-colors hover:bg-surface"
                 aria-label="Remove from saved"
               >
                 <Heart className="h-4 w-4 fill-primary" />
