@@ -30,7 +30,6 @@ const reviewButtonClassName =
 
 const whatsappButtonClassName =
   'flex items-center justify-center rounded-xl border border-primary bg-surface text-primary transition-colors duration-200 hover:bg-card'
-
 export function ProductCard({ product, className = '' }: ProductCardProps) {
   const whatsappHref = getWhatsAppUrl(buildProductEnquiryWhatsAppMessage(product, getSiteUrl()))
   const brandTitle = getProductBrandTitle(product)

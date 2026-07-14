@@ -132,7 +132,7 @@ export function SearchCatalog({ categories, brands, filterOptions }: SearchCatal
           <button
             type="button"
             onClick={applySidebarFilters}
-            className="mt-6 w-full rounded-full border border-primary bg-transparent py-3 text-xs font-bold uppercase tracking-widest text-primary transition-colors hover:bg-primary/10"
+            className="mt-6 w-full rounded-full bg-primary py-3 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors duration-200 hover:bg-primary-hover"
           >
             Apply Filters
           </button>
