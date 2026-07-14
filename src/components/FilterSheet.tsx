@@ -191,7 +191,7 @@ export function FilterSheet({
             onClick={() => {
               onApply?.()
             }}
-            className="w-full rounded-full border border-primary bg-transparent px-4 py-3.5 text-xs font-bold uppercase tracking-widest text-primary transition-colors hover:bg-primary/10"
+            className="w-full rounded-full bg-primary px-4 py-3.5 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors duration-200 hover:bg-primary-hover"
           >
             Apply Filters ({totalDocs.toLocaleString()})
           </button>

@@ -135,7 +135,7 @@ export default function CartPage() {
           <button
             type="button"
             onClick={handleSendWhatsApp}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border border-whatsapp bg-transparent py-4 text-sm font-bold uppercase tracking-wide text-whatsapp transition-colors hover:bg-whatsapp/10 active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-3 rounded-xl bg-primary py-4 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-colors duration-200 hover:bg-primary-hover active:scale-[0.98]"
           >
             <span>Send via WhatsApp</span>
             <WhatsAppIcon className="h-5 w-5" />
